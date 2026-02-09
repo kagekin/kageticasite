@@ -37,7 +37,7 @@
             <div class="nav-links">
                 <a href="#about" class="vertical-text">人物</a>
                 <a href="#works" class="vertical-text">事業</a>
-                <a href="#lab" class="vertical-text">Lab</a>
+                <a href="#lab" class="vertical-text">作品</a>
                 <a href="#portal" class="vertical-text">リンク</a>
                 <a href="#contact" class="vertical-text">お問い合わせ</a>
             </div>
@@ -143,38 +143,58 @@
         <!-- Laboratory Section -->
         <section id="lab" class="section works-section" style="background-color: #f0f0f0; border-top: 2px solid #000;">
             <div class="container">
-                <h2 class="section-title vertical-text">研究室</h2>
-                <div class="works-grid">
+                <div class="section-header">
+                    <h2 class="section-title vertical-text">作品</h2>
+                    <div class="filter-container">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="tools">Tools</button>
+                        <button class="filter-btn" data-filter="toys">Toys</button>
+                        <button class="filter-btn" data-filter="planning">Planning</button>
+                    </div>
+                </div>
+                <div class="works-grid" id="dev-grid">
                     <!-- Tool 1: Sandai Banashi -->
-                    <article class="work-card">
-                        <div class="work-image"
-                            style="background: #000; color: #fff; display: flex; align-items: center; justify-content: center;">
-                            3 THEME
-                        </div>
+                    <article class="work-card" data-category="tools toys">
+                        <a href="lab/sandai_banashi.html" class="work-thumb-link">
+                            <div class="work-image"
+                                style="background: #000; color: #fff; display: flex; align-items: center; justify-content: center;">
+                                3 THEME
+                            </div>
+                        </a>
                         <div class="work-content">
-                            <h3 class="work-title">三題噺メーカー</h3>
+                            <h3 class="work-title">3つのお題から生まれた物語</h3>
                             <p class="work-desc">
                                 <strong>「偶然から始まる物語」</strong><br>
                                 ランダムに選ばれた3つのお題から、想像力を刺激するショートストーリーを創作するためのツール。
                             </p>
-                            <a href="lab/sandai_banashi.html" class="btn-link">Enter Lab <span
+                            <div class="work-tags">
+                                <span class="tag">Tools</span>
+                                <span class="tag">Toys</span>
+                            </div>
+                            <a href="lab/sandai_banashi.html" class="btn-link btn-action">OPEN TOOL <span
                                     class="arrow">→</span></a>
                         </div>
                     </article>
 
                     <!-- Tool 2: One Hour Writing -->
-                    <article class="work-card">
-                        <div class="work-image"
-                            style="background: #000; color: #fff; display: flex; align-items: center; justify-content: center;">
-                            1 HOUR
-                        </div>
+                    <article class="work-card" data-category="tools planning">
+                        <a href="lab/one_hour_writing.html" class="work-thumb-link">
+                            <div class="work-image"
+                                style="background: #000; color: #fff; display: flex; align-items: center; justify-content: center;">
+                                1 HOUR
+                            </div>
+                        </a>
                         <div class="work-content">
                             <h3 class="work-title">One Hour Writing 【ワンライ】</h3>
                             <p class="work-desc">
                                 <strong>「60分で執筆するワンドロの小説版」</strong><br>
                                 イベントページと各種便利ツール。
                             </p>
-                            <a href="lab/one_hour_writing.html" class="btn-link">Enter Lab <span
+                            <div class="work-tags">
+                                <span class="tag">Tools</span>
+                                <span class="tag">Planning</span>
+                            </div>
+                            <a href="lab/one_hour_writing.html" class="btn-link btn-action">OPEN TOOL <span
                                     class="arrow">→</span></a>
                         </div>
                     </article>

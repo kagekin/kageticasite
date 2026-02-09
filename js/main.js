@@ -71,6 +71,48 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 3000);
 
     /* ==========================================================================
+       Developed Items Filtering
+       ========================================================================== */
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const worksGrid = document.getElementById('dev-grid');
+
+    if (filterBtns.length > 0 && worksGrid) {
+        const cards = worksGrid.querySelectorAll('.work-card');
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active class from all
+                filterBtns.forEach(b => b.classList.remove('active'));
+                // Add active to clicked
+                btn.classList.add('active');
+
+                const filterValue = btn.getAttribute('data-filter');
+
+                cards.forEach(card => {
+                    const categories = card.getAttribute('data-category');
+                    if (filterValue === 'all' || categories.includes(filterValue)) {
+                        gsap.to(card, {
+                            scale: 1,
+                            opacity: 1,
+                            duration: 0.3,
+                            display: 'block',
+                            ease: 'power2.out'
+                        });
+                    } else {
+                        gsap.to(card, {
+                            scale: 0.8,
+                            opacity: 0,
+                            duration: 0.3,
+                            display: 'none',
+                            ease: 'power2.in'
+                        });
+                    }
+                });
+            });
+        });
+    }
+
+    /* ==========================================================================
        SF Mode / Matrix Effect
        ========================================================================== */
     const sfToggle = document.getElementById('sf-toggle');
