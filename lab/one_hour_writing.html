@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>One Hour Writing - 深夜の真剣執筆60分一本勝負</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Lucide Icons (via unpkg for global access or we can try esm in babel) -->
+    <!-- We will use a small helper to fetch icons or use a CDN that exposes lucideReact -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Noto+Sans+JP:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', 'Noto Sans JP', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50">
+    <!-- Navigation Back Link -->
+    <nav class="fixed top-0 left-0 w-full p-4 z-50 pointer-events-none">
+        <a href="../index.html" class="pointer-events-auto inline-flex items-center gap-2 bg-black/80 text-white px-4 py-2 rounded-full backdrop-blur-sm hover:bg-black transition-colors font-bold text-xs uppercase tracking-widest">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+            Back to Lab
+        </a>
+    </nav>
+
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import { useState, useRef, useEffect } from 'https://esm.sh/react@18?deps=react@18';
+        import { 
+            Download, Layout, Type, Palette, RefreshCw, ChevronDown,
+            Layers, Timer, PenTool, BookOpen, Share2, Play, Square,
+            Pencil, Quote, ExternalLink, Library, Book, Coffee, ClipboardCheck,
+            Zap, AlertCircle, MessageSquareText, Image, Shuffle, CheckCircle2,
+            Clock, Heart, Volume2, Target
+        } from 'https://esm.sh/lucide-react@0.292.0?deps=react@18';
+
+        // Fix for "Square" icon name change in some versions or user code mismatch
+        // The user code asks for "Square as StopSquare". 
+        // We will simple use Square for StopSquare if imported correctly.
+        const StopSquare = Square;
+
+        const App = () => {
+            // --- State ---
+            const [title, setTitle] = useState('無題の物語');
+            const [synopsis, setSynopsis] = useState('');
+            const [theme, setTheme] = useState('短編小説');
+            const [customTheme, setCustomTheme] = useState('');
+            const [promptText, setPromptText] = useState('');
+            const [selectedDesign, setSelectedDesign] = useState(0);
+            const [platform, setPlatform] = useState('x');
+
+            // Timer State
+            const [timeLeft, setTimeLeft] = useState(3600);
+            const [isActive, setIsActive] = useState(false);
+            const [isSoundOn, setIsSoundOn] = useState(true);
+
+            const canvasRef = useRef(null);
+
+            // Data
+            const themeOptions = ['小説', '短編小説', 'ショートショート', 'SF', 'ファンタジー', 'ミステリー', 'ホラー', '恋愛', '現代ドラマ', 'その他'];
+
+            const platforms = [
+                { name: "note", url: "https://note.com/", color: "bg-green-600" },
+                { name: "TALES", url: "https://tales.note.com/", color: "bg-slate-900" },
+                { name: "pixiv", url: "https://www.pixiv.net/novel", color: "bg-blue-500" },
+                { name: "破滅派", url: "https://hametuha.com/", color: "bg-red-600" },
+                { name: "カクヨム", url: "https://kakuyomu.jp/", color: "bg-blue-700" },
+                { name: "ノベラ", url: "https://novelup.plus/", color: "bg-orange-600" },
+                { name: "エブリスタ", url: "https://estar.jp/", color: "bg-purple-600" },
+                { name: "なろう", url: "https://syosetu.com/", color: "bg-indigo-700" }
+            ];
+
+            const recommendedBooks = [
+                {
+                    title: "作家で食っていく方法",
+                    author: "今村 翔吾",
+                    comment: "圧倒的な執筆体力の重要性を痛感させられる一冊。",
+                    url: "https://amzn.to/4r336U6"
+                },
+                {
+                    title: "読者に憐れみを",
+                    author: "カート・ヴォネガット",
+                    comment: "「書くことについて」の世界的名著。創作の師。",
+                    url: "https://amzn.to/4bDj0jp"
+                },
+                {
+                    title: "SHOW YOUR WORK!",
+                    author: "オースティン・クレオン",
+                    comment: "クリエイティブを共有する勇気をくれるバイブル。",
+                    url: "https://amzn.to/4alCerm"
+                }
+            ];
+
+            const designs = [
+                { category: "古風", name: "墨色", bg: "#1a1a1a", card: "#222222", badge: "#d97706", text: "#f8fafc", badgeText: "#000",
+                layout: "left", accent: "#d97706" },
+                { category: "古風", name: "和紙", bg: "#f5f5f4", card: "#fffcf0", badge: "#7f1d1d", text: "#450a0a", badgeText: "#fff",
+                layout: "center", border: "#e7e5e4" },
+                { category: "古風", name: "朱", bg: "#991b1b", card: "#ffffff", badge: "#1a1a1a", text: "#1a1a1a", badgeText: "#fff",
+                layout: "accent", accent: "#991b1b" },
+                { category: "古風", name: "藍染", bg: "#1e3a8a", card: "#1e3a8a", badge: "#fbbf24", text: "#fff", badgeText: "#000", layout:
+                "center", border: "#3b82f6" },
+                { category: "古風", name: "松", bg: "#064e3b", card: "#ffffff", badge: "#d97706", text: "#064e3b", badgeText: "#fff",
+                layout: "left", accent: "#d97706" },
+                { category: "ミニマル", name: "Ghost", bg: "#ffffff", card: "#ffffff", badge: "#000000", text: "#000000", badgeText: "#fff",
+                layout: "center", border: "#f0f0f0" },
+                { category: "ミニマル", name: "Deep", bg: "#000000", card: "#000000", badge: "#ffffff", text: "#ffffff", badgeText: "#000",
+                layout: "center" },
+                { category: "ミニマル", name: "Slate", bg: "#f8fafc", card: "#ffffff", badge: "#334155", text: "#0f172a", badgeText: "#fff",
+                layout: "left", border: "#e2e8f0" },
+                { category: "ミニマル", name: "Edge", bg: "#ffffff", card: "#ffffff", badge: "#1a1a1a", text: "#1a1a1a", badgeText: "#fff",
+                layout: "accent", accent: "#000" },
+                { category: "ミニマル", name: "Grid", bg: "#ffffff", card: "#ffffff", badge: "#000", text: "#000", badgeText: "#fff",
+                layout: "center", border: "#f3f4f6" },
+                { category: "ビビッド", name: "Flash", bg: "#fbbf24", card: "#ffffff", badge: "#ef4444", text: "#000", badgeText: "#fff",
+                layout: "center" },
+                { category: "ビビッド", name: "Neon", bg: "#000000", card: "#000000", badge: "#00ff41", text: "#00ff41", badgeText: "#000",
+                layout: "left", border: "#00ff41" },
+                { category: "ビビッド", name: "Berry", bg: "#db2777", card: "#ffffff", badge: "#1a1a1a", text: "#1a1a1a", badgeText: "#fff",
+                layout: "accent", accent: "#db2777" },
+                { category: "ビビッド", name: "Cyan", bg: "#06b6d4", card: "#ffffff", badge: "#000", text: "#000", badgeText: "#fff",
+                layout: "accent", accent: "#06b6d4" },
+                { category: "ビビッド", name: "Sunset", bg: "#f97316", card: "#ffffff", badge: "#1a1a1a", text: "#1a1a1a", badgeText:
+                "#fff", layout: "center" },
+                { category: "モダン", name: "Navy", bg: "#0f172a", card: "#1e293b", badge: "#38bdf8", text: "#f8fafc", badgeText:
+                "#0f172a", layout: "left" },
+                { category: "モダン", name: "Glass", bg: "linear-gradient(45deg, #4f46e5, #9333ea)", card: "rgba(255,255,255,0.9)", badge:
+                "#1a1a1a", text: "#1a1a1a", badgeText: "#fff", layout: "center" },
+                { category: "モダン", name: "Gold", bg: "#1c1917", card: "#292524", badge: "#eab308", text: "#fafaf9", badgeText: "#000",
+                layout: "accent", accent: "#eab308" },
+                { category: "モダン", name: "Forest", bg: "#14532d", card: "#ffffff", badge: "#166534", text: "#14532d", badgeText: "#fff",
+                layout: "left", border: "#dcfce7" },
+                { category: "モダン", name: "Steel", bg: "#334155", card: "#ffffff", badge: "#0f172a", text: "#0f172a", badgeText: "#fff",
+                layout: "left" },
+                { category: "ソフト", name: "Cream", bg: "#fff7ed", card: "#ffffff", badge: "#c2410c", text: "#431407", badgeText: "#fff",
+                layout: "center", border: "#ffedd5" },
+                { category: "ソフト", name: "Lavender", bg: "#f5f3ff", card: "#ffffff", badge: "#7c3aed", text: "#4c1d95", badgeText:
+                "#fff", layout: "left", border: "#ddd6fe" },
+                { category: "ソフト", name: "Mint", bg: "#f0fdf4", card: "#ffffff", badge: "#16a34a", text: "#052e16", badgeText: "#fff",
+                layout: "accent", accent: "#16a34a" },
+                { category: "ソフト", name: "Peach", bg: "#fff1f2", card: "#ffffff", badge: "#fb7185", text: "#881337", badgeText: "#fff",
+                layout: "left", border: "#ffe4e6" },
+                { category: "ソフト", name: "Sky", bg: "#f0f9ff", card: "#ffffff", badge: "#0284c7", text: "#082f49", badgeText: "#fff",
+                layout: "center" }
+            ];
+
+            // --- Logic ---
+            const playAlarm = () => {
+                if (!isSoundOn) return;
+                try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                const ctx = new AudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                const now = ctx.currentTime;
+                osc.frequency.setValueAtTime(880, now);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.1);
+                osc.frequency.setValueAtTime(880, now + 0.2);
+                gain.gain.setValueAtTime(0.1, now + 0.2);
+                gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.4);
+                } catch (e) { console.error("Audio playback failed", e); }
+            };
+
+            useEffect(() => {
+                let interval = null;
+                if (isActive && timeLeft > 0) {
+                interval = setInterval(() => setTimeLeft((time) => time - 1), 1000);
+                } else if (timeLeft === 0 && isActive) {
+                setIsActive(false);
+                clearInterval(interval);
+                playAlarm();
+                } else if (timeLeft === 0) {
+                setIsActive(false);
+                clearInterval(interval);
+                }
+                return () => clearInterval(interval);
+            }, [isActive, timeLeft]);
+
+            const formatTime = (seconds) => {
+                const m = Math.floor(seconds / 60);
+                const s = seconds % 60;
+                return `${m}:${s < 10 ? '0' : '' }${s}`; 
+            }; 
+            
+            useEffect(()=> { drawCanvas(); }, [title, synopsis, theme, customTheme, promptText, selectedDesign, platform]);
+
+            const drawCanvas = () => {
+                const canvas = canvasRef.current;
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+                const design = designs[selectedDesign];
+                const displayTheme = theme === 'その他' ? (customTheme || '自由形式') : theme;
+                const w = platform === 'x' ? 1200 : 1280;
+                const h = platform === 'x' ? 480 : 670;
+                canvas.width = w; canvas.height = h;
+
+                ctx.clearRect(0, 0, w, h);
+                if (design.bg.includes('gradient')) {
+                const grad = ctx.createLinearGradient(0, 0, w, h);
+                const colors = design.bg.match(/#[a-fA-F0-9]{6}/g);
+                grad.addColorStop(0, colors[0]); grad.addColorStop(1, colors[1]);
+                ctx.fillStyle = grad;
+                } else { ctx.fillStyle = design.bg; }
+                ctx.fillRect(0, 0, w, h);
+
+                const margin = 40;
+                const layout = design.layout;
+
+                if (layout === 'accent') {
+                ctx.fillStyle = design.card; ctx.fillRect(margin, margin, w - margin*2, h - margin*2);
+                ctx.strokeStyle = design.accent || design.badge; ctx.lineWidth = 15;
+                ctx.beginPath(); ctx.moveTo(margin, margin); ctx.lineTo(margin, h - margin); ctx.stroke();
+                } else {
+                ctx.fillStyle = design.card; ctx.fillRect(margin, margin, w - margin*2, h - margin*2);
+                if (design.border) { ctx.strokeStyle = design.border; ctx.lineWidth = 2; ctx.strokeRect(margin, margin, w -
+                margin*2, h - margin*2); }
+                }
+
+                const bottomSafeY = h - margin - 50;
+                ctx.font = 'bold 18px "sans-serif"';
+                ctx.fillStyle = design.accent || design.badge;
+                ctx.textAlign = 'right';
+                ctx.fillText("#ワンライ #深夜の真剣執筆60分一本勝負", w - margin - 60, bottomSafeY);
+
+                const topLimit = margin + 50;
+                const bottomLimit = h - margin - 130;
+                const availableH = bottomLimit - topLimit;
+                const contentStartX = (layout === 'left' || layout === 'accent') ? margin + 70 : w / 2;
+                const maxWidth = (layout === 'center') ? w * 0.85 : w * 0.75;
+                const textAlign = (layout === 'center') ? 'center' : 'left';
+
+                const getWrappedLines = (text, size, maxW) => {
+                ctx.font = `bold ${size}px "sans-serif"`;
+                const chars = text.split('');
+                let lines = [];
+                let currentLine = '';
+                for (let char of chars) {
+                let test = currentLine + char;
+                if (ctx.measureText(test).width > maxW && currentLine !== '') {
+                lines.push(currentLine);
+                currentLine = char;
+                } else { currentLine = test; }
+                }
+                lines.push(currentLine);
+                return lines;
+                };
+
+                ctx.font = 'bold 24px "sans-serif"';
+                const badgeW = ctx.measureText(displayTheme).width + 80;
+                const badgeH = 50;
+                let titleSize = platform === 'x' ? 84 : 94;
+                let synoSize = 30;
+                let promptSize = 32;
+
+                const calcTotalHeight = (tS, sS, pS) => {
+                let h_title = getWrappedLines(title, tS, maxWidth).length * tS * 1.3;
+                let h_syno = synopsis ? getWrappedLines(`─ ${synopsis}`, sS, maxWidth).length * sS * 1.3 : 0;
+                let h_prompt = promptText ? getWrappedLines(`お題：${promptText}`, pS, maxWidth).length * pS * 1.3 : 0;
+                return badgeH + 60 + h_title + (synopsis ? h_syno + 25 : 0) + (promptText ? h_prompt + 25 : 0);
+                };
+
+                let currentTotalH = calcTotalHeight(titleSize, synoSize, promptSize);
+                while (currentTotalH > availableH && titleSize > 32) {
+                titleSize *= 0.95; synoSize *= 0.95; promptSize *= 0.95;
+                currentTotalH = calcTotalHeight(titleSize, synoSize, promptSize);
+                }
+
+                const finalTitleLines = getWrappedLines(title, titleSize, maxWidth);
+                const finalSynoLines = synopsis ? getWrappedLines(`─ ${synopsis}`, synoSize, maxWidth) : [];
+                const finalPromptLines = promptText ? getWrappedLines(`お題：${promptText}`, promptSize, maxWidth) : [];
+
+                ctx.textBaseline = 'top';
+                ctx.textAlign = textAlign;
+                let drawY = topLimit + (availableH - currentTotalH) / 2;
+
+                let bX = textAlign === 'center' ? w/2 - badgeW/2 : contentStartX;
+                ctx.fillStyle = design.badge;
+                roundRect(ctx, bX, drawY, badgeW, badgeH, 4, true, false);
+                ctx.fillStyle = design.badgeText;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.font = 'bold 24px "sans-serif"';
+                ctx.fillText(displayTheme, bX + badgeW/2, drawY + badgeH/2);
+
+                drawY += badgeH + 60;
+                ctx.textAlign = textAlign;
+                ctx.textBaseline = 'top';
+
+                ctx.font = `bold ${titleSize}px "sans-serif"`;
+                ctx.fillStyle = design.text;
+                finalTitleLines.forEach((line, i) => {
+                ctx.fillText(line, contentStartX, drawY + (i * titleSize * 1.3));
+                });
+                drawY += finalTitleLines.length * titleSize * 1.3 + 30;
+
+                if (synopsis) {
+                ctx.font = `italic bold ${synoSize}px "sans-serif"`;
+                ctx.globalAlpha = 0.55;
+                finalSynoLines.forEach((line, i) => {
+                ctx.fillText(line, contentStartX, drawY + (i * synoSize * 1.3));
+                });
+                ctx.globalAlpha = 1.0;
+                drawY += finalSynoLines.length * synoSize * 1.3 + 20;
+                }
+
+                if (promptText) {
+                ctx.font = `bold ${promptSize}px "sans-serif"`;
+                ctx.globalAlpha = 0.7;
+                finalPromptLines.forEach((line, i) => {
+                ctx.fillText(line, contentStartX, drawY + (i * promptSize * 1.3));
+                });
+                ctx.globalAlpha = 1.0;
+                }
+            };
+
+            const roundRect = (ctx, x, y, width, height, radius, fill, stroke) => {
+                ctx.beginPath(); ctx.moveTo(x + radius, y); ctx.lineTo(x + width - radius, y);
+                ctx.quadraticCurveTo(x + width, y, x + width, y + radius); ctx.lineTo(x + width, y + height - radius);
+                ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height); ctx.lineTo(x + radius, y + height);
+                ctx.quadraticCurveTo(x, y + height, x, y + height - radius); ctx.lineTo(x, y + radius);
+                ctx.quadraticCurveTo(x, y, x + radius, y); ctx.closePath();
+                if (fill) ctx.fill(); if (stroke) ctx.stroke();
+            };
+
+            const copyToClipboard = (text) => {
+                const el = document.createElement('textarea'); el.value = text;
+                document.body.appendChild(el); el.select();
+                document.execCommand('copy'); document.body.removeChild(el);
+            };
+
+            const downloadImage = () => {
+                const canvas = canvasRef.current;
+                const link = document.createElement('a');
+                link.download = `wanrai-thumbnail-${Date.now()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            };
+
+            const shuffleDesign = () => setSelectedDesign(Math.floor(Math.random() * designs.length));
+
+            const currentWorkFormat = theme === 'その他' ? (customTheme || '自由形式') : theme;
+            const finishTmpl = `【今日も短編小説を書きました！】\n\n作品：『${title}』\n形式：${currentWorkFormat}\nお題：${promptText ||
+                '自由設定'}\n${synopsis ? `概要：${synopsis}\n\n` : '\n'}制限時間60分、一気に書き上げました。\n作品URL: [ここにURLを貼る]\n\n#ワンライ #深夜の真剣執筆60分一本勝負`;
+
+            return (
+            <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-20 selection:bg-blue-100 selection:text-blue-900">
+
+                {/* --- Section 1: Intro --- */}
+                <div className="max-w-5xl mx-auto px-6 md:px-8 space-y-20 pt-16">
+                    <header className="space-y-12">
+                        <div className="space-y-4">
+                            <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-slate-900 uppercase leading-tight">
+                                One Hour Writing <br className="md:hidden" />【ワンライ】
+                            </h1>
+                            <p className="text-xs font-bold text-blue-600 tracking-[0.3em] uppercase">深夜の真剣執筆60分一本勝負</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
+                            <div className="space-y-8 leading-relaxed text-slate-700">
+                                <div className="space-y-4">
+                                    <h2 className="text-xl font-black flex items-center gap-3">
+                                        <Quote className="w-5 h-5 text-blue-500 fill-current" /> ワンライとは？
+                                    </h2>
+                                    <p className="text-sm md:text-base">
+                                        イラストレーター界隈の<span className="font-bold text-slate-900">「ワンドロ（One Hour Drawing）」</span>という文化をご存知ですか？ 1時間という制限時間内に、お題に沿ったイラストを完成させる企画です。
+                                    </p>
+                                    <p className="text-sm md:text-base">
+                                        これを小説でもやってみたいと思い、企画を立てました。イラストではなく執筆（Writing）なので、いわゆる<span className="font-bold text-blue-600">「ワンライ」</span>です。
+                                    </p>
+                                </div>
+
+                                <div className="space-y-4 bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+                                    <h3 className="text-lg font-black text-slate-900">目的は「書く体力」</h3>
+                                    <p className="text-sm">
+                                        机に向かうと、どうしても「上手く書こう」という完璧主義が邪魔をします。筆が止まり、悩み、結局書きあぐねてしまう。
+                                    </p>
+                                    <p className="text-sm">
+                                        そんな重たいハードルを、60分という制限時間で強制的に取り払ってしまいましょう。<span className="font-bold text-slate-900">「完走する楽しさを思い出す」</span>ためのトレーニングです。
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="bg-slate-900 text-white p-8 md:p-10 rounded-[40px] shadow-2xl space-y-6">
+                                <h2 className="text-xl font-black flex items-center gap-3">
+                                    <Target className="w-6 h-6 text-blue-400" /> ルール
+                                </h2>
+                                <ul className="space-y-5">
+                                    {[
+                                    { num: 1, title: "時間は60分", desc: "プロットは事前準備OK。執筆そのものは1時間のスプリントで。" },
+                                    { num: 2, title: "お題は自由", desc: "書きたいものを自由に。迷ったら「三題噺メーカー」なども活用OK。" },
+                                    { num: 3, title: "タグをつけて投稿", desc: "#ワンライ #深夜の真剣執筆60分一本勝負" },
+                                    { num: 4, title: "場所は問わない", desc: "note, pixiv, カクヨム... 使い慣れた場所で公開しましょう。" },
+                                    ].map((rule) => (
+                                    <li key={rule.num} className="flex gap-4">
+                                        <span className="bg-blue-600 text-xs font-black w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">{rule.num}</span>
+                                        <div>
+                                            <p className="font-bold text-sm">{rule.title}</p>
+                                            <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">{rule.desc}</p>
+                                        </div>
+                                    </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* --- Section 2: Tools --- */}
+                    <section id="tools" className="space-y-10 border-t border-slate-200 pt-16">
+                        <div className="text-center space-y-3">
+                            <h2 className="text-3xl font-black text-slate-900">ワンライ・スターター</h2>
+                            <p className="text-sm text-slate-500 font-medium">執筆、記録、そして共有。あなたのスプリントを支える3つの機能。</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+                            {/* Left: Settings */}
+                            <div className="lg:col-span-5 space-y-6">
+                                <div className="bg-white p-6 md:p-8 rounded-[32px] shadow-sm border border-slate-200 space-y-6">
+                                    <h2 className="text-lg font-black flex items-center gap-2 text-slate-800">
+                                        <Pencil className="w-5 h-5 text-blue-600" /> 1. 内容設定
+                                    </h2>
+                                    <div className="space-y-4">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-bold text-slate-400">タイトル</label>
+                                            <input type="text" value={title} onChange={(e)=> setTitle(e.target.value)}
+                                            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl
+                                            focus:ring-2 focus:ring-blue-500/20 outline-none font-bold text-slate-800"
+                                            placeholder="作品のタイトル..." />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-bold text-slate-400">1行あらすじ</label>
+                                            <input type="text" value={synopsis} onChange={(e)=> setSynopsis(e.target.value)}
+                                            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl
+                                            focus:ring-2 focus:ring-blue-500/20 outline-none font-medium text-slate-700"
+                                            placeholder="〇〇が〇〇する話..." />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-bold text-slate-400">お題</label>
+                                                <input type="text" value={promptText} onChange={(e)=>
+                                                setPromptText(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border
+                                                border-slate-100 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none
+                                                font-medium text-slate-700" placeholder="お題を入力..." />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-bold text-slate-400">形式</label>
+                                                <div className="relative">
+                                                    <select value={theme} onChange={(e)=> setTheme(e.target.value)}
+                                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-100
+                                                        rounded-xl font-medium text-slate-800 outline-none appearance-none
+                                                        cursor-pointer">
+                                                        {themeOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                                                    </select>
+                                                    <ChevronDown
+                                                        className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {theme === 'その他' && (
+                                        <input type="text" value={customTheme} onChange={(e)=> setCustomTheme(e.target.value)}
+                                        className="w-full px-4 py-3 bg-blue-50 border border-blue-100 rounded-xl focus:ring-2
+                                        focus:ring-blue-500/20 outline-none font-bold text-blue-800 animate-in fade-in"
+                                        placeholder="形式を自由入力..." />
+                                        )}
+                                    </div>
+
+                                    <div className="pt-6 border-t border-slate-100 space-y-3">
+                                        <div className="flex justify-between items-center px-1">
+                                            <label className="text-[10px] font-bold text-slate-400">スタイル選択</label>
+                                            <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+                                                {designs[selectedDesign].category}
+                                            </span>
+                                        </div>
+                                        <div className="grid grid-cols-5 gap-2">
+                                            {designs.map((d, idx) => (
+                                            <button key={idx} onClick={()=> setSelectedDesign(idx)} className={`h-10 rounded-lg
+                                                transition-all border-2 ${selectedDesign === idx ? 'border-blue-500 scale-105 z-10 ring-2 ring-blue-100' : 'border-transparent hover:border-slate-200'}`}
+                                                style={{ background: d.bg }} aria-label={d.name} />
+                                                ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <a href="https://tales.note.com/" target="_blank" rel="noopener noreferrer"
+                                    className="bg-white text-slate-600 px-6 py-4 rounded-2xl text-sm font-bold flex items-center justify-between group hover:shadow-md transition-all border border-slate-200">
+                                    <span className="flex items-center gap-3">
+                                        <BookOpen className="w-5 h-5 text-blue-500" /> お題に迷ったら（外部ツール）
+                                    </span>
+                                    <ExternalLink className="w-4 h-4 opacity-30 group-hover:opacity-100 transition-opacity" />
+                                </a>
+                            </div>
+
+                            {/* Right: Preview */}
+                            <div className="lg:col-span-7 space-y-6 lg:sticky lg:top-8">
+                                <div className="flex items-center justify-between px-2">
+                                    <div className="flex bg-white p-1 rounded-xl border border-slate-200">
+                                        <button onClick={()=> setPlatform('x')} className={`px-4 py-1.5 rounded-lg text-[10px]
+                                            font-black uppercase transition-all ${platform === 'x' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}>X (5:2)</button>
+                                        <button onClick={()=> setPlatform('note')} className={`px-4 py-1.5 rounded-lg
+                                            text-[10px] font-black uppercase transition-all ${platform === 'note' ?
+                                            'bg-slate-800 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}>note
+                                            Header</button>
+                                    </div>
+                                    <button onClick={shuffleDesign}
+                                        className="flex items-center gap-2 text-blue-600 px-3 py-1.5 rounded-lg text-[10px] font-bold hover:bg-blue-50 transition-colors">
+                                        <Shuffle className="w-3 h-3" /> デザインをシャッフル
+                                    </button>
+                                </div>
+
+                                <div className="bg-white rounded-[24px] p-2 shadow-xl border border-slate-200 overflow-hidden">
+                                    <canvas ref={canvasRef} className="w-full h-auto rounded-2xl border border-slate-100" />
+                                </div>
+
+                                <button onClick={downloadImage}
+                                    className="w-full py-5 bg-blue-600 text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-3 shadow-lg hover:bg-blue-700 transition-all transform active:scale-[0.98] group">
+                                    <Download className="w-6 h-6 group-hover:animate-bounce" />
+                                    サムネイル画像を保存
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* --- Section 3: Timer --- */}
+                    <section className="pt-16 border-t border-slate-200">
+                        <div
+                            className="bg-slate-900 p-8 md:p-16 rounded-[40px] shadow-2xl text-center space-y-8 relative overflow-hidden">
+                            {/* Progress Bar */}
+                            <div className="absolute top-0 left-0 w-full h-2 bg-white/10">
+                                <div className="h-full bg-blue-500 transition-all duration-1000 ease-linear shadow-[0_0_20px_rgba(59,130,246,0.8)]"
+                                    style={{ width: `${(timeLeft/3600)*100}%` }}></div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label
+                                    className="text-xs font-black text-slate-500 uppercase tracking-[0.2em] flex items-center justify-center gap-2">
+                                    <Zap className={`w-4 h-4 ${isActive ? 'text-yellow-400 animate-pulse' : '' }`} /> 執筆タイマー
+                                    (60分)
+                                </label>
+                                <div className={`text-7xl md:text-9xl font-mono font-black text-white tracking-tighter
+                                    tabular-nums ${timeLeft <=600 && isActive ? 'text-red-500 animate-pulse' : '' }`}>
+                                    {formatTime(timeLeft)}
+                                </div>
+                            </div>
+
+                            {timeLeft <= 600 && timeLeft> 0 && (
+                                <div
+                                    className="inline-flex items-center gap-2 bg-red-500/20 text-red-400 px-6 py-2 rounded-full border border-red-500/30 animate-pulse">
+                                    <AlertCircle className="w-5 h-5" />
+                                    <span className="font-bold text-sm">ラストスパート！あと10分</span>
+                                </div>
+                                )}
+
+                                <div className="flex flex-col md:flex-row gap-4 justify-center items-center pt-4">
+                                    <button onClick={()=> setIsActive(!isActive)} className={`w-full md:w-auto px-10 py-5
+                                        rounded-2xl font-black text-lg flex items-center justify-center gap-3 transition-all
+                                        active:scale-95 ${isActive ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-blue-600
+                                        text-white hover:bg-blue-500 shadow-lg shadow-blue-900/50'}`}>
+                                        {isActive ? <>
+                                            <StopSquare className="w-6 h-6" /> 中断する
+                                        </> : <>
+                                            <Play className="w-6 h-6 fill-current" /> 計測開始
+                                        </>}
+                                    </button>
+
+                                    <div className="flex gap-4">
+                                        <button onClick={()=> {setTimeLeft(3600); setIsActive(false);}} className="p-5
+                                            bg-slate-800 text-slate-400 rounded-2xl hover:text-white transition-colors"
+                                            title="リセット">
+                                            <RefreshCw className="w-6 h-6" />
+                                        </button>
+                                        <button onClick={()=> setIsSoundOn(!isSoundOn)} className={`p-5 rounded-2xl
+                                            transition-colors border ${isSoundOn ? 'bg-slate-800 text-blue-400 border-blue-900'
+                                            : 'bg-slate-800 text-slate-600 border-transparent'}`} title="完了音のON/OFF">
+                                            <Volume2 className="w-6 h-6" />
+                                        </button>
+                                    </div>
+                                </div>
+                        </div>
+                    </section>
+
+                    {/* --- Section 4: Post Template --- */}
+                    <section className="pt-10 space-y-6">
+                        <div className="flex items-center gap-3 px-2">
+                            <CheckCircle2 className="w-6 h-6 text-green-600" />
+                            <h2 className="text-xl font-black text-slate-800">執筆完了報告</h2>
+                        </div>
+                        <div
+                            className="bg-white p-6 md:p-8 rounded-[32px] border border-green-100 shadow-xl relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-green-50 rounded-bl-[80px] -z-1 opacity-50" />
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-end">
+                                    <h4 className="text-xs font-bold text-green-700 flex items-center gap-2">
+                                        <Share2 className="w-4 h-4" /> 投稿用テンプレート
+                                    </h4>
+                                    <button onClick={()=> copyToClipboard(finishTmpl)} className="bg-green-600 text-white px-4
+                                        py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-green-700
+                                        transition-colors shadow-md active:scale-95">
+                                        <ClipboardCheck className="w-4 h-4" /> テキストをコピー
+                                    </button>
+                                </div>
+                                <div
+                                    className="bg-slate-50 p-6 rounded-2xl text-sm font-medium text-slate-600 leading-relaxed font-mono border border-slate-100 shadow-inner overflow-x-auto">
+                                    <pre className="whitespace-pre-wrap">{finishTmpl}</pre>
+                                </div>
+                                <p className="text-[10px] text-slate-400 text-center">※ 作品URLを貼り付けて、画像を添付して投稿してください。</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* --- Section 5: Platforms --- */}
+                    <section className="pt-16 border-t border-slate-200">
+                        <div className="text-center mb-8">
+                            <span
+                                className="bg-white px-6 py-2 rounded-full border border-slate-200 text-xs font-bold text-slate-500 shadow-sm">投稿プラットフォーム</span>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {platforms.map(p => (
+                            <a key={p.name} href={p.url} target="_blank" rel="noopener noreferrer" className={`${p.color} p-6
+                                rounded-2xl text-white flex flex-col justify-between h-32 hover:scale-[1.02] transition-all
+                                shadow-md hover:shadow-lg active:scale-95 no-underline`}>
+                                <span className="font-bold text-lg">{p.name}</span>
+                                <ExternalLink className="w-5 h-5 opacity-40 self-end" />
+                            </a>
+                            ))}
+                        </div>
+                    </section>
+
+                    {/* --- Section 6: Books --- */}
+                    <section className="pt-16 border-t border-slate-200 space-y-8">
+                        <div className="flex items-center gap-3">
+                            <Library className="w-6 h-6 text-slate-400" />
+                            <h2 className="text-xl font-black text-slate-800">執筆のモチベーションを高める本</h2>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {recommendedBooks.map((book, idx) => (
+                            <a key={idx} href={book.url} target="_blank" rel="noopener noreferrer"
+                                className="bg-white p-8 rounded-[32px] border border-slate-200 shadow-sm hover:shadow-xl transition-all group block no-underline h-full flex flex-col">
+                                <div className="space-y-1 mb-4">
+                                    <h3
+                                        className="font-bold text-lg text-slate-900 group-hover:text-blue-600 transition-colors leading-snug">
+                                        {book.title}</h3>
+                                    <p className="text-xs font-bold text-slate-400">{book.author}</p>
+                                </div>
+                                <p className="text-sm text-slate-600 leading-relaxed flex-1">"{book.comment}"</p>
+                                <div
+                                    className="pt-6 mt-auto flex items-center gap-2 text-xs font-bold text-slate-400 group-hover:text-slate-800 transition-colors border-t border-slate-50">
+                                    Amazonで見る
+                                    <ExternalLink className="w-3 h-3" />
+                                </div>
+                            </a>
+                            ))}
+                        </div>
+                    </section>
+
+                    {/* --- Closing --- */}
+                    <section className="pt-20 border-t border-slate-200">
+                        <div
+                            className="max-w-3xl mx-auto space-y-8 text-center md:text-left md:flex md:gap-12 md:items-start md:text-left">
+                            <div className="space-y-6 flex-1">
+                                <h2
+                                    className="text-2xl font-black text-slate-900 flex items-center justify-center md:justify-start gap-2">
+                                    <Heart className="w-6 h-6 text-pink-500 fill-current" /> 最後に
+                                </h2>
+                                <div className="text-slate-600 space-y-4 text-sm leading-relaxed">
+                                    <p>
+                                        私自身、作家を名乗ってはいますが、ブランクが長く、圧倒的に「書く体力」が足りていません。
+                                    </p>
+                                    <p>
+                                        プロとして生き残るには、クオリティ以前に「書き上げるだけの基礎体力」が必要不可欠です。だから、ここから泥臭くリハビリを始めます。
+                                    </p>
+                                    <p>
+                                        1時間で傑作は書けませんが、1時間で「完成品」を作ることはできる。その小さな達成感の積み重ねが、筆を速くし、物語を遠くへ運んでくれるはずです。
+                                    </p>
+                                </div>
+                            </div>
+                            <div
+                                className="bg-blue-50 p-8 rounded-3xl text-sm font-medium text-slate-700 italic border border-blue-100 md:w-80 flex-shrink-0">
+                                "基本的には私の訓練として始めますが、一人で走るより、誰かが隣で走っているほうが心強いのも事実です。もし『書く習慣をつけたい』という方がいれば、ぜひ一緒に参加してください。"
+                            </div>
+                        </div>
+                    </section>
+
+                    <footer className="pt-24 pb-12 text-center space-y-6">
+                        <div
+                            className="flex justify-center gap-8 text-[10px] font-black text-slate-300 uppercase tracking-widest">
+                            <span>Commitment</span><span>Consistency</span><span>Completion</span>
+                        </div>
+                        <p className="text-sm text-slate-400 font-medium opacity-80">
+                            "短編小説を一編、形にして公開する。そこからしか始まらない。"
+                        </p>
+                    </footer>
+
+                </div>
+            </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

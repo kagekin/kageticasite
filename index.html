@@ -22,6 +22,11 @@
 </head>
 
 <body class="loading">
+    <canvas id="matrix-canvas"></canvas>
+
+    <div class="sf-toggle" id="sf-toggle">
+        <span class="sf-toggle-icon">SF</span>
+    </div>
 
     <!-- Navigation -->
     <nav id="nav">
@@ -32,6 +37,7 @@
             <div class="nav-links">
                 <a href="#about" class="vertical-text">人物</a>
                 <a href="#works" class="vertical-text">事業</a>
+                <a href="#lab" class="vertical-text">Lab</a>
                 <a href="#portal" class="vertical-text">リンク</a>
                 <a href="#contact" class="vertical-text">お問い合わせ</a>
             </div>
@@ -49,16 +55,7 @@
             <div class="glitch-overlay"></div>
         </div>
 
-        <div class="hero-content">
-            <h1 class="hero-title vertical-text">
-                <span class="glitch-text" data-text="現実を">現実を</span>
-                <span class="glitch-text accent" data-text="SFに">SFに</span>
-                <span class="glitch-text" data-text="変える">変える</span>
-            </h1>
-            <p class="hero-subtitle vertical-text">
-                Future Hacker 吉田影近
-            </p>
-        </div>
+
 
         <div class="scroll-indicator">
             <span class="vertical-text">Scroll Down</span>
@@ -139,6 +136,66 @@
                             <a href="#" class="btn-link">Detail <span class="arrow">→</span></a>
                         </div>
                     </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Laboratory Section -->
+        <section id="lab" class="section works-section" style="background-color: #f0f0f0; border-top: 2px solid #000;">
+            <div class="container">
+                <h2 class="section-title vertical-text">研究室</h2>
+                <div class="works-grid">
+                    <!-- Tool 1: Sandai Banashi -->
+                    <article class="work-card">
+                        <div class="work-image"
+                            style="background: #000; color: #fff; display: flex; align-items: center; justify-content: center;">
+                            3 THEME
+                        </div>
+                        <div class="work-content">
+                            <h3 class="work-title">三題噺メーカー</h3>
+                            <p class="work-desc">
+                                <strong>「偶然から始まる物語」</strong><br>
+                                ランダムに選ばれた3つのお題から、想像力を刺激するショートストーリーを創作するためのツール。
+                            </p>
+                            <a href="lab/sandai_banashi.html" class="btn-link">Enter Lab <span
+                                    class="arrow">→</span></a>
+                        </div>
+                    </article>
+
+                    <!-- Tool 2: One Hour Writing -->
+                    <article class="work-card">
+                        <div class="work-image"
+                            style="background: #000; color: #fff; display: flex; align-items: center; justify-content: center;">
+                            1 HOUR
+                        </div>
+                        <div class="work-content">
+                            <h3 class="work-title">One Hour Writing 【ワンライ】</h3>
+                            <p class="work-desc">
+                                <strong>「60分で執筆するワンドロの小説版」</strong><br>
+                                イベントページと各種便利ツール。
+                            </p>
+                            <a href="lab/one_hour_writing.html" class="btn-link">Enter Lab <span
+                                    class="arrow">→</span></a>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Novel Game Section -->
+        <section id="novel" class="section novel-section">
+            <div class="novel-container">
+                <div class="character-area">
+                    <img src="assets/nekomi.svg" alt="Nekomi Nyanamaru" class="character-img">
+                </div>
+                <div class="message-window">
+                    <div class="name-tag">猫見にゃにゃ丸</div>
+                    <div class="message-text">
+                        ようこそ、<span class="glitch-text" data-text="現実">現実</span>と情報の狭間へ。<br>
+                        吾輩はここの所長、猫見にゃにゃ丸だ。<br>
+                        ここにあるのは「未来」の断片……触れるか触れないかは、君次第だよ。
+                    </div>
+                    <div class="next-indicator">▼</div>
                 </div>
             </div>
         </section>

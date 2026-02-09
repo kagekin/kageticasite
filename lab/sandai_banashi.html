@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3つのお題から生まれた物語 - 3 Theme Story Maker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@900&family=Noto+Sans+JP:wght@300;700;900&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #f8f9fa;
+            color: #1a1a1a;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 40px 80px -15px rgba(0, 0, 0, 0.15);
+            background-color: white;
+            transition: aspect-ratio 0.3s ease;
+        }
+
+        .preview-container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            position: relative;
+            display: inline-block;
+            padding-bottom: 8px;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: #ef4444;
+        }
+
+        .color-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .color-dot.active {
+            border-color: #000;
+            transform: scale(1.2);
+        }
+
+        /* Custom Scrollbar for Category List */
+        .category-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .category-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .category-list::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 4px;
+        }
+
+        .category-list::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-12">
+    <!-- Links -->
+    <nav class="fixed top-0 left-0 w-full p-4 z-50 pointer-events-none">
+        <a href="../index.html"
+            class="pointer-events-auto inline-flex items-center gap-2 bg-white/80 text-black px-4 py-2 rounded-full backdrop-blur-sm hover:bg-white border border-gray-200 transition-colors font-bold text-xs uppercase tracking-widest shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m12 19-7-7 7-7" />
+                <path d="M19 12H5" />
+            </svg>
+            Back to Lab
+        </a>
+    </nav>
+    <div class="max-w-6xl mx-auto pt-12">
+        <!-- Header -->
+        <header class="flex justify-between items-end mb-8 border-b-2 border-black pb-4">
+            <div>
+                <h1 class="text-2xl font-black tracking-tighter uppercase">3つのお題から生まれた物語</h1>
+                <p class="text-[10px] font-bold tracking-[0.2em] text-gray-500 uppercase">3 Theme Story Maker</p>
+            </div>
+            <div class="text-right hidden md:block">
+                <span id="word-counter"
+                    class="text-[10px] font-bold text-red-500 bg-red-50 px-3 py-1 rounded-full border border-red-100 italic tracking-widest">FULL
+                    DATABASE LOADED</span>
+            </div>
+        </header>
+
+        <!-- Main UI -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
+            <!-- Settings Panel -->
+            <div class="lg:col-span-4 space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+                    <div class="flex justify-between items-center mb-4">
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">1. Categories (15
+                            Types)</p>
+                        <button id="toggle-all" class="text-[10px] font-bold text-blue-600 hover:underline">Uncheck
+                            All</button>
+                    </div>
+
+                    <!-- Categories Scroll Area -->
+                    <div class="category-list h-64 overflow-y-auto pr-2 space-y-2 mb-6 border-b border-gray-100 pb-4">
+                        <label
+                            class="flex items-center space-x-3 cursor-pointer group hover:bg-gray-50 p-2 rounded transition">
+                            <input type="checkbox" id="check-nature" checked
+                                class="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500 category-check">
+                            <span class="text-xs font-bold text-gray-700">1. 自然 (天体・気象・動植物)</span>
+                        </label>
+                        <label
+                            class="flex items-center space-x-3 cursor-pointer group hover:bg-gray-50 p-2 rounded transition">
+                            <input type="checkbox" id="check-concept" checked
+                                class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 category-check">
+                            <span class="text-xs font-bold text-gray-700">2. 概念・人物・修飾語</span>
+                        </label>
+                        <label
+                            class="flex items-center space-x-3 cursor-pointer group hover:bg-gray-50 p-2 rounded transition">
+                            <input type="checkbox" id="check-human" checked
+                                class="w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 category-check">
+                            <span class="text-xs font-bold text-gray-700">3. 人工物 (家電・生活)</span>
+                        </label>
+                        <label
+                            class="flex items-center space-x-3 cursor-pointer group hover:bg-gray-50 p-2 rounded transition">
+                            <input type="checkbox" id="check-modern" checked
+                                class="w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-400 category-check">
+                            <span class="text-xs font-bold text-gray-700">4. 現代用語・IT・社会</span>
+                        </label>
+                        <label
+                            class="flex items-center space-x-3 cursor-pointer group hover:bg-gray-50 p-2 rounded transition">
+                            <input type="checkbox" id="check-fantasy" checked
+                                class="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 category-check">
+                            <span class="text-xs font-bold text-gray-700">5. 空想・SF・ファンタジー</span>
+                        </label>
+                        <label
+                            class="flex items-center space-x-3 cursor-pointer group hover:bg-gray-50 p-2 rounded transition">
+                            <input type="checkbox" id="check-place" checked
+                                class="w-4 h-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500 category-check">
+                            <span class="text-xs font-bold text-gray-700">6. 場所・舞台</span>
+                        </label>
+                        <label
+                            class="flex items-center space-x-3 cursor-pointer group hover:bg-gray-50 p-2 rounded transition">
+                            <input type="checkbox" id="check-food" checked
+                                class="w-4 h-4 rounded border-gray-300 text-red-500 focus:ring-red-400 category-check">
+                            <span class="text-xs font-bold text-gray-700">7. 食べ物・味覚</span>
+                        </label>
+                        <label
+                            class="flex items-center space-x-3 cursor-pointer group hover:bg-gray-50 p-2 rounded transition">
+                            <input type="checkbox" id="check-history" checked
+                                class="w-4 h-4 rounded border-gray-300 text-yellow-700 focus:ring-yellow-600 category-check">
+                            <span class="text-xs font-bold text-gray-700">8. 歴史・宗教・オカルト</span>
+                        </label>
+                        <label
+                            class="flex items-center space-x-3 cursor-pointer group hover:bg-gray-50 p-2 rounded transition">
+                            <input type="checkbox" id="check-body" checked
+                                class="w-4 h-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500 category-check">
+                            <span class="text-xs font-bold text-gray-700">9. 身体・医学・状態</span>
+                        </label>
+                        <label
+                            class="flex items-center space-x-3 cursor-pointer group hover:bg-gray-50 p-2 rounded transition">
+                            <input type="checkbox" id="check-art" checked
+                                class="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 category-check">
+                            <span class="text-xs font-bold text-gray-700">10. 芸術・趣味・スポーツ</span>
+                        </label>
+                        <label
+                            class="flex items-center space-x-3 cursor-pointer group hover:bg-gray-50 p-2 rounded transition">
+                            <input type="checkbox" id="check-social" checked
+                                class="w-4 h-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500 category-check">
+                            <span class="text-xs font-bold text-gray-700">11. 教育・ビジネス・生活</span>
+                        </label>
+                        <label
+                            class="flex items-center space-x-3 cursor-pointer group hover:bg-gray-50 p-2 rounded transition">
+                            <input type="checkbox" id="check-mystery" checked
+                                class="w-4 h-4 rounded border-gray-300 text-slate-700 focus:ring-slate-600 category-check">
+                            <span class="text-xs font-bold text-gray-700">12. 事件・謎・ミステリー</span>
+                        </label>
+                        <label
+                            class="flex items-center space-x-3 cursor-pointer group hover:bg-gray-50 p-2 rounded transition">
+                            <input type="checkbox" id="check-love" checked
+                                class="w-4 h-4 rounded border-gray-300 text-rose-500 focus:ring-rose-400 category-check">
+                            <span class="text-xs font-bold text-gray-700">13. 恋愛・青春・人間関係</span>
+                        </label>
+                        <label
+                            class="flex items-center space-x-3 cursor-pointer group hover:bg-gray-50 p-2 rounded transition">
+                            <input type="checkbox" id="check-philo" checked
+                                class="w-4 h-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500 category-check">
+                            <span class="text-xs font-bold text-gray-700">14. 不条理・哲学・バグ</span>
+                        </label>
+                        <label
+                            class="flex items-center space-x-3 cursor-pointer group hover:bg-gray-50 p-2 rounded transition">
+                            <input type="checkbox" id="check-niche" checked
+                                class="w-4 h-4 rounded border-gray-300 text-stone-600 focus:ring-stone-500 category-check">
+                            <span class="text-xs font-bold text-gray-700">15. ニッチ・路地裏・詳細</span>
+                        </label>
+                    </div>
+
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-6 mb-4">2. Design & Size
+                    </p>
+                    <div class="space-y-4">
+                        <select id="select-style-main"
+                            class="w-full bg-gray-50 border-2 border-gray-100 p-3 rounded-xl font-bold text-xs focus:border-black outline-none">
+                            <option value="editorial">EDITORIAL (White / Minimal)</option>
+                            <option value="neonoir">NEO NOIR (Black / Gold)</option>
+                            <option value="manifesto">MANIFESTO (High Impact)</option>
+                            <option value="archive">ARCHIVE (Paper / Retro)</option>
+                            <option value="cyber">CYBER (Neon / Glass)</option>
+                        </select>
+                        <div class="flex justify-between px-2" id="color-palette"></div>
+                        <div class="grid grid-cols-2 gap-2 mt-4">
+                            <button id="mode-note"
+                                class="platform-btn active bg-black text-white px-3 py-2 rounded-lg text-[10px] font-black transition-all">note用
+                                (1.91:1)</button>
+                            <button id="mode-x"
+                                class="platform-btn bg-gray-100 text-gray-600 px-3 py-2 rounded-lg text-[10px] font-black transition-all hover:bg-gray-200">X用
+                                (5:2)</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action & Preview -->
+            <div class="lg:col-span-8 space-y-6">
+                <div class="flex gap-4">
+                    <button id="btn-generate"
+                        class="flex-[2] bg-black text-white px-8 py-5 rounded-2xl font-black text-xl hover:bg-gray-900 transition-all shadow-xl shadow-black/10 flex items-center justify-center gap-3 active:scale-95">
+                        <span>お題を引く</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+                            <path d="M21 3v5h-5" />
+                        </svg>
+                    </button>
+                    <button id="btn-download"
+                        class="flex-1 bg-white text-black border-2 border-black px-4 py-5 rounded-2xl font-black hover:bg-gray-50 transition-all active:scale-95">
+                        保存
+                    </button>
+                </div>
+
+                <div class="preview-container">
+                    <canvas id="thumbnailCanvas" width="1280" height="670"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Onboarding & Creator Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mt-20 py-12 border-t border-gray-300">
+            <div class="space-y-6">
+                <h2 class="text-xl font-black section-title">「3つのお題から生まれた物語」とは？</h2>
+                <div class="space-y-4 text-gray-600 leading-relaxed font-medium">
+                    <p>ランダムに選ばれた「3つのお題」をパズルのように繋げて作られた、ショートストーリーのためのメーカーです。</p>
+                    <p>
+                        <strong>読者の皆さまへ：</strong><br>
+                        まずはこのサムネイルにある「3つの言葉」を見てみてください。その後で本編を読むと、バラバラだった要素が物語の中でどう繋がったのか、その「驚き」を体験できます。
+                    </p>
+                    <p class="text-xs text-gray-400">※噺家や小説家の中ではこの手法を「三題噺（さんだいばなし）」と呼び、江戸時代から続く伝統的な創作の遊びです。</p>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <h2 class="text-xl font-black section-title">Community & Creator</h2>
+                <div class="space-y-4">
+                    <a href="https://note.com/hashtag/3つのお題から生まれた物語" target="_blank"
+                        class="flex items-center justify-between bg-white p-4 rounded-xl border border-gray-200 hover:border-black transition-all group shadow-sm">
+                        <span class="font-bold text-gray-800 italic">#3つのお題から生まれた物語 の記事を読む</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                            class="group-hover:translate-x-1 transition-transform">
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                            <polyline points="12 5 19 12 12 19" />
+                        </svg>
+                    </a>
+
+                    <div class="bg-gray-100 p-6 rounded-2xl flex items-center gap-5">
+                        <img src="https://pbs.twimg.com/profile_images/2014566038508331008/_zSbntyQ_400x400.jpg"
+                            alt="吉田影近" class="w-16 h-16 rounded-full shadow-lg border-2 border-white object-cover">
+                        <div class="flex-1">
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Created by
+                            </p>
+                            <p class="font-black text-xl">吉田 影近</p>
+                            <div class="flex gap-4 mt-2">
+                                <a href="https://note.com/kagechika" target="_blank"
+                                    class="text-sm font-bold text-blue-600 hover:underline">note</a>
+                                <a href="https://x.com/kagetica" target="_blank"
+                                    class="text-sm font-bold text-blue-600 hover:underline">X (Twitter)</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer
+            class="mt-20 py-8 text-center text-gray-400 text-[10px] font-bold tracking-[0.5em] uppercase border-t border-gray-200">
+            © 3-THEME STORY MAKER / YOSHIDA KAGECHIKA
+        </footer>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast"
+        class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-black text-white px-8 py-4 rounded-full opacity-0 transition-all duration-300 pointer-events-none font-black text-sm tracking-widest z-50 shadow-2xl">
+        SAVED
+    </div>
+
+    <script>
+        const canvas = document.getElementById('thumbnailCanvas');
+        const ctx = canvas.getContext('2d');
+        const btnGenerate = document.getElementById('btn-generate');
+        const btnDownload = document.getElementById('btn-download');
+        const selectStyleMain = document.getElementById('select-style-main');
+        const colorPalette = document.getElementById('color-palette');
+        const modeNote = document.getElementById('mode-note');
+        const modeX = document.getElementById('mode-x');
+        const toast = document.getElementById('toast');
+        const toggleAllBtn = document.getElementById('toggle-all');
+
+        let currentWords = [];
+        let currentStyle = 'editorial';
+        let currentColorIdx = 0;
+        let currentPlatform = 'note';
+
+        // 1. Define configurations FIRST (Fixing the ReferenceError)
+        const colorConfigs = {
+            editorial: [{ bg: "#F8F9FA", text: "#000000", accent: "#EF4444" }, { bg: "#F8F9FA", text: "#000000", accent: "#3B82F6" }, { bg: "#F8F9FA", text: "#000000", accent: "#10B981" }, { bg: "#F8F9FA", text: "#000000", accent: "#F59E0B" }, { bg: "#F8F9FA", text: "#000000", accent: "#8B5CF6" }],
+            neonoir: [{ bg: "#000000", text: "#FFFFFF", accent: "#EAB308" }, { bg: "#000000", text: "#FFFFFF", accent: "#EF4444" }, { bg: "#000000", text: "#FFFFFF", accent: "#22D3EE" }, { bg: "#000000", text: "#FFFFFF", accent: "#A855F7" }, { bg: "#000000", text: "#FFFFFF", accent: "#4ADE80" }],
+            manifesto: [{ bg: "#DC2626", text: "#FFFFFF", accent: "#FFFFFF" }, { bg: "#1D4ED8", text: "#FFFFFF", accent: "#FFFFFF" }, { bg: "#059669", text: "#FFFFFF", accent: "#FFFFFF" }, { bg: "#000000", text: "#FFFFFF", accent: "#FFFFFF" }, { bg: "#7C3AED", text: "#FFFFFF", accent: "#FFFFFF" }],
+            archive: [{ bg: "#E7E2D5", text: "#2D334A", accent: "#2D334A" }, { bg: "#DCD0C0", text: "#373737", accent: "#C09F80" }, { bg: "#F1F1F1", text: "#1A1A1A", accent: "#5D5C61" }, { bg: "#F5F5DC", text: "#4a3728", accent: "#8b4513" }, { bg: "#E0E2E4", text: "#2C3E50", accent: "#E74C3C" }],
+            cyber: [{ grad: ["#0F172A", "#1E1B4B"], text: "#FFFFFF", accent: "#06B6D4" }, { grad: ["#4C1D95", "#831843"], text: "#FFFFFF", accent: "#F472B6" }, { grad: ["#064E3B", "#022C22"], text: "#FFFFFF", accent: "#10B981" }, { grad: ["#1E3A8A", "#1e1b4b"], text: "#FFFFFF", accent: "#60A5FA" }, { grad: ["#312E81", "#4C1D95"], text: "#FFFFFF", accent: "#A78BFA" }]
+        };
+
+        const dictionary = {
+            // 1. 自然のもの（天体・気象・動植物・鉱物）
+            nature: [
+                // 天体・宇宙
+                "銀河", "彗星", "星屑", "三日月", "満月", "新月", "星雲", "流星", "恒星", "惑星", "天の川", "冬銀河", "ほうき星", "一番星", "北極星", "明けの明星", "宵の明星", "オリオン", "ブラックホール", "超新星", "宇宙塵", "黄道光", "月暈", "日蝕", "太陽風", "二重星", "矮星", "巨星", "クエーサー", "無重力", "暗黒物質", "太陽フレア", "月面", "隕石坑", "土星の環", "太陽黒点", "彗星の尾", "軌道", "引力", "星座", "天球儀", "流れ星", "満天の星", "暁月", "残月", "アンドロメダ", "シリウス", "ベテルギウス", "プロキオン", "アンタレス", "アルタイル", "ベガ", "デネブ", "カシオペア", "北斗七星", "南十字星", "小惑星帯", "オールトの雲", "ラグランジュ点", "自転", "公転", "食", "衝", "合", "極光", "磁気嵐", "宇宙線", "星団", "星間ガス", "原始星", "パルサー", "中性子星", "白色矮星", "赤色巨星", "事象の地平線", "特異点", "ワームホール", "ビッグバン", "インフレーション", "アークトゥルス", "リゲル", "カノープス", "スピカ", "ポルックス", "フォーマルハウト", "レグルス", "アルデバラン", "カペラ", "アケルナル", "ハダル", "ミラ", "アルゴル", "プレアデス星団", "ヒアデス星団", "散光星雲", "暗黒星雲", "惑星状星雲", "球状星団", "銀河団", "超銀河団", "宇宙ひも", "ダークエネルギー", "重力波", "重力レンズ", "潮汐力", "太陽柱", "幻日環", "天頂弧", "彩雲", "光冠", "暈", "映日", "月虹", "地球照", "朔", "望", "上弦", "下弦", "蝕", "子午線", "黄道", "白道", "赤道", "極軸", "歳差", "章動", "視差", "光年", "パーセク", "天文単位", "宇宙天気", "スペースデブリ",
+                // 気象・現象
+                "朝露", "雷鳴", "氷河", "虹", "霧", "暁", "宵", "台風", "雨音", "雷光", "木枯らし", "凪", "夕凪", "春風", "薫風", "野分", "初雪", "淡雪", "粉雪", "牡丹雪", "春雷", "地吹雪", "地平線", "水平線", "オーロラ", "蜃気楼", "ダイヤモンドダスト", "霜柱", "つらら", "樹氷", "陽炎", "彩雲", "逃げ水", "霧氷", "朧月", "稲妻", "雹", "霰", "霧雨", "豪雨", "旋風", "旱魃", "寒波", "熱波", "積乱雲", "砂嵐", "稲光", "夕映え", "小春日和", "氷雨", "五月雨", "通り雨", "秋晴れ", "狐の嫁入り", "天泣", "暴風雨", "濃霧", "ブロッケン現象", "セントエルモの火", "グリーンフラッシュ", "幻日", "虹彩雲", "漏斗雲", "スーパーセル", "爆弾低気圧", "前線", "高気圧", "低気圧", "気圧配置", "エルニーニョ", "ラニーニャ", "偏西風", "貿易風", "モンスーン", "フェーン現象", "ヒートアイランド", "放射冷却", "嵐", "疾風", "烈風", "暴風", "颶風", "竜巻", "スコール", "時雨", "村雨", "慈雨", "穀雨", "霙", "霜", "露", "靄", "霞", "梅雨", "桜前線", "秋雨", "寒冷前線", "温暖前線", "停滞前線", "閉塞前線", "移動性高気圧", "シベリア気団", "小笠原気団", "オホーツク海気団", "揚子江気団", "偏東風", "ジェット気流", "乱気流", "上昇気流", "下降気流", "べた凪", "白波", "うねり", "三角波", "高潮", "離岸流", "土石流", "雪崩", "ホワイトアウト", "アイスバーン", "ブラックアイスバーン", "結露", "結氷", "解氷", "流氷", "氷山", "氷塊", "氷柱", "氷紋", "霜花", "雪華", "風花", "六花", "銀世界",
+                // 地形・水
+                "湿原", "孤島", "珊瑚", "火山", "洞窟", "深海", "森林", "砂漠", "流氷", "潮騒", "渦潮", "温泉", "滝", "岬", "入り江", "盆地", "平野", "高原", "干潟", "砂丘", "断崖", "峡谷", "扇状地", "中州", "河口", "鍾乳洞", "湧水", "礁湖", "氷筍", "地底湖", "デルタ", "大陸棚", "海溝", "海嶺", "海底火山", "密林", "尾根", "山頂", "麓", "氷穴", "風穴", "源流", "渓流", "沼地", "湿地", "荒野", "崖", "オアシス", "水源", "カルスト", "リアス式海岸", "フィヨルド", "三角州", "砂州", "砂嘴", "陸繋島", "環礁", "潟湖", "氷河湖", "火口湖", "堰止湖", "間欠泉", "熱水噴出孔", "伏流水", "地下水脈", "帯水層", "分水嶺", "稜線", "鞍部", "クレバス", "氷床", "永久凍土", "ツンドラ", "タイガ", "サバンナ", "ステップ", "熱帯雨林", "マングローブ", "珊瑚礁", "岩礁", "暗礁", "浅瀬", "深淵", "海峡", "水道", "運河", "堀", "濠", "堤防", "ダム", "貯水池", "用水路", "排水路", "下水", "上水", "井戸水", "鉱泉", "冷泉", "秘湯", "野湯", "露天風呂", "足湯", "砂蒸し", "地獄谷", "噴気孔", "溶岩ドーム", "カルデラ", "外輪山", "側火山", "寄生火山", "休火山", "死火山", "活火山",
+                // 動物（獣）
+                "狼", "狐", "狸", "鼠", "猿", "熊", "獅子", "豹", "虎", "象", "麒麟", "馬", "羊", "山羊", "牛", "豚", "犬", "猫", "兎", "鹿", "縞馬", "針鼠", "栗鼠", "鼬", "獺", "獏", "駱駝", "馴鹿", "羚羊", "熊猫", "アルパカ", "カピバラ", "ハシビロコウ", "アライグマ", "ハクビシン", "テン", "ムササビ", "モモンガ", "ヤマネ", "ハリネズミ", "モルモット", "ハムスター", "フェレット", "カモノハシ", "ハリモグラ", "コアラ", "カンガルー", "ウォンバット", "タスマニアデビル", "ヤマアラシ", "スカンク", "ミーアキャット", "プレーリードッグ", "ビーバー", "ヌートリア", "マングース", "ジャコウネコ", "サーバル", "カラカル", "ジャガー", "チーター", "ピューマ", "オオヤマネコ", "ハイエナ", "リカオン", "フェネック", "コヨーテ", "ディンゴ", "バク", "サイ", "カバ", "イノシシ", "ペッカリー", "キリン", "オカピ", "ヌー", "ガゼル", "インパラ", "オリックス", "バイソン", "バッファロー", "ヤク", "ジャコウウシ", "カモシカ", "アイベックス", "ムフロン", "アルマジロ", "アリクイ", "ナマケモノ", "センザンコウ", "ツチブタ", "ヒヨケザル", "モグラ", "トガリネズミ", "コウモリ", "オオコウモリ", "吸血コウモリ",
+                // 動物（鳥・虫・水生）
+                "梟", "蝶", "蛍", "蝉", "蜻蛉", "蜂", "蟻", "蜘蛛", "鮭", "鮪", "鯛", "鰻", "蛸", "烏賊", "海老", "蟹", "水母", "金魚", "鯉", "鯨", "海豚", "海亀", "鱶", "山椒魚", "燕", "鶴", "鷺", "鴨", "鴎", "鷹", "鷲", "隼", "翡翠", "鸚鵡", "啄木鳥", "蝙蝠", "雲雀", "鶯", "孔雀", "鯱", "ぺんぎん", "蠍", "蟷螂", "鈴虫", "松虫", "甲虫", "鍬形虫", "揚羽蝶", "飛魚", "鮟鱇", "海馬", "蜜蜂", "毒蛇", "野良猫", "渡り鳥", "アメンボ", "ゲンゴロウ", "タガメ", "ミズカマキリ", "タイコウチ", "ミズスマシ", "ヤゴ", "ボウフラ", "アカムシ", "イトミミズ", "プラナリア", "ヒドラ", "ミジンコ", "ケンミジンコ", "ゾウリムシ", "アメーバ", "ユーグレナ", "ボルボックス", "ミカヅキモ", "クンショウモ", "アオミドロ", "珪藻", "放散虫", "有孔虫", "ウミシダ", "ウミユリ", "ヒトデ", "クモヒトデ", "ナマコ", "ウニ", "カシパン", "ブンブク", "イソギンチャク", "サンゴ", "クラゲ", "カツオノエボシ", "ギンカクラゲ", "アンドンクラゲ", "ハブクラゲ", "サカサクラゲ", "エチゼンクラゲ", "ミズクラゲ", "アカエイ", "マンタ", "ジンベエザメ", "ホオジロザメ", "シュモクザメ", "ノコギリザメ", "チョウチンアンコウ", "フクロウナギ", "リュウグウノツカイ", "デメニギス", "オウムガイ", "アンモナイト", "三葉虫", "シーラカンス", "ハイギョ", "ウーパールーパー", "オオサンショウウオ", "イモリ", "ヤモリ", "トカゲ", "カメレオン", "イグアナ", "コモドドラゴン", "ワニ", "ガビアル", "アナコンダ", "パイソン", "コブラ", "マムシ", "ハブ", "ガラガラヘビ", "リクガメ", "ゾウガメ", "スッポン",
+                // 植物
+                "桜", "梅", "桃", "椿", "蘭", "菊", "蓮", "百合", "薔薇", "楓", "欅", "檜", "杉", "松", "竹", "柳", "柿", "栗", "柚", "林檎", "葡萄", "蜜柑", "秋桜", "向日葵", "落葉", "多肉植物", "観葉植物", "雑草", "切り花", "押し花", "どんぐり", "松ぼっくり", "羊歯", "苔", "茸", "茨", "蓬", "蓮華", "菖蒲", "芥子", "蘇鉄", "椰子", "仙人掌", "夾竹桃", "菫", "蒲公英", "露草", "桔梗", "紫陽花", "木蓮", "梔子", "茉莉花", "金木犀", "銀木犀", "山茶花", "寒椿", "柊", "樅ノ木", "勿忘草", "月見草", "竜胆", "彼岸花", "睡蓮", "鈴蘭", "雛菊", "撫子", "藤", "蔦", "枯れ葉", "四つ葉", "蕾", "アネモネ", "アマリリス", "アルストロメリア", "イチイ", "イチョウ", "オリーブ", "カーネーション", "ガーベラ", "カスミソウ", "カトレア", "カラー", "カンナ", "キョウチクトウ", "クチナシ", "クローバー", "クロッカス", "ケシ", "コスモス", "コチョウラン", "サクラソウ", "サボテン", "サルビア", "シクラメン", "シャクヤク", "ジャスミン", "スイセン", "スイレン", "スミレ", "ゼラニウム", "ダリア", "チューリップ", "ツツジ", "ツバキ", "デージー", "ナノハナ", "ニチニチソウ", "ネモフィラ", "ハイビスカス", "ハナミズキ", "バラ", "パンジー", "ヒガンバナ", "ヒマワリ", "ヒヤシンス", "ブーゲンビリア", "フリージア", "プリムラ", "ベゴニア", "ペチュニア", "ポインセチア", "ボタン", "ポピー", "マリーゴールド", "ミモザ", "ムスカリ", "モクレン", "ヤグルマギク", "ヤマブキ", "ユリ", "ライラック", "ラベンダー", "ラン", "リンドウ", "ルピナス", "レンジ", "ローズマリー", "ワスレナグサ", "ガジュマル", "バオバブ", "マングローブ", "ウツボカズラ", "ハエトリグサ", "モウセンゴケ", "ラフレシア", "ショクダイオオコンニャク", "月下美人", "サギソウ", "ホテイアオイ", "オジギソウ",
+                // 鉱物・素材
+                "化石", "琥珀", "隕石", "真珠", "水晶", "翡翠", "瑪瑙", "黒曜石", "宝石", "原石", "貝殻", "流木", "柘榴石", "藍玉", "黄玉", "蛋白石", "雲母", "石炭", "黒鉛", "硫黄", "石英", "砂金", "方解石", "蛍石", "瑠璃", "黄鉄鉱", "磁鉄鉱", "赤鉄鉱", "銅鉱石", "蒼鉛", "水銀", "ラピスラズリ", "月長石", "太陽石", "金剛石", "硝子", "陶片", "孔雀石", "菱マンガン鉱", "燐灰石", "電気石", "緑柱石", "金緑石", "尖晶石", "ジルコン", "橄欖石", "輝石", "角閃石", "長石", "滑石", "蛇紋石", "石膏", "重晶石", "天青石", "霰石", "藍銅鉱", "赤銅鉱", "自然金", "自然銀", "自然銅", "白金", "イリジウム", "オスミウム", "パラジウム", "ロジウム", "ルテニウム", "チタン", "タングステン", "モリブデン", "バナジウム", "クロム", "マンガン", "コバルト", "ニッケル", "亜鉛", "錫", "鉛", "ビスマス", "アンチモン", "砒素", "テルル", "セレン", "ゲルマニウム", "シリコン", "ウラン", "トリウム", "プルトニウム", "ラジウム", "セメント", "コンクリート", "アスファルト", "レンガ", "タイル", "モルタル", "漆喰", "珪藻土", "大理石", "御影石", "砂岩", "泥岩", "粘板岩", "凝灰岩", "玄武岩", "安山岩", "流紋岩", "花崗岩", "閃緑岩", "斑レイ岩", "かんらん岩", "蛇紋岩", "石灰岩", "チャート", "フリント", "黒曜岩", "軽石", "スコリア", "火山灰", "溶岩", "鉄", "鋼鉄", "ステンレス", "アルミニウム", "ジュラルミン", "真鍮", "青銅", "白銅", "洋白", "トタン", "ブリキ", "金箔", "銀箔", "炭素繊維", "グラスファイバー", "プラスチック", "ビニール", "ゴム", "シリコン", "ナイロン", "ポリエステル", "アクリル", "ウレタン", "スポンジ", "発泡スチロール", "ガラス", "鏡", "陶器", "磁器", "漆器", "琺瑯", "テラコッタ", "コルク", "フェルト", "羊毛", "木綿", "麻", "絹", "皮革", "毛皮", "羽毛", "象牙", "鼈甲"
+            ],
+
+            // 2. 概念・人物・修飾語
+            concept: [
+                // 抽象概念
+                "永遠", "刹那", "空想", "真理", "矛盾", "偶像", "過去", "現在", "未来", "生命", "秩序", "混沌", "静寂", "平和", "幸福", "絶望", "希望", "正義", "罪", "罰", "秘密", "嘘", "均衡", "逸脱", "必然", "偶然", "収束", "拡散", "消失", "再構築", "断片", "虚無", "輪廻", "解脱", "因果", "属性", "輪郭", "境界", "反射", "透過", "浸透", "摩擦", "慣性", "抵抗", "質量", "密度", "粘度", "涅槃", "煩悩", "業", "宿命", "前世", "来世", "摂理", "輪舞", "忘却", "覚醒", "昇華", "振動", "符号", "記憶", "予感", "兆し", "パラダイム", "シナジー", "リスク", "ベネフィット", "コスト", "パフォーマンス", "クオリティ", "モチベーション", "インスピレーション", "アイデンティティ", "イデオロギー", "コンセプト", "セオリー", "メソッド", "システム", "ネットワーク", "コミュニティ", "ソサエティ", "カルチャー", "トレンド", "ブーム", "フェーズ", "サイクル", "プロセス", "アプローチ", "スタンス", "ポリシー", "ビジョン", "ミッション", "バリュー", "プライオリティ", "マジョリティ", "マイノリティ", "ダイバーシティ", "インクルージョン", "サステナビリティ", "エコロジー", "グローバル", "ローカル", "バーチャル", "リアル", "デジタル", "アナログ", "シンプル", "複雑", "抽象", "具体", "絶対", "相対", "主観", "客観", "普遍", "特殊", "エントロピー", "カオス", "フラクタル", "シンギュラリティ", "パラドックス", "ジレンマ", "アンビバレンス", "アイロニー", "メタファー", "アナロジー", "レトリック", "トラウマ", "コンプレックス", "ジンクス", "ルーティン", "タブー", "ドグマ", "ステレオタイプ", "バイアス", "フィルター", "ノイズ", "シグナル", "構造", "機能", "形態", "パターン", "モデル", "プロトタイプ", "アーキタイプ", "ステータス", "ランク", "クラス", "カテゴリー", "ジャンル", "スタイル", "モード", "トーン", "マナー", "ルール", "規範", "倫理", "道徳", "法律", "権利", "義務", "責任", "自由", "平等", "公平", "公正", "民主主義", "資本主義", "社会主義", "共産主義", "全体主義", "個人主義", "自由主義", "保守主義", "急進主義", "原理主義", "ロマン主義", "写実主義", "自然主義", "象徴主義", "表現主義", "超現実主義", "印象派", "前衛", "古典", "伝統", "革新", "進歩", "保守", "反動", "革命", "改革", "改善", "改良", "改悪", "劣化", "崩壊", "滅亡", "誕生", "創生", "起源", "終焉", "終末", "死後", "霊魂", "転生", "復活", "再生", "不死",
+                // 感情・状態
+                "孤独", "情熱", "好奇心", "郷愁", "羨望", "劣等感", "安堵", "焦燥", "歓喜", "戦慄", "憧憬", "猜疑", "葛藤", "愉悦", "感傷", "慈愛", "畏怖", "虚脱", "執着", "純真", "偽善", "諦念", "既視感", "未視感", "共鳴", "残響", "波紋", "余韻", "倦怠", "恍惚", "憤怒", "哀悼", "打算", "潔癖", "背徳", "虚栄", "優越感", "羞恥", "慈悲", "憐憫", "憎悪", "怨嗟", "怨念", "渇望", "切望", "虚飾", "哀歓", "忘我", "疎外感", "多幸感", "違和感", "期待", "不安", "焦り", "後悔", "懺悔", "狼狽", "困惑", "驚愕", "失望", "落胆", "絶望", "悲嘆", "慟哭", "号泣", "爆笑", "苦笑", "冷笑", "嘲笑", "哄笑", "微笑", "笑顔", "泣き顔", "怒り顔", "真顔", "寝顔", "死に顔", "素顔", "仮面", "ペルソナ", "本音", "建前", "忖度", "気遣い", "配慮", "遠慮", "謙遜", "傲慢", "卑屈", "臆病", "勇敢", "慎重", "大胆", "冷静", "楽観", "悲観", "喪失感", "閉塞感", "緊迫感", "切迫感", "臨場感", "没入感", "一体感", "親近感", "嫌悪感", "罪悪感", "責任感", "使命感", "正義感", "義務感", "危機感", "恐怖感", "不信感", "満足", "不満", "快楽", "苦痛", "緊張", "緩和", "興奮", "沈静", "集中", "散漫", "覚醒", "陶酔", "酩酊", "錯乱", "狂気", "正気", "善意", "悪意", "敵意", "好意", "愛情", "尊敬", "軽蔑", "信頼", "疑惑", "感謝", "謝罪", "許し", "救い", "癒し", "慰め", "励まし",
+                // 人物・職業
+                "英雄", "悪党", "賢者", "愚者", "王", "騎士", "魔法使い", "科学者", "芸術家", "友人", "恋人", "敵", "味方", "家族", "先生", "学生", "労働者", "兵士", "商人", "旅人", "迷子", "浪人", "密偵", "逃亡者", "隠者", "予言者", "偽善者", "観測者", "被験者", "執行人", "翻訳家", "庭師", "探偵", "助手", "船長", "操縦士", "料理人", "鍛冶屋", "薬師", "吟遊詩人", "司書", "学芸員", "指揮者", "舞踊手", "占い師", "牧師", "僧侶", "巫女", "門番", "彫刻家", "調律師", "郵便配達", "案内人", "漂流者", "裏切り者", "隠居", "居候", "影武者", "双子", "ドッペルゲンガー", "名探偵", "容疑者", "被害者", "証人", "弁護士", "検事", "裁判官", "陪審員", "看守", "囚人", "脱獄囚", "指名手配犯", "スパイ", "工作員", "暗殺者", "傭兵", "運び屋", "情報屋", "武器商人", "闇医者", "詐欺師", "泥棒", "怪盗", "義賊", "海賊", "山賊", "ギャンブラー", "ディーラー", "バーテンダー", "ソムリエ", "バリスタ", "シェフ", "パティシエ", "ショコラティエ", "ウェイター", "ウェイトレス", "コンシェルジュ", "ドアマン", "ベルボーイ", "メイド", "執事", "家政婦", "ベビーシッター", "介護士", "看護師", "医師", "薬剤師", "獣医師", "トリマー", "調教師", "ブリーダー", "農家", "漁師", "猟師", "木こり", "陶芸家", "書家", "画家", "漫画家", "小説家", "詩人", "脚本家", "演出家", "映画監督", "カメラマン", "記者", "編集者", "校正者", "声優", "俳優", "女優", "モデル", "アイドル", "ミュージシャン", "ダンサー", "アスリート", "監督", "コーチ", "審判", "政治家", "官僚", "公務員", "秘書", "経営者", "投資家", "銀行員", "税理士", "会計士", "弁理士", "司法書士", "行政書士", "建築家", "大工", "鳶職", "左官", "配管工", "電気工事士", "整備士", "運転手", "車掌", "駅員", "パイロット", "CA", "宇宙飛行士", "研究者", "学者", "教授", "教師", "講師", "インストラクター", "トレーナー", "アドバイザー", "コンサルタント", "カウンセラー", "セラピスト", "ヒーラー", "整体師", "マッサージ師", "美容師", "理容師", "ネイリスト", "メイクアップアーティスト", "スタイリスト", "デザイナー", "パタンナー", "イラストレーター", "アニメーター", "ゲームクリエイター", "プログラマー", "エンジニア", "データサイエンティスト", "マーケター", "プランナー", "ディレクター", "プロデューサー", "営業", "事務", "受付", "警備員", "清掃員", "用務員",
+                // 感覚・色
+                "呼吸", "輪郭", "肖像", "境界", "対話", "欠片", "質感", "光沢", "彩度", "濃淡", "旋律", "楽譜", "寓話", "青", "赤", "白", "黒", "金", "銀", "透明", "無彩色", "瑠璃", "茜", "萌葱", "漆黒", "純白", "灰", "紺碧", "山吹色", "墨色", "藍色", "朱色", "若草色", "桜色", "藤色", "葡萄色", "浅葱色", "臙脂", "縹", "錆色", "鉛色", "虹色", "玉虫色", "飴色", "琥珀色", "翡翠色", "象牙色", "亜麻色", "栗色", "鳶色", "鶯色", "苔色", "松葉色", "常磐色", "萌黄色", "檸檬色", "向日葵色", "杏色", "柿色", "橙色", "緋色", "紅色", "薔薇色", "桃色", "撫子色", "牡丹色", "菫色", "菖蒲色", "紫苑色", "群青色", "露草色", "空色", "水色", "瓶覗", "月白", "生成り", "濡羽色", "鉄色", "褐色", "肌色", "小麦色", "銅色", "銀灰色", "燻銀", "パールホワイト", "ミッドナイトブルー", "ターコイズブルー", "エメラルドグリーン", "ライムグリーン", "オリーブグリーン", "マスタードイエロー", "ショッキングピンク", "ワインレッド", "ボルドー", "ネイビー", "ベージュ", "カーキ", "キャメル", "ブラウン", "グレー", "チャコールグレー", "オフホワイト", "パステルカラー", "ビビッドカラー", "ネオンカラー", "アースカラー", "モノトーン", "セピア", "グラデーション", "コントラスト", "マテリアル", "テクスチャ", "フォルム", "シルエット", "ディテール", "ニュアンス", "イメージ", "インパクト", "アクセント", "ハイライト", "シャドウ", "トーン", "バランス", "ハーモニー", "リズム", "テンポ", "ビート", "グルーヴ", "メロディ", "フレーズ", "コード", "スケール", "オクターブ", "ピッチ", "ボリューム", "サウンド", "ボイス", "イントネーション"
+            ],
+
+            // 3. 人間の作ったもの（人工物・生活・文化）
+            human: [
+                // 家電・電子機器
+                "冷蔵庫", "信号", "電池", "扇風機", "ストーブ", "カメラ", "ラジオ", "目覚まし", "歯ブラシ", "トースター", "アイロン", "加湿器", "懐中電灯", "スマホ", "イヤホン", "キーボード", "ディスプレイ", "ルーター", "炊飯器", "オーブン", "電子レンジ", "洗濯機", "乾燥機", "掃除機", "映写機", "蓄電池", "拡声器", "顕微鏡", "録音機", "換気扇", "発電機", "電球", "蛍光灯", "LED", "給湯器", "空気清浄機", "翻訳機", "蓄音機", "露出計", "現像機", "複写機", "印刷機", "裁断機", "穿孔機", "鋲打機", "溶接機", "旋盤", "フライス盤", "圧延機", "プレス機", "クレーン", "リフト", "エレベーター", "エスカレーター", "自動ドア", "改札機", "券売機", "自販機", "ATM", "レジスター", "バーコードリーダー", "スキャナー", "プリンター", "FAX", "シュレッダー", "タイムレコーダー", "インターホン", "防犯カメラ", "センサーライト", "体重計", "体温計", "血圧計", "活動量計", "歩数計", "ストップウォッチ", "タイマー", "電卓", "電子辞書", "タブレット", "スマートウォッチ", "ドローン", "3Dプリンター", "VRゴーグル", "コントローラー", "ケーブル", "充電器", "モバイルバッテリー", "USBメモリ", "SDカード", "ハードディスク", "サーバー", "モデム", "ハブ", "スイッチ", "マウス", "トラックボール", "ペンタブレット", "スピーカー", "アンプ", "ミキサー", "マイク", "インカム", "トランシーバー", "テレビ", "プロジェクター", "スクリーン", "モニター", "アンテナ", "チューナー", "レコーダー", "プレーヤー", "ゲーム機", "ソフト", "カセット", "ディスク", "カートリッジ", "リモコン", "バッテリー", "アダプター", "コンセント", "プラグ", "コード", "配線", "基板", "チップ", "センサー", "モーター", "ボタン", "ランプ", "液晶", "タッチパネル",
+                // 楽器・音楽
+                "ピアノ", "レコード", "ギター", "ベース", "ドラム", "バイオリン", "フルート", "サックス", "太鼓", "メトロノーム", "譜面台", "指揮棒", "ヘッドホン", "オルゴール", "ハープ", "チェロ", "琴", "尺八", "三味線", "鈴", "笛", "鐘", "チェンバロ", "タンバリン", "カスタネット", "竪琴", "オカリナ", "トランペット", "トロンボーン", "ホルン", "琵琶", "鼓", "鉄琴", "木琴", "アコーディオン", "バグパイプ", "シタール", "銅鑼", "木魚", "拍子木", "笙", "篳篥", "龍笛", "和太鼓", "締太鼓", "小鼓", "大鼓", "三線", "二胡", "馬頭琴", "マリンバ", "ビブラフォン", "グロッケン", "ティンパニ", "シンバル", "トライアングル", "コンガ", "ボンゴ", "カホン", "ジャンベ", "ウクレレ", "マンドリン", "バンジョー", "リュート", "クラリネット", "オーボエ", "ファゴット", "ピッコロ", "ユーフォニアム", "チューバ", "コントラバス", "エレキギター", "エレキベース", "シンセサイザー", "サンプラー", "ターンテーブル", "エフェクター", "カポタスト", "ピック", "弦", "リード", "マウスピース", "弓", "松脂", "譜面", "楽譜", "音叉", "チューナー", "ピアノ椅子", "ギターケース", "楽器ケース", "スタンド", "シールド", "マイクスタンド", "ポップガード", "インシュレーター", "吸音材", "防音室", "ライブハウス", "コンサートホール", "野外ステージ", "観客席", "チケット", "パンフレット", "ポスター", "CD", "カセットテープ", "MD", "MP3", "配信", "プレイリスト", "セットリスト", "アンコール", "拍手", "歓声",
+                // 文房具・雑貨
+                "万年筆", "砂時計", "合鍵", "図鑑", "消しゴム", "インク", "整理券", "切手", "封筒", "便箋", "ボールペン", "クリップ", "ノート", "教科書", "雑誌", "ポストカード", "お守り", "標本", "万華鏡", "吊り革", "望遠鏡", "コンパス", "定規", "腕時計", "懐中時計", "鍵穴", "鏡台", "額縁", "栞", "羅針盤", "天秤", "画鋲", "修正液", "筆", "硯", "墨", "印鑑", "鉛筆", "彫刻刀", "筆箱", "カッター", "ハサミ", "ホッチキス", "穴あけパンチ", "懐紙", "算盤", "虫眼鏡", "地球儀", "裁縫箱", "待ち針", "糸切りバサミ", "指抜き", "チャコペン", "メジャー", "霧吹き", "じょうろ", "スコップ", "熊手", "鎌", "鍬", "鋤", "篩", "梯子", "脚立", "工具箱", "金槌", "ドライバー", "ペンチ", "ニッパー", "スパナ", "レンチ", "鋸", "鉋", "鑿", "錐", "鑢", "万力", "クランプ", "半田ごて", "接着剤", "テープ", "紐", "縄", "ロープ", "鎖", "ワイヤー", "釘", "ネジ", "ボルト", "ナット", "ワッシャー", "蝶番", "錠前", "南京錠", "キーホルダー", "ストラップ", "缶バッジ", "ステッカー", "シール", "マスキングテープ", "付箋", "メモ帳", "手帳", "カレンダー", "アルバム", "ファイル", "バインダー", "ブックエンド", "ペン立て", "道具箱", "救急箱", "薬箱", "宝石箱", "スノードーム", "置物", "ぬいぐるみ", "人形", "模型", "フィギュア", "ジオラマ", "パズル", "ボードゲーム", "カードゲーム", "サイコロ", "トランプ", "花札", "囲碁", "将棋", "麻雀", "チェス", "オセロ", "けん玉", "独楽", "凧", "風車", "水鉄砲", "花火", "浮き輪", "ビーチボール", "ゴーグル", "シュノーケル", "足ひれ", "テント", "寝袋", "ランタン", "飯盒", "水筒", "弁当箱", "箸", "スプーン", "フォーク", "ナイフ", "皿", "コップ", "マグカップ", "急須", "湯呑み", "茶碗", "お椀", "丼", "鉢", "盆", "膳", "重箱", "徳利", "猪口", "盃", "銚子", "枡", "瓶", "缶", "樽", "桶", "ざる", "かご", "箱", "袋", "風呂敷", "手ぬぐい", "ハンカチ", "タオル", "石鹸", "シャンプー", "髭剃り", "鏡", "櫛", "化粧品", "香水",
+                // インフラ・乗り物
+                "踏切", "水道水", "改札口", "自転車", "オートバイ", "自動車", "トラック", "バス", "タクシー", "電車", "新幹線", "地下鉄", "飛行機", "ヘリコプター", "潜水艦", "宇宙船", "ロケット", "人工衛星", "防波堤", "灯台", "給水塔", "電波塔", "煙突", "水車", "風車", "鉄橋", "トンネル", "歩道橋", "停留所", "浮き橋", "滑走路", "貨物船", "救急車", "消防車", "飛行船", "モノレール", "ケーブルカー", "帆船", "筏", "カヌー", "ボート", "ヨット", "客船", "フェリー", "タンカー", "巡視船", "砕氷船", "浚渫船", "起重機船", "艀", "屋形船", "釣り船", "ゴンドラ", "人力車", "籠", "馬車", "牛車", "橇", "スノーモービル", "セグウェイ", "キックボード", "三輪車", "一輪車", "車椅子", "ストレッチャー", "霊柩車", "パトカー", "白バイ", "装甲車", "戦車", "戦闘機", "爆撃機", "偵察機", "輸送機", "ドローン", "気球", "グライダー", "パラグライダー", "ハンググライダー", "ロードバイク", "マウンテンバイク", "クロスバイク", "ママチャリ", "原付", "スクーター", "トラクター", "コンバイン", "田植え機", "フォークリフト", "ブルドーザー", "ショベルカー", "ダンプカー", "クレーン車", "ミキサー車", "散水車", "清掃車", "ゴミ収集車", "郵便車", "宅配車", "キャンピングカー", "キッチンカー", "オープンカー", "リムジン", "スポーツカー", "クラシックカー", "レーシングカー", "ゴーカート", "ソリ", "スケートボード", "ローラースケート", "スキー", "スノーボード", "サーフボード", "ウェイクボード", "カヤック", "ゴムボート", "水上バイク", "潜水艇", "探査機", "探査車", "シャトル", "ステーション", "コロニー", "エスカレーター", "動く歩道", "索道", "パイプライン", "送電線", "鉄塔", "電柱", "街灯", "信号機", "標識", "ガードレール", "マンホール", "消火栓", "ポスト", "電話ボックス", "自販機", "ゴミ箱", "ベェンチ", "掲示板", "案内板", "時計台", "モニュメント", "噴水", "花壇", "植え込み", "生垣", "塀", "柵", "門", "ゲート", "改札", "券売機", "精算機", "ATM", "コインロッカー", "駐車場", "駐輪場", "駅", "港", "空港", "ヘリポート",
+                // その他道具・部品
+                "歯車", "ぜんまい", "振り子", "活字", "フィルム", "レンズ", "プリズム", "フラスコ", "ビーカー", "試験管", "シャーレ", "ピペット", "薬匙", "乳鉢", "乳棒", "アルコールランプ", "三脚", "蒸留器", "冷却器", "濾紙", "坩堝", "鑷子", "メス", "鉗子", "開創器", "聴診器", "注射器", "点滴", "包帯", "ギプス", "松葉杖", "義手", "義足", "義眼", "カツラ", "入れ歯", "眼鏡", "コンタクトレンズ", "補聴器", "ペースメーカー", "ステント", "カテーテル", "カスガイ", "蝶番", "錠前", "南京錠", "チェーン", "ケーブル", "コード", "プラグ", "ソケット", "スイッチ", "ヒューズ", "基板", "チップ", "抵抗", "コンデンサ", "コイル", "トランス", "モーター", "エンジン", "タービン", "ポンプ", "バルブ", "ピストン", "シリンダー", "クランク", "シャフト", "ギア", "ベアリング", "バネ", "ゴム", "パッキン", "シール", "フィルター", "ダクト", "パイプ", "チューブ", "ホース", "ノズル", "スプレー", "ボンベ", "タンク", "ドラム缶", "コンテナ", "パレット", "ダンボール", "ガムテープ", "紐", "縄", "ロープ", "釣り針", "釣り糸", "浮き", "錘", "網", "銛", "錨", "舵", "六分儀", "海図", "地図", "設計図", "青写真", "マニュアル", "仕様書", "契約書", "請求書", "領収書", "通帳", "印鑑", "名刺", "パスポート", "免許証", "保険証", "診察券", "会員証", "ポイントカード", "クレジットカード", "電子マネー", "チケット", "切符", "定期券", "回数券", "整理券", "抽選券", "宝くじ", "お札", "硬貨", "小銭", "財布", "金庫", "レジスター", "電卓", "そろばん", "メジャー", "ノギス", "マイクロメーター", "温度計", "湿度計", "気圧計", "高度計", "風向計", "風速計", "雨量計", "地震計", "放射線測定器", "探知機", "センサー", "レーダー", "ソナー", "魚群探知機", "GPS", "カーナビ"
+            ],
+
+            // 4. 現代用語・IT・社会
+            modern: [
+                "推し", "沼", "尊い", "聖地巡礼", "同担", "箱推し", "スパチャ", "投げ銭", "アクスタ", "祭壇", "生誕祭", "遠征", "ファンサ", "認知", "卒業", "転生", "ガチ恋", "鍵垢", "匂わせ", "マウント", "自撮り", "配信", "実況", "切り抜き", "アバター", "待機所", "メンバーシップ", "チャンネル登録", "公式", "二次創作", "解釈違い", "地雷", "供給", "燃料", "黒歴史", "承認欲求", "ガチャ", "天井", "課金", "メンテ", "ログインボーナス", "ペンライト", "うちわ", "痛バッグ", "オフ会", "コラボ", "案件", "収益化", "スパム", "bot", "荒らし", "釣り", "ネタバレ", "フラグ", "回収", "伏線", "考察", "沼落ち", "布教", "履修", "限界オタク", "解釈一致", "公式最大手", "幻覚", "概念", "ぬい撮り", "聖地", "巡礼", "痛車", "コスプレ", "コミケ", "同人誌", "即売会", "サークル", "頒布", "新刊", "既刊", "委託", "通販", "在庫", "完売", "再版", "入稿", "締切", "進捗", "原稿", "修羅場", "落書き", "ネーム", "下書き", "ペン入れ", "ベタ", "トーン", "写植", "誤植", "乱丁", "落丁", "奥付", "あとがき", "まえがき", "帯", "初版", "重版", "絶版", "復刊", "電子書籍", "自炊", "積読", "アニメ", "マンガ", "ラノベ", "声優", "アニソン", "キャラソン", "サントラ", "フィギュア", "プラモ", "グッズ", "イベント", "ライブ", "フェス", "舞台挨拶", "握手会", "サイン会", "トークショー", "コラボカフェ", "ポップアップストア", "一番くじ", "クレーンゲーム", "ガシャポン", "食玩", "トレーディングカード", "ソシャゲ", "音ゲー", "FPS", "RPG", "MMO", "eスポーツ", "プロゲーマー", "ストリーマー", "VTuber", "ライバー", "歌い手", "ボカロP", "絵師", "字書き", "レイヤー", "カメコ", "囲い", "厄介", "古参", "新規", "にわか", "ミーハー", "厨", "信者", "アンチ", "晒し", "炎上", "特定", "デマ", "フェイク", "ステマ", "自作自演", "複垢", "裏垢", "ブロック", "ミュート", "スルー", "リプ", "RT", "引用RT", "いいね", "シェア", "拡散", "バズる", "オワコン", "覇権", "神回", "鬱回", "しんどい", "無理", "語彙力", "優勝", "天才", "神", "供給過多", "燃料投下", "墓", "遺言",
+                "AI", "シンギュラリティ", "ハルシネーション", "アルゴリズム", "クラウド", "メタバース", "ログイン", "ログアウト", "アップデート", "バズ", "プロンプト", "暗号通貨", "ブロックチェーン", "ディープフェイク", "フィルタリング", "ストレージ", "サーバー", "ドメイン", "バグ", "ウイルス", "暗号化", "圧縮", "解凍", "モデム", "通信", "符号", "キャッシュ", "ログ", "バックアップ", "アプリ", "OS", "ウェアラブル", "ビッグデータ", "仮想現実", "垢BAN", "凍結", "特定", "デジタルタトゥー", "検索履歴", "通知", "既読スルー", "サブ垢", "匿名", "実名", "顔出し", "声出し", "リプライ", "リツイート", "フォロー", "フォロワー", "タイムライン", "トレンド", "ハッシュタグ", "メンション", "ダイレクトメッセージ", "グループチャット", "通話", "ビデオ会議", "画面共有", "リモート", "テレワーク", "オンライン", "オフライン", "ダウンロード", "アップロード", "インストール", "アンインストール", "再起動", "強制終了", "フリーズ", "エラー", "グリッチ", "ラグ", "サーバーダウン", "メンテナンス", "アカウント", "パスワード", "認証", "セキュリティ", "ファイアウォール", "ハッキング", "フィッシング", "スキミング", "ランサムウェア", "マルウェア", "スパイウェア", "アドウェア", "トロイの木馬", "ワーム", "ボットネット", "DDoS攻撃", "ゼロデイ攻撃", "ブルートフォースアタック", "ソーシャルエンジニアリング", "生体認証", "指紋認証", "顔認証", "虹彩認証", "声紋認証", "二段階認証", "ワンタイムパスワード", "トークン", "電子証明書", "暗号鍵", "公開鍵", "秘密鍵", "電子署名", "タイムスタンプ", "VPN", "IPアドレス", "MACアドレス", "プロトコル", "HTTP", "HTTPS", "FTP", "SSH", "SSL", "TLS", "DNS", "DHCP", "NAT", "LAN", "WAN", "Wi-Fi", "Bluetooth", "NFC", "GPS", "5G", "6G", "IoT", "機械学習", "ディープラーニング", "ニューラルネットワーク", "データマイニング", "クラウドコンピューティング", "エッジコンピューティング", "量子コンピューティング", "仮想通貨", "NFT", "スマートコントラクト", "DAO", "DeFi", "Web3", "VR", "AR", "MR", "XR", "デジタルトランスフォーメーション", "DX", "フィンテック", "エドテック", "ヘルステック", "アグリテック", "フードテック", "クリーンテック",
+                "タイパ", "コスパ", "ルーティン", "エモい", "忖度", "同調圧力", "ライフハック", "ミニマリズム", "自己責任", "多様性", "持続可能性", "格差", "偏見", "固定観念", "自己啓発", "著作権", "肖像権", "コンプラ", "エビデンス", "リテラシー", "インフルエンサー", "フォロワー", "アンチ", "信者", "陰謀論", "フェイクニュース", "ステマ", "ダイバーシティ", "サステナビリティ", "リモートワーク", "ワーケーション", "ノマド", "フリーランス", "副業", "転売", "買い占め", "クラファン", "サブスク", "シェアリング", "ギグワーク", "ベーシックインカム", "格差社会", "少子高齢化", "人口減少", "地方創生", "空き家問題", "限界集落", "孤独死", "無縁社会", "断捨離", "終活", "エンディングノート", "墓じまい", "樹木葬", "散骨", "家族葬", "直葬", "改名", "キラキラネーム", "毒親", "親ガチャ", "アダルトチルドレン", "ヤングケアラー", "8050問題", "老老介護", "認認介護", "待機児童", "貧困", "虐待", "DV", "ハラスメント", "パワハラ", "セクハラ", "モラハラ", "アカハラ", "マタハラ", "カスハラ", "ネットいじめ", "ヘイトスピーチ", "ポリコレ", "ジェンダー", "LGBTQ", "フェミニズム", "ヴィーガン", "エシカル", "フェアトレード", "カーボンニュートラル", "脱炭素", "再生可能エネルギー", "SDGs", "ESG", "CSR", "コンプライアンス", "ガバナンス", "リスクマネジメント", "クライシスマネジメント", "BCP", "デューデリジェンス", "アカウンタビリティ", "トレースアビリティ", "サプライチェーン", "バリューチェーン", "プラットフォーム", "エコシステム", "スタートアップ", "ベンチャー", "ユニコーン", "イノベーション", "ディスラプション", "パラダイムシフト"
+            ],
+
+            // 5. 空想・SF・ファンタジー
+            fantasy: [
+                "モノリス", "インベーダー", "量子回路", "平行世界", "テレポート", "サイボーグ", "クローン", "アンドロイド", "タイムマシン", "恒星間航行", "重力制御", "ナノマシン", "ワームホール", "静止軌道", "人工冬眠", "外骨格", "脳内チップ", "軌道エレベーター", "テラフォーミング", "反物質", "亜空間", "超能力", "テレパシー", "テレキネシス", "透視", "予知", "マッドサイエンティスト", "地球外生命体", "未確認飛行物体", "反重力", "永久機関", "コールドスリープ", "ホログラム", "フォースフィールド", "レーザー銃", "光線銃", "宇宙ステーション", "宇宙コロニー", "ダイソン球", "亜光速", "超光速", "ワープ", "タイムリープ", "タイムパラドックス", "バタフライエフェクト", "シュレーディンガーの猫", "水槽の脳", "シミュレーション仮説", "アカシックレコード", "集合的無意識", "第六感", "チャクラ", "オーラ", "気", "波動", "エーテル", "マナ", "プラーナ", "錬金術", "賢者の石", "ホムンクルス", "人造人間", "改造人間", "ミュータント", "超人", "エスパー", "サイキッカー", "ニュータイプ", "オールドタイプ", "強化人間", "調整体", "デザイナーベビー", "クローン人間", "レプリカント", "ガイノイド", "ヒューマノイド", "ロボット", "ドロイド", "オートマタ", "ゴーレム", "パワードスーツ", "モビルスーツ", "巨大ロボット", "合体ロボット", "変形ロボット", "空中戦艦", "宇宙戦艦", "恒星間移民船", "世代宇宙船", "方舟", "植民惑星", "ドーム都市", "地下都市", "空中都市", "海底都市", "月面基地", "火星基地", "宇宙要塞", "デススター", "ブラックホール爆弾", "反物質爆弾", "重力波砲", "荷電粒子砲", "レールガン", "コイルガン", "光子魚雷", "バリア", "シールド", "クローキング", "ステルス", "転送装置", "物質転送機", "タイムトラベル", "タイムループ", "歴史改変", "並行宇宙", "マルチバース", "異次元", "ブラックホール", "ホワイトホール", "特異点", "超ひも理論", "多次元宇宙", "泡宇宙", "インフレーション宇宙", "ビッグバン", "ビッグクランチ", "ビッグリップ", "エントロピー", "マクスウェルの悪魔", "ラプラスの悪魔", "不確定性原理", "量子もつれ", "量子テレポーテーション",
+                "ワイバーン", "狼男", "吸血鬼", "ドラゴン", "魔法陣", "聖剣", "魔王", "勇者", "精霊", "妖精", "死神", "天使", "悪魔", "予言", "呪い", "聖杯", "迷宮", "呪符", "結界", "召喚獣", "龍神", "幽霊船", "宝図", "秘薬", "呪術", "幻獣", "聖域", "契約", "儀式", "生贄", "祈祷", "除霊", "使い魔", "魔導書", "異世界", "転生者", "グリフォン", "ペガサス", "ユニコーン", "フェニックス", "ケンタウロス", "ミノタウロス", "スフィンクス", "キマイラ", "クラーケン", "リヴァイアサン", "バハムート", "イフリート", "シルフ", "ウンディーネ", "ノーム", "サラマンダー", "ドワーフ", "エルフ", "オーク", "ゴブリン", "トロール", "オーガ", "ジャイアント", "スライム", "ミミック", "スケルトン", "ゾンビ", "グール", "レイス", "リッチ", "ヴァンパイア", "サキュバス", "インキュバス", "デュラハン", "バンシー", "セイレーン", "ハーピー", "メデューサ", "ナーガ", "ラミア", "ガーゴイル", "コカトリス", "バジリスク", "マンティコア", "ヒュドラ", "ケルベロス", "オルトロス", "鵺", "河童", "天狗", "鬼", "妖怪", "物の怪", "付喪神", "座敷童子", "雪女", "ろくろ首", "ぬらりひょん", "一反木綿", "塗り壁", "子泣き爺", "砂かけ婆", "猫又", "化け猫", "狐", "狸", "龍", "麒麟", "鳳凰", "霊獣", "神獣", "聖獣", "魔獣", "式神", "守護霊", "背後霊", "地縛霊", "浮遊霊", "悪霊", "怨霊", "生霊", "死霊", "亡霊", "幽霊", "お化け", "モンスター", "魔物", "魔族", "亜人", "獣人", "魚人", "鳥人", "竜人", "天人", "仙人", "神", "女神", "男神", "邪神", "魔神", "破壊神", "創造神", "世界樹", "ユグドラシル", "泉", "魔境", "秘境", "ダンジョン", "遺跡", "古城", "塔", "神殿", "祭壇", "召喚陣", "ポータル", "転送門", "夢の世界", "精神世界", "冥界", "地獄", "天国", "極楽", "浄土", "黄泉", "根の国", "常世", "ニライカナイ", "アヴァロン", "エデン", "シャングリラ", "エルドラド", "アトランティス", "ムー大陸", "レムリア大陸"
+            ],
+
+            // 6. 場所・舞台
+            place: [
+                "廃校", "無人駅", "コインランドリー", "図書室", "理科室", "音楽室", "保健室", "体育館", "屋上遊園地", "デパート", "プラネタリウム", "博物館", "美術館", "映画館", "劇場", "スタジアム", "遊園地", "墓地", "教会", "神社", "寺", "城", "天文台", "研究所", "工場", "倉庫", "農場", "牧場", "鉱山", "シェルター", "ホテル", "旅館", "地下壕", "展望台", "灯台", "監獄", "廃墟", "砦", "隠れ家", "屋台", "縁日", "祭", "宿屋", "酒場", "武器屋", "道具屋", "雑貨店", "古本屋", "質屋", "骨董屋", "駄菓子屋", "八百屋", "魚屋", "肉屋", "パン屋", "花屋", "本屋", "文房具屋", "薬局", "靴屋", "服屋", "雑貨屋", "家具屋", "電気屋", "時計屋", "眼鏡屋", "美容院", "理容室", "エステ", "ジム", "プール", "サウナ", "銭湯", "温泉", "岩盤浴", "漫画喫茶", "ネットカフェ", "カラオケ", "ボウリング場", "ゲームセンター", "パチンコ", "雀荘", "競馬場", "競輪場", "競艇場", "オートレース場", "カジノ", "動物園", "水族館", "植物園", "公園", "サーカス", "見世物小屋", "コンサートホール", "ライブハウス", "クラブ", "ディスコ", "バー", "パブ", "スナック", "キャバクラ", "ホストクラブ", "ラブホテル", "モーテル", "ビジネスホテル", "シティホテル", "リゾートホテル", "民宿", "ペンション", "コテージ", "バンガロー", "キャンプ場", "グランピング", "別荘", "豪邸", "屋敷", "洋館", "古民家", "長屋", "団地", "マンション", "アパート", "寮", "社宅", "官舎", "仮設住宅", "避難所", "病院", "診療所", "クリニック", "医院", "救急病院", "総合病院", "大学病院", "精神科病院", "隔離病棟", "手術室", "霊安室", "遺体安置所", "火葬場", "斎場", "葬儀場", "霊園", "納骨堂", "警察署", "交番", "駐在所", "消防署", "市役所", "区役所", "町役場", "村役場", "県庁", "都庁", "議事堂", "裁判所", "刑務所", "拘置所", "少年院", "更生施設", "軍事基地", "駐屯地", "演習場", "射撃場", "レーダー基地", "ミサイル基地", "核施設", "発電所", "変電所", "ガスタンク", "石油コンビナート", "ダム", "浄水場", "下水処理場", "ゴミ処理場", "リサイクルセンター", "最終処分場",
+                "路地裏", "ベンチ", "噴水", "花壇", "水飲み場", "街灯", "電柱", "ガードレール", "歩道橋", "横断歩道", "シャッター街", "アーケード", "空き地", "駐車場", "喫茶店", "レストラン", "コンビニ", "郵便局", "銀行", "裏口", "屋上", "踊り場", "階段下", "軒先", "縁側", "屋根裏", "地下室", "天窓", "ベランダ", "廊下", "キッチン", "押し入れ", "箪笥", "庭", "生垣", "畳", "襖", "障子", "床の間", "暖炉", "煙突", "非常階段", "エレベーターホール", "給湯室", "会議室", "応接室", "社長室", "職員室", "校長室", "放送室", "家庭科室", "美術室", "技術室", "コンピュータ室", "視聴覚室", "武道場", "更衣室", "部室", "学食", "購買", "昇降口", "下駄箱", "焼却炉", "配電盤", "貯水槽", "給水塔", "室外機", "ダクト", "排気口", "通気口", "マンホール", "側溝", "排水溝", "井戸", "ポンプ小屋", "物置", "納屋", "蔵", "土蔵", "馬小屋", "牛舎", "鶏小屋", "犬小屋", "鳥籠", "水槽", "虫籠", "プランター", "植木鉢", "盆栽", "庭石", "灯籠", "飛び石", "鹿威し", "手水鉢", "蹲", "垣根", "塀", "門", "門柱", "表札", "ポスト", "インターホン", "ドア", "窓", "網戸", "雨戸", "簾", "葦簀", "庇", "軒", "瓦", "鬼瓦", "鯱", "棟", "梁", "柱", "壁", "床", "天井", "欄間", "鴨居", "敷居", "長押", "廻り縁", "巾木", "コンセント", "スイッチ", "照明", "シャンデリア", "蛍光灯", "電球", "鏡", "洗面台", "蛇口", "シンク", "コンロ", "換気扇", "風呂", "浴槽", "シャワー", "トイレ", "便器", "トイレットペーパー", "タオル掛け"
+            ],
+
+            // 7. 食べ物・味覚
+            food: [
+                "クリームソーダ", "コーヒー", "お茶", "紅茶", "コーラ", "サイダー", "ワイン", "ビール", "日本酒", "焼酎", "牛乳", "ジュース", "スープ", "薬草茶", "湧き水", "ジンジャーエール", "抹茶", "甘酒", "炭酸水", "おにぎり", "パン", "ケーキ", "クッキー", "チョコレート", "キャンディー", "ガム", "プリン", "ゼリー", "アイス", "豆腐", "納豆", "卵", "肉", "魚", "チーズ", "ヨーグルト", "蕎麦", "米", "麦", "非常食", "麺", "パスタ", "カレー", "缶詰", "サラダ", "サンドイッチ", "ハンバーガー", "ピザ", "寿司", "天ぷら", "刺身", "味噌汁", "燻製", "鍋料理", "懐石料理", "弁当", "定食", "丼", "粥", "リゾット", "グラタン", "ドリア", "シチュー", "ポトフ", "ローストビーフ", "ステーキ", "ハンバーグ", "コロッケ", "メンチカツ", "トンカツ", "唐揚げ", "焼き鳥", "餃子", "焼売", "春巻き", "麻婆豆腐", "回鍋肉", "青椒肉絲", "酢豚", "エビチリ", "チャーハン", "ラーメン", "うどん", "素麺", "冷麦", "焼きそば", "お好み焼き", "たこ焼き", "もんじゃ焼き", "たい焼き", "今川焼き", "団子", "大福", "羊羹", "饅頭", "カステラ", "煎餅", "おかき", "クレープ", "パフェ", "サンデー", "ワッフル", "パンケーキ", "フレンチトースト", "ドーナツ", "シュークリーム", "エクレア", "タルト", "パイ", "ミルフィーユ", "ティラミス", "チーズケーキ", "ショートケーキ", "モンブラン", "ガトーショコラ", "マカロン", "マドレーヌ", "フィナンシェ", "スコーン", "ビスケット", "ラスク", "プレッツェル", "ポップコーン", "ポテトチップス", "ナッツ", "ドライフルーツ", "ジャーキー", "チーズ鱈", "スルメ", "枝豆", "冷奴", "お新香", "塩辛", "珍味", "キャビア", "フォアグラ", "トリュフ", "フカヒレ", "ツバメの巣", "アワビ", "伊勢海老", "松葉ガニ", "タラバガニ", "ウニ", "イクラ", "すき焼き", "しゃぶしゃぶ", "焼肉", "鉄板焼き", "ジンギスカン", "もつ鍋", "水炊き", "ちゃんこ鍋", "石狩鍋", "きりたんぽ鍋", "ほうとう", "おじや", "雑炊", "お茶漬け", "卵かけご飯", "カレーライス", "ハヤシライス", "オムライス", "ラザニア", "パエリア", "スパゲッティ", "マカロニ", "ラビオリ", "ニョッキ", "きしめん", "つけ麺", "油そば", "ビーフン", "フォー", "春雨", "小籠包", "肉まん", "あんまん", "ピロシキ", "カレーパン", "メロンパン", "あんパン", "ジャムパン", "クリームパン", "チョココロネ", "ホットドッグ", "トースト", "クラッカー", "キャラメル", "グミ", "マシュマロ", "アイスクリーム", "シャーベット", "かき氷", "ソフトクリーム", "餅", "おはぎ", "ぜんざい", "お汁粉", "わらび餅", "くず餅", "ところてん", "あんみつ", "みつまめ",
+                "苺", "林檎", "葡萄", "蜜柑", "桃", "柿", "梨", "栗", "西瓜", "メロン", "バナナ", "パイナップル", "マンゴー", "レモン", "オレンジ", "ライム", "柚子", "金柑", "さくらんぼ", "ブルーベリー", "トマト", "胡瓜", "茄子", "南瓜", "大根", "人参", "玉葱", "茸", "柘榴", "無花果", "杏", "李", "塩", "砂糖", "醤油", "味噌", "酢", "スパイス", "蜜", "胡椒", "七味", "一味", "山葵", "辛子", "生姜", "大蒜", "葱", "紫蘇", "茗荷", "柚子胡椒", "豆板醤", "甜麺醤", "コチュジャン", "ナンプラー", "オイスターソース", "バター", "マーガリン", "ジャム", "蜂蜜", "メープルシロップ", "コンデンスミルク", "チョコレートソース", "生クリーム", "カスタード", "あんこ", "きな粉", "抹茶", "黒蜜", "小麦粉", "片栗粉", "パン粉", "白玉粉", "上新粉", "寒天", "ゼラチン", "ベーキングパウダー", "イースト", "バニラエッセンス", "食紅", "金箔", "銀箔", "米", "玄米", "餅米", "粟", "稗", "黍", "豆", "大豆", "小豆", "黒豆", "空豆", "隠元豆", "豌豆", "落花生", "アーモンド", "胡桃", "カシューナッツ", "ピスタチオ", "マカダミアナッツ", "銀杏", "胡麻", "荏胡麻", "亜麻仁", "菜種", "向日葵", "椿", "オリーブ", "椰子"
+            ],
+
+            // 8. 歴史・宗教・オカルト
+            history: [
+                "遺跡", "土偶", "埴輪", "勾玉", "古文書", "碑文", "宝物庫", "棺", "ミイラ", "石碑", "銅鐸", "古戦場", "凱旋門", "断頭台", "紋章", "密勅", "遺言状", "羊皮紙", "封蝋", "古銭", "石器", "青銅器", "鉄器", "陶磁器", "ガラス器", "埋蔵金", "隠し財宝", "古地図", "航海日誌", "刻印", "家系図", "王冠", "玉座", "錫杖", "笏", "扇子", "刀", "槍", "弓", "鎧", "兜", "盾", "旗", "狼煙", "砦", "城壁", "堀", "跳ね橋", "落とし穴", "隠し扉", "抜け道", "地下牢", "拷問器具", "ギロチン", "電気椅子", "絞首台", "十字架", "杭", "縄文土器", "弥生土器", "前方後円墳", "ピラミッド", "スフィンクス", "パルテノン神殿", "コロッセオ", "万里の長城", "マチュピチュ", "ナスカの地上絵", "ストーンヘンジ", "モアイ", "兵馬俑", "アンコールワット", "タージマハル", "聖骸布", "聖遺物", "ロゼッタストーン", "死海文書", "ハンムラビ法典", "古事記", "日本書紀", "万葉集", "源氏物語", "平家物語", "徒然草", "方丈記", "奥の細道", "東海道中膝栗毛", "南総里見八犬伝", "学問のすゝめ", "舞姫", "こころ", "人間失格", "銀河鉄道の夜", "走れメロス", "羅生門", "山月記", "蜘蛛の糸", "杜子春", "吾輩は猫である", "坊っちゃん", "草枕", "三四郎", "それから", "門", "明暗",
+                "念珠", "祭壇", "聖典", "経典", "護符", "呪物", "仏像", "托鉢", "巡礼", "瞑想", "啓示", "憑依", "除霊", "生贄", "神託", "聖水", "祈り", "儀式", "祭器", "降霊会", "自動書記", "ポルターガイスト", "都市伝説", "呪詛", "霊媒", "水晶玉", "タロット", "こっくりさん", "オーパーツ", "UFO", "テレパシー", "予知夢", "生き霊", "幽霊", "亡霊", "守護霊", "浄化", "丑の刻参り", "結界", "聖域", "禁足地", "神隠し", "狐火", "人魂", "鬼火", "ドッペルゲンガー", "臨死体験", "体外離脱", "前世記憶", "輪廻転生", "因果応報", "六道輪廻", "曼荼羅", "梵字", "真言", "祝詞", "お経", "賛美歌", "聖歌", "レクイエム", "エクソシスト", "シャーマン", "陰陽師", "イタコ", "ノストラダムス", "エドガー・ケイシー", "フリーメイソン", "イルミナティ", "エリア51", "バミューダトライアングル", "ミステリーサークル", "ネッシー", "ツチノコ", "チュパカブラ", "ビッグフット", "スカイフィッシュ", "宇宙人", "グレイ", "レプティリアン", "メン・イン・ブラック", "アブダクション", "インプラント", "キャトルミューティレーション", "クロップサークル", "ロズウェル事件", "フィラデルフィア実験", "モントーク計画", "MJ-12", "シリウス", "プレアデス", "オリオン", "レムリア", "アトランティス", "ムー", "アガルタ", "シャンバラ", "地球空洞説", "氷壁", "フラットアース", "巨人", "小人", "地底人", "海底人", "月面人", "火星人", "金星人", "土星人", "木星人"
+            ],
+
+            // 9. 身体・医学・状態
+            body: [
+                "鼓動", "脈拍", "指紋", "網膜", "声帯", "脳波", "骨格", "筋肉", "爪", "毛髪", "汗", "涙", "唾液", "傷跡", "痣", "体温", "胎動", "吐息", "関節", "臓器", "血管", "神経", "皮膚", "粘膜", "血液", "遺伝子", "DNA", "細胞", "輸血", "手術台", "麻酔", "包帯", "処方箋", "隔離室", "診断", "蘇生", "免疫", "幻肢", "記憶喪失", "催眠", "ワクチン", "抗体", "昏睡", "延命", "臓器提供", "義手", "義足", "点滴", "カルテ", "聴診器", "注射器", "メス", "鑷子", "鉗子", "開創器", "麻酔銃", "AED", "人工呼吸器", "心電図", "エコー", "レントゲン", "CT", "MRI", "胃カメラ", "内視鏡", "カテーテル", "ペースメーカー", "インプラント", "義歯", "義眼", "かつら", "コルセット", "松葉杖", "車椅子", "ストレッチャー", "救急箱", "薬瓶", "錠剤", "カプセル", "粉薬", "シロップ", "軟膏", "湿布", "絆創膏", "ガーゼ", "脱脂綿", "綿棒", "脳", "心臓", "肺", "胃", "肝臓", "腎臓", "膵臓", "脾臓", "胆嚢", "膀胱", "子宮", "卵巣", "精巣", "甲状腺", "リンパ節", "扁桃腺", "虫垂", "脊髄", "大脳", "小脳", "脳幹", "海馬", "前頭葉", "側頭葉", "頭頂葉", "後頭葉", "ニューロン", "シナプス", "アドレナリン", "ドーパミン", "セロトニン", "インスリン", "コルチゾール", "白血球", "赤血球", "血小板", "幹細胞", "iPS細胞", "がん細胞", "ウイルス", "細菌", "真菌", "寄生虫", "抗生物質", "ステロイド", "抗がん剤", "向精神薬", "睡眠薬", "鎮痛剤", "解熱剤", "麻酔薬", "消毒液", "生理食塩水", "血液製剤", "輸液", "栄養剤", "サプリメント", "ビタミン", "ミネラル", "プロテイン",
+                "痛み", "痺れ", "痒み", "痙攣", "悪寒", "眩暈", "渇き", "空腹", "疲労", "覚醒", "腐敗", "発酵", "酸化", "融解", "凍結", "蒸発", "燃焼", "腐食", "摩耗", "劣化", "破損", "故障", "活性", "抑制", "安定", "不安定", "平衡", "不均衡", "老化", "進化", "退化", "変異", "感染", "発症", "潜伏", "治癒", "寛解", "再発", "転移", "末期", "臨終", "蘇生", "仮死", "脳死", "植物状態", "幽体離脱", "金縛り", "夢遊病", "健忘症", "認知症", "統合失調症", "うつ病", "躁鬱病", "パニック障害", "強迫性障害", "PTSD", "アレルギー", "花粉症", "アトピー", "喘息", "糖尿病", "高血圧", "痛風", "メタボ", "肥満", "拒食症", "過食症", "不眠症", "過眠症", "ナルコレプシー", "乖離性障害", "多重人格", "記憶障害", "幻覚", "幻聴", "妄想", "錯覚", "錯乱", "狂気", "正気", "正常", "異常", "健康", "病気", "障害", "症状", "症候群", "病名", "治療", "予後"
+            ],
+
+            // 10. 芸術・趣味・スポーツ
+            art: [
+                "油絵", "彫刻", "版画", "写真", "演劇", "舞踊", "詩", "小説", "漫画", "アニメ", "デザイン", "書道", "生け花", "茶道", "陶芸", "織物", "染色", "筆致", "構図", "遠近法", "黄金比", "デッサン", "スケッチ", "パレット", "筆", "額縁", "画集", "脚本", "台本", "楽譜", "楽器", "舞台", "照明", "音響", "衣装", "小道具", "大道具", "緞帳", "花道", "桟敷", "客席", "ギャラリー", "アトリエ", "スタジオ", "暗室", "現像", "焼き増し", "ネガ", "ポジ", "フィルム", "フレスコ画", "モザイク画", "ステンドグラス", "タペストリー", "レリーフ", "ブロンズ像", "石膏像", "埴輪", "土偶", "仏像", "能面", "狂言", "歌舞伎", "文楽", "落語", "漫才", "コント", "ミュージカル", "オペラ", "バレエ", "ダンス", "パントマイム", "大道芸", "手品", "サーカス", "ジャグリング", "アクロバット", "マジック", "イリュージョン", "腹話術", "パフォーマンス", "インスタレーション", "現代アート", "ポップアート", "ストリートアート", "グラフィティ", "建築", "彫金", "七宝", "漆芸", "竹細工", "木工", "金工", "ガラス工芸", "レザークラフト", "手芸", "刺繍", "編み物", "パッチワーク", "キルト", "ビーズ", "アクセサリー",
+                "登山", "釣り", "キャンプ", "旅行", "読書", "ガーデニング", "料理", "裁縫", "模型", "パズル", "ゲーム", "ラジオ投稿", "切手収集", "古着", "骨董", "囲碁", "将棋", "麻雀", "トランプ", "花札", "サイコロ", "チェス", "クイズ", "謎解き", "塗り絵", "折り紙", "コレクション", "ジオラマ", "フィギュア", "ドール", "ラジコン", "ミニ四駆", "ボードゲーム", "TRPG", "サバゲー", "コスプレ", "聖地巡礼", "撮り鉄", "乗り鉄", "音鉄", "廃墟探索", "工場萌え", "ダム巡り", "御朱印集め", "カフェ巡り", "食べ歩き", "ヨガ", "ピラティス", "瞑想", "座禅", "写経", "俳句", "短歌", "川柳", "絵手紙", "日曜大工", "DIY", "アクアリウム", "テラリウム", "バードウォッチング", "天体観測", "昆虫採集", "化石発掘", "潮干狩り", "釣り堀", "ボウリング", "ビリヤード", "ダーツ", "卓球", "カラオケ", "映画鑑賞", "音楽鑑賞", "美術鑑賞", "スポーツ観戦", "ドライブ", "ツーリング", "サイクリング", "ジョギング", "ウォーキング", "散歩", "ハイキング", "ピクニック", "バーベキュー", "花見", "月見", "雪見", "紅葉狩り", "温泉巡り", "サウナ",
+                "陸上", "水泳", "野球", "蹴球", "籠球", "庭球", "柔道", "剣道", "空手", "弓道", "相撲", "拳闘", "体操", "弓術", "馬術", "帆走", "マラソン", "駅伝", "審判", "グラウンド", "コート", "プール", "観客席", "声援", "優勝", "敗北", "記録", "ストライク", "ボール", "アウト", "セーフ", "ホームラン", "ヒット", "バント", "盗塁", "三振", "四球", "死球", "暴投", "捕逸", "エラー", "ファウル", "フェア", "オフサイド", "フリーキック", "コーナーキック", "ペナルティキック", "スローイン", "ゴール", "シュート", "パス", "ドリブル", "タックル", "スクラム", "トライ", "ノックオン", "スローフォワード", "サーブ", "レシーブ", "トス", "スパイク", "ブロック", "アタック", "セッター", "リベロ", "ラケット", "バット", "グローブ", "ミット", "ユニフォーム", "ゼッケン", "スパイク", "ハチマキ", "タスキ", "メダル", "トロフィー", "表彰台", "金メダル", "銀メダル", "銅メダル", "オリンピック", "パラリンピック", "ワールドカップ", "甲子園", "国体", "インターハイ", "運動会", "体育祭", "プロ野球", "Jリーグ", "Bリーグ", "Vリーグ", "トップリーグ", "大相撲", "格闘技", "ボクシング", "プロレス", "キックボクシング", "総合格闘技", "柔術", "合気道", "少林寺拳法", "テコンドー", "ムエタイ", "カポエイラ", "フェンシング", "アーチェリー", "射撃", "クレー射撃", "ゴルフ", "テニス", "バドミントン", "スカッシュ", "ソフトボール", "ハンドボール", "ドッジボール", "フットサル", "ラグビー", "アメフト", "ホッケー", "アイスホッケー", "カーリング", "フィギュアスケート", "スピードスケート", "ショートトラック", "スキー", "スノーボード", "ジャンプ", "アルペン", "クロスカントリー", "バイアスロン", "ボブスレー", "リュージュ", "スケルトン"
+            ],
+
+            // 11. 教育・ビジネス・生活
+            social: [
+                "教室", "講堂", "屋上", "中庭", "放送室", "準備室", "寮", "制服", "校歌", "校章", "卒業証書", "通知表", "黒板", "チョーク", "教卓", "予鈴", "文化祭", "体育祭", "修学旅行", "宿題", "会議室", "応接間", "事務机", "書類", "印鑑", "名刺", "プレゼン", "ノルマ", "昇進", "左遷", "退職", "倒産", "株価", "為替", "金利", "税金", "年金", "保険", "接待", "出張", "残業", "有給", "始末書", "辞表", "契約書", "稟議書", "企画書", "報告書", "請求書", "領収書", "見積書", "納品書", "発注書", "履歴書", "職務経歴書", "エントリーシート", "面接", "内定", "採用", "解雇", "リストラ", "早期退職", "定年", "再雇用", "派遣", "パート", "アルバイト", "インターン", "研修", "OJT", "テレワーク", "ノマド", "フリーランス", "起業", "独立", "副業", "株主総会", "取締役会", "決算", "赤字", "黒字", "破産", "合併", "買収", "上場", "デフレ", "インフレ", "円高", "円安", "バブル", "リーマンショック", "オイルショック", "ブラック企業", "ホワイト企業", "パワハラ", "セクハラ", "モラハラ", "過労死", "サービス残業", "労働組合", "ストライキ", "デモ", "交渉", "妥協", "決裂", "協定", "条約", "法律", "規則", "校則", "社則", "マナー", "エチケット", "プロトコル",
+                "買い物", "洗濯", "掃除", "育児", "介護", "冠婚葬祭", "趣味", "娯楽", "休養", "旅行", "読書", "睡眠", "夢", "習慣", "朝食", "散歩", "運動", "談笑", "創作", "収集", "学習", "鍛錬", "家賃", "光熱費", "貯金", "借金", "引っ越し", "大掃除", "ゴミ出し", "回覧板", "町内会", "子供会", "老人会", "婦人会", "消防団", "青年団", "お中元", "お歳暮", "年賀状", "暑中見舞い", "残暑見舞い", "クリスマスカード", "バレンタイン", "ホワイトデー", "誕生日", "記念日", "結婚式", "葬式", "法事", "お盆", "お彼岸", "正月", "大晦日", "節分", "七夕", "ハロウィン", "クリスマス", "お年玉", "お小遣い", "へそくり", "家計簿", "通帳", "キャッシュカード", "クレジットカード", "電子マネー", "ポイントカード", "クーポン", "チラシ", "特売", "セール", "バーゲン", "福袋", "宝くじ", "ギャンブル", "保険証", "年金手帳", "パスポート", "運転免許証", "マイナンバーカード", "住民票", "戸籍謄本", "印鑑証明", "婚姻届", "離婚届", "出生届", "死亡届", "遺言書", "相続", "税金", "確定申告", "年末調整", "源泉徴収", "控除", "還付金", "補助金", "助成金", "給付金", "寄付", "募金", "ボランティア"
+            ],
+
+            // 12. 事件・謎・ミステリー
+            mystery: [
+                "殺人", "盗難", "詐欺", "放火", "誘拐", "逃亡", "潜伏", "隠滅", "証拠", "足跡", "血痕", "凶器", "遺留品", "アリバイ", "密室", "自供", "陪審", "判決", "執行", "告訴", "告訴状", "失踪", "神隠し", "偽札", "変装", "暗号", "密告", "尾行", "張り込み", "裏切り", "罠", "独白", "回想", "結末", "真相", "動機", "背景", "伏線", "予兆", "予感", "直感", "勘", "叙述トリック", "倒叙", "クローズドサークル", "ミッシングリンク", "見立て殺人", "交換殺人", "完全犯罪", "冤罪", "偽証", "黙秘", "時効", "迷宮入り", "執行猶予", "無期懲役", "死刑", "懲役", "禁錮", "罰金", "科料", "没収", "保釈", "勾留", "逮捕", "送検", "起訴", "不起訴", "公判", "控訴", "上告", "再審", "恩赦", "模倣犯", "愉快犯", "確信犯", "常習犯", "初犯", "共犯", "主犯", "実行犯", "教唆犯", "幇助犯", "アジト", "隠れ家", "逃走経路", "指名手配", "検問", "逆探知", "盗聴", "盗撮", "ストーカー", "サイバー犯罪", "マネーロンダリング", "闇サイト", "裏社会", "暴力団", "マフィア", "テロリスト", "スパイ", "暗殺者", "ヒットマン", "スナイパー", "誘拐犯", "放火魔", "連続殺人鬼", "サイコキラー", "ハッカー", "クラッカー", "詐欺師", "ペテン師", "スリ", "万引き", "空き巣", "強盗", "恐喝", "横領", "背任", "贈収賄", "脱税", "密輸", "密売", "偽造", "改ざん", "隠蔽", "名探偵", "助手", "警部", "鑑識", "検視官", "容疑者", "被害者", "犯人", "共犯者", "黒幕", "サイコパス", "司法解剖", "現場検証", "聞き込み", "ガサ入れ", "取調室", "留置所", "拘置所", "刑務所", "科学捜査", "プロファイル", "鑑識課", "科捜研", "機動隊", "公安", "麻薬取締官", "税関", "入国管理局", "海上保安庁", "自衛隊", "警察犬", "パトカー", "白バイ", "手錠", "警棒", "拳銃", "防弾チョッキ", "盾", "ヘルメット", "無線機", "ドライブレコーダー", "防犯カメラ", "Nシステム", "似顔絵", "指紋照合", "DNA鑑定", "筆跡鑑定", "声紋鑑定", "嘘発見器", "ルミノール反応", "硝煙反応", "弾道検査", "死亡推定時刻", "死因", "トリック", "アリバイ崩し", "密室トリック", "ダイイングメッセージ", "遺書", "遺言", "脅迫状", "挑戦状", "犯行声明", "自白", "黙秘権", "令状", "逮捕状", "捜索差押許可状", "勾留状", "起訴状", "判決文", "刑法", "刑事訴訟法", "民法", "民事訴訟法", "六法全書"
+            ],
+
+            // 13. 恋愛・青春・人間関係
+            love: [
+                "初恋", "片思い", "両思い", "失恋", "復縁", "遠距離", "三角関係", "婚約", "駆け落ち", "幼馴染", "一目惚れ", "腐れ縁", "秘密の関係", "偽装結婚", "契約恋愛", "許嫁", "ソウルメイト", "パートナー", "ライバル", "親友", "師匠", "弟子", "恩人", "仇", "ストーカー", "ヒモ", "メンヘラ", "ヤンデレ", "ツンデレ", "クーデレ", "溺愛", "束縛", "嫉妬", "浮気", "不倫", "略奪", "貢ぐ", "養う", "依存", "共依存", "セフレ", "キープ", "本命", "遊び", "ワンナイト", "ナンパ", "逆ナン", "合コン", "街コン", "婚活", "恋活", "マッチングアプリ", "お見合い", "紹介", "告白", "プロポーズ", "結婚", "離婚", "再婚", "熟年離婚", "事実婚", "別居婚", "週末婚", "通い婚", "同性婚", "パートナーシップ", "ポリアモリー", "シェアハウス", "ルームシェア", "同棲", "半同棲", "遠距離恋愛", "国際結婚", "玉の輿", "逆玉", "年の差婚", "スピード婚", "授かり婚", "寿退社", "専業主婦", "専業主夫", "共働き", "ＤＩＮＫＳ", "妊活", "不妊治療", "里帰り出産", "立ち会い出産", "育休", "産休", "保活", "待機児童", "ママ友", "パパ友", "モンスターペアレント", "ＰＴＡ",
+                "デート", "キス", "ハグ", "手を繋ぐ", "壁ドン", "顎クイ", "頭ポンポン", "膝枕", "腕枕", "お姫様抱っこ", "相合傘", "間接キス", "呼び捨て", "ちゃん付け", "制服デート", "放課後デート", "映画館デート", "遊園地デート", "水族館デート", "観覧車", "夜景", "イルミネーション", "花火大会", "夏祭り", "海", "プール", "スキー", "温泉旅行", "ドライブ", "お家デート", "結婚式", "披露宴", "新婚旅行", "離婚届", "婚姻届", "ラブレター", "交換日記", "ペアルック", "お揃い", "指輪", "プレゼント", "花束", "ケーキ", "チョコレート", "手料理", "お弁当", "看病", "喧嘩", "仲直り", "別れ話", "涙", "笑顔", "赤面", "鼓動", "吐息", "温もり", "匂い", "初デート", "ダブルデート", "グループ交際", "お泊まり", "旅行", "記念日", "サプライズ", "浮気発覚", "修羅場", "破局", "焼け木杭", "吊り橋効果", "運命の出会い", "偶然の再会", "すれ違い", "誤解", "DV", "モラハラ", "甘えん坊", "小悪魔", "魔性の女", "草食系男子", "肉食系女子", "絶食系男子", "こじらせ女子", "干物女", "腐女子", "夢女子", "喪女", "非モテ", "リア充", "爆発しろ"
+            ],
+
+            // 14. 不条理・哲学・バグ
+            philo: [
+                "クオリア", "ゲシュタルト崩壊", "走馬灯", "胡蝶の夢", "永劫回帰", "アカシックレコード", "集合的無意識", "悪魔の証明", "トロッコ問題", "水槽の脳", "シュレーディンガーの猫", "パラドックス", "因果律", "決定論", "自由意志", "実存", "虚構", "独我論", "観測者効果", "バタフライエフェクト", "ラプラスの悪魔", "オッカムの剃刀", "ハンロンの剃刀", "テセウスの船", "砂山のパラドックス", "アキレスと亀", "囚人のジレンマ", "パレートの法則", "マーフィーの法則", "ピーターの法則", "パーキンソンの法則", "ハインリッヒの法則", "認知的不協和", "確証バイアス", "正常性バイアス", "生存者バイアス", "アンカリング効果", "フレーミング効果", "プラシーボ効果", "ノセボ効果", "ピグマリオン効果", "ゴーレム効果", "バーナム効果", "カクテルパーティー効果", "吊り橋効果", "単純接触効果", "ザイアンス効果", "心理的リアクタンス", "学習性無力感", "茹でガエル現象", "スタンフォード監獄実験", "ミルグラム実験", "割れ窓理論", "ゲーム理論", "カオス理論", "複雑系", "創発", "エントロピー増大の法則", "相対性理論", "量子力学", "不確定性原理", "多世界解釈", "人間原理", "階層性問題", "フェルミのパラドックス", "ドレイクの方程式", "オルバースのパラドックス", "シミュレーション仮説", "邯鄲の夢", "南柯の夢", "夢オチ", "デウス・エクス・マキナ", "メメント・モリ", "カルペ・ディエム", "アモール・ファティ", "ニヒリズム", "エゴイズム", "アルトルイズム", "ストイック", "エピキュリアン", "シニカル", "ペシミズム", "オプティミズム", "リアリズム", "ロマンチズム", "アイロニー", "パロディ", "オマージュ", "メタファー", "アレゴリー", "シンボル", "モチーフ", "テーマ", "プロット", "シナリオ", "キャラクター", "世界観", "設定", "伏線", "オチ",
+                "文字化け", "無限ループ", "強制終了", "フリーズ", "グリッチ", "エラー落ち", "逆再生", "タイムリープ", "処理落ち", "枠外", "壁抜け", "座標ズレ", "データ破損", "ログアウト不可", "メンテナンス中", "404", "アカウント停止", "サーバーダウン", "巻き戻り", "世界線", "バグ技", "チート", "ハック", "クラック", "スパム", "ウイルス", "マルウェア", "ランサムウェア", "スパイウェア", "フィッシング", "スキミング", "なりすまし", "乗っ取り", "炎上", "拡散", "デマ", "フェイク", "陰謀論", "都市伝説", "怪文書", "チェーンメール", "不幸の手紙", "呪いのビデオ", "呪いのサイト", "検索してはいけない言葉", "ブラクラ", "精神的ブラクラ", "鮫島事件", "姦姦蛇螺", "くねくね", "八尺様", "きさらぎ駅", "異世界エレベーター", "バックルーム", "リミナルスペース", "存在しない記憶", "マンデラ効果", "集団幻覚", "電波ジャック", "砂嵐", "カラーバー", "試験放送", "放送事故", "深層Web", "ダークウェブ", "ネットロア", "Creepypasta", "SCP", "洒落怖", "師匠シリーズ", "異界", "境界", "結界", "聖域", "魔境", "秘境", "禁足地", "神隠し", "タイムスリップ", "タイムトラベル", "ループ", "パラレルワールド", "異世界転生", "異世界転移", "憑依", "入れ替わり", "変身", "巨大化", "ミニチュア化", "擬人化", "女体化", "男体化", "幼児化", "老化", "若返り", "不老不死", "死者蘇生", "ゾンビ化", "ロボット化", "データ化", "幽体離脱",
+                "増殖", "極小化", "透明化", "液状化", "蒸発", "溶解", "分裂", "融合", "寄生", "擬態", "異界入り", "ドッペルゲンガー", "影人間", "脳内会議", "人生のリセットボタン", "天井裏の住人", "壁のシミ", "喋る猫", "空飛ぶ魚", "歩く植物", "歌う石", "笑う花", "泣く空", "怒る海", "踊る炎", "眠る風", "夢見る機械", "恋するAI", "哲学するゾンビ", "料理する幽霊", "運転する犬", "買い物する鳥", "勉強する虫", "働く妖怪", "旅する悪魔", "恋する天使", "戦う神", "悩む仏", "迷う精霊", "忘れる記録", "消える記憶", "変わる過去", "決まる未来", "止まる時間", "戻る時間", "進む時間", "歪む空間", "裂ける次元", "繋がる世界", "終わる世界", "始まる世界", "トリップ", "転移", "金縛り", "夢遊病", "臨死体験", "体外離脱", "予知夢", "正夢", "明晰夢", "悪夢", "白昼夢", "走馬灯", "既視感", "未視感", "ゲシュタルト崩壊", "共感覚", "幻覚", "幻聴", "妄想", "錯覚", "錯乱", "狂気"
+            ],
+
+            // 15. ニッチ・路地裏・フェティシズム
+            niche: [
+                "室外機", "給水塔", "屋上看板", "螺旋階段", "非常口", "換気口", "排水溝", "電線", "鉄塔", "高架下", "トンネルの出口", "廃線跡", "団地", "工場夜景", "ジャンクション", "ガード下", "路地裏", "雑居ビル", "非常階段", "ダクト", "パイプライン", "貯水槽", "避雷針", "サイレン", "スプリンクラー", "消火栓", "マンホール", "カーブミラー", "電柱", "ガードレール", "標識", "信号機", "歩道橋", "横断歩道", "バス停", "電話ボックス", "ポスト", "自販機", "ゴミ箱", "ベンチ", "街灯", "柵", "塀", "壁", "窓", "扉", "屋根", "煙突", "アンテナ", "配管", "計器", "メーター", "バルブ", "スイッチ", "レバー", "ボタン", "ハンドル", "ペダル", "鍵穴", "ドアノブ", "蝶番", "錠前", "南京錠", "チェーン", "金網", "鉄条網", "バリケード", "カラーコーン", "工事現場", "足場", "クレーン", "重機", "トラック", "コンテナ", "ドラム缶", "パレット", "ダンボール", "ガムテープ", "ビニールシート", "土嚢", "瓦礫", "廃材", "鉄屑", "スクラップ", "錆", "苔", "蔦", "雑草", "水たまり", "泥", "埃", "煤", "油汚れ", "落書き", "張り紙", "ポスター", "看板", "ネオンサイン", "電光掲示板", "シャッター", "ブラインド", "カーテン", "網戸", "雨戸", "庇", "軒", "瓦", "鬼瓦", "鯱", "棟", "梁", "柱", "床", "天井", "欄間", "鴨居", "敷居", "長押", "廻り縁", "巾木", "コンセント", "照明", "蛍光灯", "電球",
+                "三角コーン", "チラシの裏", "レシートの裏", "梱包材", "プチプチ", "結束バンド", "段ボール", "ビニール傘", "カビ", "廃墟", "コンクリート", "アスファルト", "鉄骨", "パイプ椅子", "蛍光灯の点滅", "換気扇の音", "ショベルカー", "足跡", "爪痕", "指紋", "唇紋", "毛髪", "血液", "体液", "汗", "涙", "唾液", "吐息", "体温", "鼓動", "脈拍", "視線", "声", "匂い", "味", "感触", "痛み", "痒み", "痺れ", "重み", "温もり", "冷たさ", "柔らかさ", "硬さ", "滑らかさ", "ざらつき", "粘り気", "弾力", "振動", "リズム", "ノイズ", "静寂", "余韻", "気配", "予感", "記憶", "幻覚", "妄想", "夢", "悪夢", "白昼夢", "デジャヴ", "ジャメヴ", "トラウマ", "コンプレックス", "フェティシズム", "執着", "偏愛", "狂気", "妄執", "渇望", "絶望", "虚無", "孤独", "疎外感", "閉塞感", "焦燥感", "緊迫感", "切迫感", "臨場感", "没入感", "一体感", "背徳感", "罪悪感", "羞恥心", "自尊心", "虚栄心", "嫉妬心", "猜疑心", "恐怖心", "不安感", "違和感", "喪失感", "虚脱感", "無力感", "絶望感", "悲壮感", "幸福感", "満足感", "達成感", "優越感", "全能感", "劣等感", "敗北感", "屈辱感", "孤独感", "虚無感", "悲哀", "哀愁", "感傷", "郷愁", "憧憬", "追憶", "回想", "妄想", "空想", "夢想", "幻想"
+            ]
+        };
+
+        function updateColorPalette() {
+            colorPalette.innerHTML = '';
+            colorConfigs[currentStyle].forEach((c, idx) => {
+                const btn = document.createElement('div');
+                btn.className = `color-dot ${currentColorIdx === idx ? 'active' : ''}`;
+                btn.style.background = c.grad ? `linear-gradient(135deg, ${c.grad[0]}, ${c.grad[1]})` : c.bg;
+                if (c.bg && c.bg.startsWith('#F')) btn.style.borderColor = "#ddd";
+                btn.onclick = () => { currentColorIdx = idx; updateColorPalette(); draw(); };
+                colorPalette.appendChild(btn);
+            });
+        }
+
+        function generateWords() {
+            let pool = [];
+
+            // Collect checked categories
+            const checkMap = {
+                'check-nature': 'nature',
+                'check-concept': 'concept',
+                'check-human': 'human',
+                'check-modern': 'modern',
+                'check-fantasy': 'fantasy',
+                'check-place': 'place',
+                'check-food': 'food',
+                'check-history': 'history',
+                'check-body': 'body',
+                'check-art': 'art',
+                'check-social': 'social',
+                'check-mystery': 'mystery',
+                'check-love': 'love',
+                'check-philo': 'philo',
+                'check-niche': 'niche'
+            };
+
+            for (const [id, key] of Object.entries(checkMap)) {
+                const checkbox = document.getElementById(id);
+                if (checkbox && checkbox.checked && dictionary[key]) {
+                    pool = pool.concat(dictionary[key]);
+                }
+            }
+
+            if (pool.length < 3) {
+                showToast("3つ以上の箱にチェックを入れてください");
+                return;
+            }
+
+            const used = new Set();
+            currentWords = [];
+            // Retry logic to prevent duplicates
+            let maxAttempts = 100;
+            while (currentWords.length < 3 && maxAttempts > 0) {
+                const word = pool[Math.floor(Math.random() * pool.length)];
+                if (!used.has(word)) {
+                    currentWords.push({ text: word });
+                    used.add(word);
+                }
+                maxAttempts--;
+            }
+            draw();
+        }
+
+        function draw() {
+            if (currentWords.length === 0) return;
+            const styleSet = colorConfigs[currentStyle][currentColorIdx];
+
+            canvas.width = currentPlatform === 'x' ? 1200 : 1280;
+            canvas.height = currentPlatform === 'x' ? 480 : 670;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (styleSet.grad) {
+                const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+                grad.addColorStop(0, styleSet.grad[0]); grad.addColorStop(1, styleSet.grad[1]);
+                ctx.fillStyle = grad;
+            } else ctx.fillStyle = styleSet.bg;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Noise texture
+            ctx.globalAlpha = currentStyle === 'archive' ? 0.12 : 0.05;
+            for (let i = 0; i < 8000; i++) {
+                ctx.fillStyle = Math.random() > 0.5 ? '#fff' : '#000';
+                ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 1.5, 1.5);
+            }
+            ctx.globalAlpha = 1.0;
+
+            // Border Frame
+            ctx.strokeStyle = styleSet.text; ctx.globalAlpha = 0.2; ctx.lineWidth = 2; ctx.strokeRect(40, 40, canvas.width - 80, canvas.height - 80); ctx.globalAlpha = 1.0;
+
+            // Header Titles
+            ctx.textAlign = "right"; ctx.fillStyle = styleSet.text; ctx.font = "900 24px 'Noto Sans JP'"; ctx.letterSpacing = "0.3em"; ctx.globalAlpha = 0.8;
+            ctx.fillText("3つのお題から生まれた物語", canvas.width - 80, 95);
+            ctx.font = "700 14px 'Noto Sans JP'"; ctx.letterSpacing = "0.2em";
+            ctx.fillText("3 THEME STORY MAKER", canvas.width - 80, 125); ctx.globalAlpha = 1.0; ctx.letterSpacing = "0px";
+            ctx.fillStyle = styleSet.accent; ctx.beginPath(); ctx.arc(canvas.width - 65, 85, 4, 0, Math.PI * 2); ctx.fill();
+
+            // Topics List (Left Aligned with Margin)
+            const startX = canvas.width * 0.22;
+            const startY = currentPlatform === 'x' ? 150 : 220;
+            const gapY = currentPlatform === 'x' ? 100 : 140;
+
+            currentWords.forEach((item, index) => {
+                const y = startY + (index * gapY);
+                ctx.textAlign = "left";
+                ctx.fillStyle = styleSet.text;
+
+                const fontSize = currentPlatform === 'x' ? 70 : 86;
+                ctx.font = (currentStyle === 'manifesto' ? `900 ${fontSize}px 'Noto Sans JP'` : `900 ${fontSize}px 'Noto Serif JP'`);
+
+                if (currentStyle === 'cyber') {
+                    ctx.shadowColor = styleSet.accent;
+                    ctx.shadowBlur = 15;
+                }
+
+                // Accent Bar
+                ctx.fillStyle = styleSet.accent;
+                ctx.fillRect(startX - 45, y - fontSize / 2 + 10, 8, fontSize - 15);
+
+                // Word Text
+                ctx.fillStyle = styleSet.text;
+                ctx.fillText(item.text, startX, y + fontSize / 3);
+                ctx.shadowBlur = 0;
+            });
+
+            // Footer
+            ctx.textAlign = "left"; ctx.fillStyle = styleSet.text; ctx.font = "900 20px 'Noto Sans JP'"; ctx.letterSpacing = "0.5em"; ctx.globalAlpha = 0.3;
+            const footerY = currentPlatform === 'x' ? canvas.height - 70 : canvas.height - 85;
+            ctx.fillText("偶然から生まれた物語", 80, footerY); ctx.globalAlpha = 1.0; ctx.fillStyle = styleSet.accent; ctx.fillRect(80, footerY + 10, 200, 2);
+        }
+
+        function switchPlatform(p) {
+            currentPlatform = p;
+            if (p === 'note') {
+                modeNote.classList.add('active', 'bg-black', 'text-white'); modeNote.classList.remove('bg-gray-100', 'text-gray-600');
+                modeX.classList.remove('active', 'bg-black', 'text-white'); modeX.classList.add('bg-gray-100', 'text-gray-600');
+            } else {
+                modeX.classList.add('active', 'bg-black', 'text-white'); modeX.classList.remove('bg-gray-100', 'text-gray-600');
+                modeNote.classList.remove('active', 'bg-black', 'text-white'); modeNote.classList.add('bg-gray-100', 'text-gray-600');
+            }
+            draw();
+        }
+
+        function showToast(msg) {
+            toast.innerText = msg; toast.classList.remove('opacity-0'); setTimeout(() => toast.classList.add('opacity-0'), 2000);
+        }
+
+        // Toggle All Categories
+        toggleAllBtn.addEventListener('click', () => {
+            const allChecks = document.querySelectorAll('.category-check');
+            const isAllChecked = Array.from(allChecks).every(c => c.checked);
+            allChecks.forEach(c => c.checked = !isAllChecked);
+            toggleAllBtn.innerText = isAllChecked ? "Check All" : "Uncheck All";
+        });
+
+        window.onload = () => { updateColorPalette(); generateWords(); };
+        btnGenerate.addEventListener('click', generateWords);
+        btnDownload.addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = `3Theme_Story_${currentPlatform}.png`; link.href = canvas.toDataURL('image/png'); link.click();
+            showToast("IMAGE SAVED");
+        });
+        selectStyleMain.addEventListener('change', (e) => { currentStyle = e.target.value; currentColorIdx = 0; updateColorPalette(); draw(); });
+        modeNote.addEventListener('click', () => switchPlatform('note'));
+        modeX.addEventListener('click', () => switchPlatform('x'));
+    </script>
+</body>
+
+</html>

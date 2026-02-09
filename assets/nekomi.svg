@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600">
+  <defs>
+    <style>
+      .cls-1 { fill: #111; }
+      .cls-2 { fill: #fff; }
+      .cls-3 { fill: #ffe400; } /* Yellow */
+      .cls-4 { fill: #e82065; } /* Pink */
+      .cls-5 { fill: #00f3ff; } /* Cyan */
+      .cls-stroke { fill: none; stroke: #000; stroke-width: 4px; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+    <filter id="glitch-filter">
+      <feTurbulence type="fractalNoise" baseFrequency="0.1" numOctaves="1" result="noise" />
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" />
+    </filter>
+  </defs>
+
+  <!-- Background Aura (Glitchy) -->
+  <path d="M50,100 L350,100 L350,600 L50,600 Z" fill="#ffe400" opacity="0.1" filter="url(#glitch-filter)" />
+
+  <!-- Lab Coat Body -->
+  <path d="M100,500 L80,600 L320,600 L300,500 L300,350 C300,300 280,280 200,280 C120,280 100,300 100,350 Z" class="cls-2" />
+  <path d="M100,350 L100,600 M300,350 L300,600" class="cls-stroke" />
+  
+  <!-- Collar -->
+  <path d="M200,280 L160,350 L200,400 L240,350 Z" class="cls-2" stroke="#000" stroke-width="3" />
+  
+  <!-- Tie -->
+  <path d="M200,280 L180,300 L200,450 L220,300 Z" class="cls-4" />
+
+  <!-- Cat Head -->
+  <circle cx="200" cy="180" r="90" class="cls-1" />
+  
+  <!-- Ears -->
+  <path d="M130,120 L110,50 L180,90 Z" class="cls-1" />
+  <path d="M270,120 L290,50 L220,90 Z" class="cls-1" />
+  <!-- Inner Ears (Cyber) -->
+  <path d="M135,110 L120,70 L160,100 Z" class="cls-5" opacity="0.8" />
+  <path d="M265,110 L280,70 L240,100 Z" class="cls-5" opacity="0.8" />
+
+  <!-- Face Details -->
+  <!-- Eyes (Cyber Glasses) -->
+  <rect x="130" y="150" width="60" height="40" rx="10" class="cls-3" opacity="0.9" stroke="#fff" stroke-width="2" />
+  <rect x="210" y="150" width="60" height="40" rx="10" class="cls-3" opacity="0.9" stroke="#fff" stroke-width="2" />
+  <line x1="190" y1="170" x2="210" y2="170" stroke="#fff" stroke-width="4" />
+  
+  <!-- Digital Eyes -->
+  <rect x="145" y="165" width="30" height="10" class="cls-1" />
+  <rect x="225" y="165" width="30" height="10" class="cls-1" />
+
+  <!-- Whiskers (Glitchy) -->
+  <line x1="120" y1="200" x2="60" y2="190" class="cls-5" stroke-width="2" />
+  <line x1="120" y1="210" x2="60" y2="215" class="cls-5" stroke-width="2" />
+  <line x1="280" y1="200" x2="340" y2="190" class="cls-5" stroke-width="2" />
+  <line x1="280" y1="210" x2="340" y2="215" class="cls-5" stroke-width="2" />
+
+  <!-- Mouth -->
+  <path d="M180,230 Q200,240 220,230" stroke="#fff" stroke-width="3" fill="none" />
+
+  <!-- ID Badge -->
+  <rect x="250" y="380" width="40" height="25" class="cls-1" />
+  <rect x="255" y="385" width="30" height="5" class="cls-5" />
+  <rect x="255" y="392" width="20" height="2" class="cls-2" />
+
+  <!-- Text Overlay (Vertical) -->
+  <text x="360" y="100" font-family="monospace" font-size="20" fill="#e82065" writing-mode="tb" letter-spacing="5">CAT WORLD</text>
+  <text x="40" y="300" font-family="monospace" font-size="16" fill="#00f3ff" writing-mode="tb" letter-spacing="5" opacity="0.6">SYSTEM:NEKOMI</text>
+
+</svg>

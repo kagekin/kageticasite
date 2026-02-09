@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // TODO: 完全なオーバーレイメニューの実装
     const menuTrigger = document.querySelector('.menu-trigger');
     const navLinks = document.querySelector('.nav-links');
-    
+
     if (menuTrigger) {
         menuTrigger.addEventListener('click', () => {
             navLinks.classList.toggle('active');
@@ -64,9 +64,79 @@ document.addEventListener('DOMContentLoaded', () => {
     // グリッチエフェクトのランダムトリガー（オプション）
     const glitchTexts = document.querySelectorAll('.glitch-text');
     setInterval(() => {
-        const randomText = glitchTexts[Math.floor(Math.random() * glitchTexts.length)];
-        // クラスを付け外ししてアニメーションを誘発させるなどの処理が可能
-        // 現在はCSSのhoverで対応しているため、ここでは何もしないが、
-        // 将来的にJSで制御する場合の拡張ポイント
+        if (glitchTexts.length > 0) {
+            const randomText = glitchTexts[Math.floor(Math.random() * glitchTexts.length)];
+            // クラスを付け外ししてアニメーションを誘発させるなどの処理が可能
+        }
     }, 3000);
+
+    /* ==========================================================================
+       SF Mode / Matrix Effect
+       ========================================================================== */
+    const sfToggle = document.getElementById('sf-toggle');
+    const body = document.body;
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx = canvas.getContext('2d');
+
+    let matrixInterval;
+    const characters = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const fontSize = 16;
+    let columns;
+    let drops = [];
+
+    // Resize canvas
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        columns = canvas.width / fontSize;
+        drops = [];
+        for (let i = 0; i < columns; i++) {
+            drops[i] = 1;
+        }
+    }
+
+    function drawMatrix() {
+        // Black BG for the trail effect
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = '#0F0'; // Green text
+        ctx.font = fontSize + 'px monospace';
+
+        for (let i = 0; i < drops.length; i++) {
+            const text = characters.charAt(Math.floor(Math.random() * characters.length));
+            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                drops[i] = 0;
+            }
+            drops[i]++;
+        }
+    }
+
+    if (sfToggle) {
+        sfToggle.addEventListener('click', () => {
+            body.classList.toggle('sf-mode');
+
+            if (body.classList.contains('sf-mode')) {
+                // Start Matrix
+                resizeCanvas();
+                window.addEventListener('resize', resizeCanvas);
+                matrixInterval = setInterval(drawMatrix, 33);
+
+                // Change toggle text
+                const icon = sfToggle.querySelector('.sf-toggle-icon');
+                if (icon) icon.textContent = 'R'; // Return to Reality
+            } else {
+                // Stop Matrix
+                clearInterval(matrixInterval);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                window.removeEventListener('resize', resizeCanvas);
+
+                // Change toggle text back
+                const icon = sfToggle.querySelector('.sf-toggle-icon');
+                if (icon) icon.textContent = 'SF';
+            }
+        });
+    }
 });
