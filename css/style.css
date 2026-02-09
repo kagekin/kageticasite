@@ -1,0 +1,748 @@
+@charset "UTF-8";
+
+/* ==========================================================================
+   Variables & Reset
+   ========================================================================== */
+:root {
+    /* Colors: User Specified (Header Illustration Match) */
+    --bg-color: #ffe400;
+    /* Yellow */
+    --text-color: #000000;
+    /* Black */
+    --accent-color: #e82065;
+    /* Pink */
+    --secondary-accent: #00f3ff;
+    /* Keep Cyan for glitch contrast or adjust? Let's keep it for now */
+    --link-color: #000000;
+    --gray-color: #333333;
+
+    /* Fonts */
+    --font-mincho: 'Shippori Mincho', 'Zen Old Mincho', serif;
+    --font-gothic: 'Noto Sans JP', sans-serif;
+
+    /* Sizes */
+    --header-height: 80px;
+    --container-width: 1200px;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+    font-size: 16px;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: var(--font-mincho);
+    line-height: 2.0;
+    overflow-x: hidden;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+body.loaded {
+    opacity: 1;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+}
+
+ul {
+    list-style: none;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* ==========================================================================
+   Utilities
+   ========================================================================== */
+.container {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+    height: 100%;
+    /* For vertical alignment */
+}
+
+.vertical-text {
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    letter-spacing: 0.15em;
+    font-feature-settings: "palt";
+}
+
+.en {
+    font-family: var(--font-gothic);
+    writing-mode: horizontal-tb;
+    /* Reset for English inside vertical text if needed */
+}
+
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 3rem;
+    position: relative;
+}
+
+.section {
+    padding: 100px 0;
+    min-height: 100vh;
+}
+
+/* ==========================================================================
+   Navigation
+   ========================================================================== */
+#nav {
+    position: fixed;
+    top: 0;
+    right: 0;
+    /* Vertical nav often sits on right or left, but let's stick to top/right for now */
+    width: 100%;
+    height: var(--header-height);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 3rem;
+    background: transparent;
+    transition: background 0.3s ease;
+}
+
+#nav.scrolled {
+    background: rgba(255, 221, 0, 0.9);
+    /* Yellow background on scroll */
+    backdrop-filter: blur(5px);
+    border-bottom: 2px solid #000;
+}
+
+.logo-mark img {
+    height: 50px;
+    width: auto;
+}
+
+.nav-links {
+    display: flex;
+    gap: 3rem;
+}
+
+.nav-links a {
+    font-size: 1.1rem;
+    font-weight: 600;
+    position: relative;
+    padding: 0.5rem 0;
+    writing-mode: horizontal-tb;
+    /* Horizontal nav for header */
+}
+
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background-color: var(--accent-color);
+    transition: width 0.3s ease;
+}
+
+.nav-links a:hover {
+    color: var(--accent-color);
+}
+
+.nav-links a:hover::after {
+    width: 100%;
+}
+
+/* ==========================================================================
+   Hero Section
+   ========================================================================== */
+.hero-section {
+    position: relative;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.hero-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+.hero-bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    /* ヘッダー画像を全体に見せる */
+    background-color: var(--bg-color);
+    /* 画像の余白は背景色で埋める */
+}
+
+/* Glitch Overlay */
+.glitch-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(transparent 0%,
+            rgba(0, 243, 255, 0.05) 0.5%,
+            transparent 1%);
+    pointer-events: none;
+    animation: scanline 10s linear infinite;
+    mix-blend-mode: overlay;
+}
+
+@keyframes scanline {
+    0% {
+        transform: translateY(0);
+    }
+
+    100% {
+        transform: translateY(100%);
+    }
+}
+
+.hero-content {
+    position: absolute;
+    /* 画像の上に重ねる */
+    right: 15%;
+    /* 右側に配置 */
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: row-reverse;
+    /* 縦書きなので右から左へ */
+    gap: 2rem;
+    z-index: 10;
+}
+
+.hero-title {
+    font-size: 4rem;
+    font-weight: 800;
+    line-height: 1.5;
+    height: 70vh;
+    /* 縦書きの高さを確保 */
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-color);
+    height: 50vh;
+    align-self: flex-end;
+    border-right: 1px solid var(--accent-color);
+    padding-right: 1rem;
+}
+
+/* Glitch Text Effect */
+.glitch-text {
+    position: relative;
+    display: inline-block;
+}
+
+.glitch-text.accent {
+    color: var(--accent-color);
+}
+
+.glitch-text:hover {
+    color: var(--secondary-accent);
+}
+
+.glitch-text::before,
+.glitch-text::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+}
+
+.glitch-text:hover::before {
+    left: 2px;
+    text-shadow: -1px 0 red;
+    animation: glitch-anim-1 2s infinite linear alternate-reverse;
+    opacity: 1;
+}
+
+.glitch-text:hover::after {
+    left: -2px;
+    text-shadow: 1px 0 blue;
+    animation: glitch-anim-2 3s infinite linear alternate-reverse;
+    opacity: 0.8;
+}
+
+@keyframes glitch-anim-1 {
+    0% {
+        clip-path: inset(20% 0 80% 0);
+    }
+
+    20% {
+        clip-path: inset(60% 0 1% 0);
+    }
+
+    40% {
+        clip-path: inset(40% 0 40% 0);
+    }
+
+    60% {
+        clip-path: inset(80% 0 5% 0);
+    }
+
+    80% {
+        clip-path: inset(10% 0 70% 0);
+    }
+
+    100% {
+        clip-path: inset(30% 0 20% 0);
+    }
+}
+
+@keyframes glitch-anim-2 {
+    0% {
+        clip-path: inset(10% 0 60% 0);
+    }
+
+    20% {
+        clip-path: inset(80% 0 5% 0);
+    }
+
+    40% {
+        clip-path: inset(30% 0 20% 0);
+    }
+
+    60% {
+        clip-path: inset(10% 0 80% 0);
+    }
+
+    80% {
+        clip-path: inset(50% 0 30% 0);
+    }
+
+    100% {
+        clip-path: inset(60% 0 10% 0);
+    }
+}
+
+.scroll-indicator {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    opacity: 0.7;
+}
+
+.scroll-indicator .line {
+    width: 1px;
+    height: 60px;
+    background: var(--text-color);
+    animation: scrollLine 2s ease infinite;
+}
+
+@keyframes scrollLine {
+    0% {
+        transform-origin: top;
+        transform: scaleY(0);
+    }
+
+    50% {
+        transform-origin: top;
+        transform: scaleY(1);
+    }
+
+    51% {
+        transform-origin: bottom;
+        transform: scaleY(1);
+    }
+
+    100% {
+        transform-origin: bottom;
+        transform: scaleY(0);
+    }
+}
+
+/* ==========================================================================
+   About Section
+   ========================================================================== */
+.about-section {
+    background-color: transparent;
+    /* Seamless with body bg */
+    color: var(--text-color);
+}
+
+.about-section .container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5rem;
+}
+
+.philosophy-text {
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 2.5;
+    height: 60vh;
+}
+
+.philosophy-text p {
+    margin-left: 2rem;
+    /* 縦書きなので行間 */
+}
+
+.profile-card {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    max-width: 500px;
+}
+
+.profile-image {
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 10px 10px 0 var(--gray-color);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.profile-image:hover {
+    transform: translate(-5px, -5px);
+    box-shadow: 15px 15px 0 var(--accent-color);
+}
+
+.profile-info h3 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    font-feature-settings: "palt";
+}
+
+.profile-info .en {
+    font-size: 1rem;
+    color: #444;
+    margin-left: 1rem;
+    font-weight: bold;
+}
+
+.profile-info .description {
+    font-family: var(--font-gothic);
+    line-height: 1.8;
+}
+
+/* ==========================================================================
+   Works Section
+   ========================================================================== */
+.works-section {
+    background-color: var(--bg-color);
+    position: relative;
+    overflow: hidden;
+}
+
+/* 横スクロールのような配置、あるいはグリッド */
+.works-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 3rem;
+    margin-top: 3rem;
+}
+
+.work-card {
+    background: #fff;
+    border: 3px solid #000;
+    /* Bold border */
+    padding: 2rem;
+    position: relative;
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 8px 8px 0 #000;
+    /* Hard shadow */
+}
+
+.work-card:hover {
+    border-color: var(--accent-color);
+    transform: translate(-4px, -4px);
+    box-shadow: 12px 12px 0 var(--accent-color);
+}
+
+.work-image {
+    height: 200px;
+    background-color: #000;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+    font-weight: 900;
+    font-size: 2rem;
+    font-family: var(--font-gothic);
+    letter-spacing: 0.1em;
+}
+
+/* Specific placeholders based on child index or class if added, 
+   for now generic cool pattern */
+.work-image::after {
+    content: 'NO SIGNAL';
+    z-index: 2;
+}
+
+.work-image::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+        repeating-linear-gradient(45deg,
+            #000,
+            #000 10px,
+            #111 10px,
+            #111 20px);
+    opacity: 0.5;
+    transition: all 0.3s;
+}
+
+.work-card:hover .work-image {
+    background-color: var(--accent-color);
+    color: #000;
+}
+
+.work-card:hover .work-image::before {
+    opacity: 0.2;
+    background-size: 150% 150%;
+}
+
+.work-card:nth-child(1) .work-image::after {
+    content: 'METAVERSE';
+}
+
+.work-card:nth-child(2) .work-image::after {
+    content: 'LOCAL DX';
+}
+
+.work-card:nth-child(3) .work-image::after {
+    content: 'PUBLISHING';
+}
+
+.work-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    font-family: var(--font-gothic);
+}
+
+.work-desc {
+    font-size: 0.9rem;
+    color: var(--gray-color);
+    margin-bottom: 2rem;
+    font-family: var(--font-gothic);
+}
+
+.btn-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    font-family: var(--font-gothic);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.btn-link .arrow {
+    transition: transform 0.3s;
+}
+
+.btn-link:hover .arrow {
+    transform: translateX(5px);
+}
+
+/* ==========================================================================
+   Portal Section
+   ========================================================================== */
+.portal-section {
+    background-color: #111;
+    color: #fff;
+    padding: 5rem 0;
+}
+
+.portal-section .section-title {
+    color: #fff;
+}
+
+.portal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.portal-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    border: 2px solid #333;
+    transition: all 0.2s ease;
+    background: #000;
+    /* Black cards on black bg */
+    color: var(--bg-color);
+    /* Yellow text on black card */
+}
+
+.portal-link:hover {
+    background: var(--bg-color);
+    /* Invert on hover: Yellow bg */
+    color: #000;
+    /* Black text */
+    border-color: #000;
+    box-shadow: 5px 5px 0 var(--accent-color);
+    transform: translate(-3px, -3px);
+}
+
+.portal-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--gray-color);
+}
+
+.portal-link:hover .portal-icon {
+    color: var(--accent-color);
+}
+
+.portal-label {
+    font-size: 1.2rem;
+    font-weight: 700;
+    font-family: var(--font-gothic);
+    margin-bottom: 0.5rem;
+}
+
+.portal-desc {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.portal-link.highlight {
+    border-color: var(--link-color);
+}
+
+.portal-link.highlight:hover {
+    box-shadow: 0 0 15px rgba(0, 0, 221, 0.3);
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+.footer {
+    background-color: #000;
+    color: #fff;
+    padding: 3rem 0;
+    text-align: center;
+}
+
+.footer-logo h2 {
+    font-size: 1.5rem;
+    letter-spacing: 0.2em;
+}
+
+.footer-logo .en {
+    font-size: 0.8rem;
+    color: var(--gray-color);
+    letter-spacing: 0.5em;
+    margin-bottom: 2rem;
+}
+
+.contact-info a {
+    color: var(--gray-color);
+    font-family: var(--font-gothic);
+}
+
+.contact-info a:hover {
+    color: var(--accent-color);
+}
+
+.copyright {
+    margin-top: 3rem;
+    font-size: 0.7rem;
+    color: #444;
+    font-family: var(--font-gothic);
+}
+
+/* ==========================================================================
+   Mobile Responsiveness
+   ========================================================================== */
+@media (max-width: 768px) {
+    :root {
+        --header-height: 60px;
+    }
+
+    .hero-content {
+        right: 5%;
+        top: 55%;
+        /* 少し下げる */
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+        height: 50vh;
+    }
+
+    .about-section .container {
+        flex-direction: column;
+        gap: 3rem;
+    }
+
+    .philosophy-text {
+        writing-mode: horizontal-tb;
+        height: auto;
+        text-align: center;
+    }
+
+    .philosophy-text p {
+        margin: 0 0 1rem 0;
+    }
+
+    .portal-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .nav-links {
+        display: none;
+        /* シンプル化のため一旦非表示、JSでメニュー実装必要 */
+    }
+
+    .menu-trigger {
+        display: block;
+        /* ハンバーガーメニューなど */
+    }
+}
