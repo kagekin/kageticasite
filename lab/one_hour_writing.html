@@ -313,7 +313,7 @@
                 ctx.font = 'bold 18px "sans-serif"';
                 ctx.fillStyle = design.accent || design.badge;
                 ctx.textAlign = 'right';
-                ctx.fillText("#ワンライ #深夜の真剣執筆60分一本勝負", w - margin - 60, bottomSafeY);
+                ctx.fillText("#ワンライ #真剣執筆60分一本勝負", w - margin - 60, bottomSafeY);
 
                 const topLimit = margin + 50;
                 const bottomLimit = h - margin - 130;
@@ -432,7 +432,7 @@
             const shuffleDesign = () => setSelectedDesign(Math.floor(Math.random() * designs.length));
 
             const currentWorkFormat = theme === 'その他' ? (customTheme || '自由形式') : theme;
-            const finishTmpl = `【今日も短編小説を書きました！】\n\n作品：『${title}』\n形式：${currentWorkFormat}\nお題：${promptText || '自由設定'}\n${synopsis ? `概要：${synopsis}\n\n` : '\n'}制限時間60分、一気に書き上げました。\n作品URL: [ここにURLを貼る]\n\n#ワンライ #深夜の真剣執筆60分一本勝負`;
+            const finishTmpl = `【今日も短編小説を書きました！】\n\n作品：『${title}』\n形式：${currentWorkFormat}\nお題：${promptText || '自由設定'}\n${synopsis ? `概要：${synopsis}\n\n` : '\n'}制限時間60分、一気に書き上げました。\n作品URL: [ここにURLを貼る]\n\n#ワンライ #真剣執筆60分一本勝負`;
 
             return (
                 <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-20 selection:bg-blue-100 selection:text-blue-900 relative">
@@ -451,7 +451,7 @@
                                 <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-slate-900 uppercase leading-tight">
                                     One Hour Writing <br className="md:hidden" />【ワンライ】
                                 </h1>
-                                <p className="text-xs font-bold text-blue-600 tracking-[0.3em] uppercase">深夜の真剣執筆60分一本勝負</p>
+                                <p className="text-xs font-bold text-blue-600 tracking-[0.3em] uppercase">真剣執筆60分一本勝負</p>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
@@ -485,7 +485,7 @@
                                         {[
                                             { num: 1, title: "時間は60分", desc: "プロットは事前準備OK。執筆そのものは1時間のスプリントで。" },
                                             { num: 2, title: "お題は自由", desc: "書きたいものを自由に。迷ったら「三題噺メーカー」なども活用OK。" },
-                                            { num: 3, title: "タグをつけて投稿", desc: "#ワンライ #深夜の真剣執筆60分一本勝負" },
+                                            { num: 3, title: "タグをつけて投稿", desc: "#ワンライ #真剣執筆60分一本勝負" },
                                             { num: 4, title: "場所は問わない", desc: "note, pixiv, カクヨム... 使い慣れた場所で公開しましょう。" },
                                         ].map((rule) => (
                                             <li key={rule.num} className="flex gap-4">
