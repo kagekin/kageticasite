@@ -450,10 +450,26 @@
                 <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-20 selection:bg-blue-100 selection:text-blue-900 relative">
                     {/* Return Button (Ported from Sandai Banashi) */}
                     <nav className="fixed top-0 left-0 w-full p-4 z-50 pointer-events-none">
-                        <a href="../index.html#lab" className="pointer-events-auto inline-flex items-center gap-2 bg-white/80 text-black px-4 py-2 rounded-full backdrop-blur-sm hover:bg-white border border-gray-200 transition-colors font-bold text-xs uppercase tracking-widest shadow-sm no-underline">
-                            <ArrowLeft className="w-4 h-4" />
-                            Back to Lab
-                        </a>
+                        <div className="flex items-center justify-between w-full pointer-events-auto">
+                            <a href="../index.html#lab" className="inline-flex items-center gap-2 bg-white/80 text-black px-4 py-2 rounded-full backdrop-blur-sm hover:bg-white border border-gray-200 transition-colors font-bold text-xs uppercase tracking-widest shadow-sm no-underline">
+                                <ArrowLeft className="w-4 h-4" />
+                                Back to Lab
+                            </a>
+                            <button
+                                onClick={() => {
+                                    const text = encodeURIComponent("制限時間60分。一気に書き上げるスプリント執筆ツール「One Hour Writing 【ワンライ】」を使っています。");
+                                    const url = encodeURIComponent(window.location.href);
+                                    const hashtags = encodeURIComponent("KageticaLab,ワンライ,執筆");
+                                    window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}&hashtags=${hashtags}`, '_blank');
+                                }}
+                                className="inline-flex items-center gap-2 bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 transition-colors font-bold text-xs uppercase tracking-widest shadow-sm"
+                            >
+                                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                                    <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932 6.064-6.932zm-1.292 19.494h2.039L6.486 3.24H4.298l13.311 17.407z" />
+                                </svg>
+                                Share on X
+                            </button>
+                        </div>
                     </nav>
 
                     {/* --- Section 1: Intro --- */}

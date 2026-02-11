@@ -95,15 +95,25 @@
 <body class="p-4 md:p-12">
     <!-- Links -->
     <nav class="fixed top-0 left-0 w-full p-4 z-50 pointer-events-none">
-        <a href="../index.html"
-            class="pointer-events-auto inline-flex items-center gap-2 bg-white/80 text-black px-4 py-2 rounded-full backdrop-blur-sm hover:bg-white border border-gray-200 transition-colors font-bold text-xs uppercase tracking-widest shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m12 19-7-7 7-7" />
-                <path d="M19 12H5" />
-            </svg>
-            Back to Lab
-        </a>
+        <div class="flex items-center justify-between w-full pointer-events-auto">
+            <a href="../index.html#lab"
+                class="inline-flex items-center gap-2 bg-white/80 text-black px-4 py-2 rounded-full backdrop-blur-sm hover:bg-white border border-gray-200 transition-colors font-bold text-xs uppercase tracking-widest shadow-sm no-underline">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m12 19-7-7 7-7" />
+                    <path d="M19 12H5" />
+                </svg>
+                Back to Lab
+            </a>
+            <button id="share-x"
+                class="inline-flex items-center gap-2 bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 transition-colors font-bold text-xs uppercase tracking-widest shadow-sm">
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                    <path
+                        d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932 6.064-6.932zm-1.292 19.494h2.039L6.486 3.24H4.298l13.311 17.407z" />
+                </svg>
+                Share on X
+            </button>
+        </div>
     </nav>
     <div class="max-w-6xl mx-auto pt-12">
         <!-- Header -->
@@ -672,6 +682,14 @@
         modeNote.addEventListener('click', () => switchPlatform('note'));
         modeX.addEventListener('click', () => switchPlatform('x'));
         modeHD.addEventListener('click', () => switchPlatform('hd'));
+
+        // Share to X
+        document.getElementById('share-x').addEventListener('click', () => {
+            const text = encodeURIComponent("偶然から物語を生成する「三題噺メーカー」で遊んでいます。 創作のヒントに。");
+            const url = encodeURIComponent(window.location.href);
+            const hashtags = encodeURIComponent("KageticaLab,三題噺");
+            window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}&hashtags=${hashtags}`, '_blank');
+        });
     </script>
 </body>
 
