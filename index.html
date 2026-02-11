@@ -7,6 +7,15 @@
     <title>吉田影近 | Future Hacker - Reality into SF</title>
     <meta name="description" content="株式会社インベーダーズCEO・吉田影近の公式サイト。テクノロジーとナラティブで現実をSF世界へアップデートするFuture Hacker。">
 
+    <!-- OGP -->
+    <meta property="og:title" content="吉田影近 | Future Hacker">
+    <meta property="og:description" content="テクノロジーとナラティブで、現実をSF世界へアップデートする。吉田影近の公式サイト。">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://kagetica.net/index.html">
+    <meta property="og:image" content="https://kagetica.net/assets/ogpimage.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@kagetica">
+
     <!-- Favicon -->
     <link rel="icon" href="assets/icon.png" type="image/png">
 
@@ -21,7 +30,7 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 
-<body class="loading">
+<body class="loading home">
     <canvas id="matrix-canvas"></canvas>
 
     <div class="sf-toggle" id="sf-toggle">
@@ -66,7 +75,30 @@
     </header>
 
     <main>
-        <!-- About Section -->
+        <!-- Topics Section -->
+        <section id="topics" class="section topics-section">
+            <div class="container">
+                <h2 class="section-title vertical-text">Topics</h2>
+                <div class="topics-list" style="margin-bottom: 2rem;">
+                    <a href="news.html" class="topic-link"
+                        style="display: block; border-bottom: 1px solid #000; padding: 1.5rem 0; text-decoration: none; color: inherit;">
+                        <span class="date"
+                            style="font-family: var(--font-gothic); font-weight: 700; margin-right: 2rem;">2024.02.09</span>
+                        <span class="title">公式サイトをフルリバイバルしました。</span>
+                    </a>
+                    <a href="news.html" class="topic-link"
+                        style="display: block; border-bottom: 1px solid #000; padding: 1.5rem 0; text-decoration: none; color: inherit;">
+                        <span class="date"
+                            style="font-family: var(--font-gothic); font-weight: 700; margin-right: 2rem;">2024.02.01</span>
+                        <span class="title">次世代クリエイター向けワークショップの開催が決定。</span>
+                    </a>
+                </div>
+                <a href="news.html" class="btn-link" style="text-align: right; display: block;">View All News <span
+                        class="arrow">→</span></a>
+            </div>
+        </section>
+
+        <!-- About Summary Section -->
         <section id="about" class="section about-section">
             <div class="container relative">
                 <div class="philosophy-text vertical-text">
@@ -80,14 +112,13 @@
                         <img src="assets/profile.png" alt="Yoshida Kagetica">
                     </div>
                     <div class="profile-info">
-                        <h2 class="section-title">人物紹介</h2>
+                        <h2 class="section-title">PROFILE</h2>
                         <h3>吉田 影近 <span class="en">Kagetica Yoshida</span></h3>
                         <p class="description">
-                            株式会社インベーダーズCEO。<br>
-                            作家・起業家VTuber。<br>
-                            「テクノロジーとナラティブで、現実をSF世界へアップデートする」<br>
-                            メタバース、生成AI、出版など、多角的に「物語」を実装中。
+                            株式会社インベーダーズCEO。作家・起業家VTuber。<br>
+                            「テクノロジーとナラティブで、現実をSF世界へアップデートする」を掲げ、メタバース、生成AI、出版など多角的に活動中。
                         </p>
+                        <a href="profile.html" class="btn-link">Read Detail <span class="arrow">→</span></a>
                     </div>
                 </div>
             </div>
@@ -98,44 +129,42 @@
             <div class="container">
                 <h2 class="section-title vertical-text">主要事業</h2>
                 <div class="works-grid">
-                    <!-- Card 1: Social Nova -->
+                    <!-- Card 1: Socialnoba -->
                     <article class="work-card">
-                        <div class="work-image">
-                            <!-- Placeholder for work image -->
-                        </div>
+                        <div class="work-image" style="background: #eee;"></div>
                         <div class="work-content">
-                            <h3 class="work-title">Social Nova</h3>
+                            <h3 class="work-title">Socialnoba</h3>
                             <p class="work-desc">
                                 <strong>「仮想空間に、熱狂とコミュニティを実装する。」</strong><br>
                                 イベントの企画・制作から、運営を支えるバーチャルスタッフの手配、バーチャルタレントのエージェント業務まで。メタバース空間と、そこに集う「人」の力を最大化するトータルソリューションを提供します。
                             </p>
-                            <a href="#" class="btn-link">Detail <span class="arrow">→</span></a>
+                            <a href="http://socialnoba.work/" class="btn-link">Detail <span class="arrow">→</span></a>
                         </div>
                     </article>
 
                     <!-- Card 2: LocalLab -->
                     <article class="work-card">
-                        <div class="work-image"></div>
+                        <div class="work-image" style="background: #eee;"></div>
                         <div class="work-content">
                             <h3 class="work-title">LocalLab</h3>
                             <p class="work-desc">
                                 <strong>「地域の『縁起』を、デジタルの力で再発明する。」</strong><br>
                                 地域に眠る伝統、特産、そして人の繋がりを最新テクノロジーと掛け合わせ、次世代の地域創生モデルを実装するLocal DXの実装機関（ラボ）です。
                             </p>
-                            <a href="#" class="btn-link">Detail <span class="arrow">→</span></a>
+                            <a href="https://invaders.co.jp/" class="btn-link">Detail <span class="arrow">→</span></a>
                         </div>
                     </article>
 
                     <!-- Card 3: Invaders Publishing -->
                     <article class="work-card">
-                        <div class="work-image"></div>
+                        <div class="work-image" style="background: #eee;"></div>
                         <div class="work-content">
                             <h3 class="work-title">Invaders Publishing</h3>
                             <p class="work-desc">
                                 <strong>「プラットフォームとしての新しい出版社」</strong><br>
                                 世界を面白く作り変えるコンテンツを創造。メディアミックス展開を積極的に行い、著者やコミュニティの想いを一冊の「未来」として形にするナラティブ・ブランディングを提供します。
                             </p>
-                            <a href="#" class="btn-link">Detail <span class="arrow">→</span></a>
+                            <a href="https://invaders.co.jp/" class="btn-link">Detail <span class="arrow">→</span></a>
                         </div>
                     </article>
                 </div>
@@ -145,18 +174,13 @@
         <!-- Laboratory Section -->
         <section id="lab" class="section works-section" style="background-color: #f0f0f0; border-top: 2px solid #000;">
             <div class="container">
-                <div class="section-header">
-                    <h2 class="section-title vertical-text">作品</h2>
-                    <div class="filter-container">
-                        <button class="filter-btn active" data-filter="all">All</button>
-                        <button class="filter-btn" data-filter="tools">Tools</button>
-                        <button class="filter-btn" data-filter="toys">Toys</button>
-                        <button class="filter-btn" data-filter="planning">Planning</button>
-                    </div>
+                <div class="section-header"
+                    style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem;">
+                    <h2 class="section-title vertical-text">作品・ツール</h2>
                 </div>
-                <div class="works-grid" id="dev-grid">
+                <div class="works-grid">
                     <!-- Tool 1: Sandai Banashi -->
-                    <article class="work-card" data-category="tools toys">
+                    <article class="work-card">
                         <a href="lab/sandai_banashi.html" class="work-thumb-link">
                             <div class="work-image"
                                 style="background: #000; color: #fff; display: flex; align-items: center; justify-content: center;">
@@ -166,20 +190,16 @@
                         <div class="work-content">
                             <h3 class="work-title">3つのお題から生まれた物語</h3>
                             <p class="work-desc">
-                                <strong>「偶然から始まる物語」</strong><br>
+                                <strong>「偶然から始まる物語。」</strong><br>
                                 ランダムに選ばれた3つのお題から、想像力を刺激するショートストーリーを創作するためのツール。
                             </p>
-                            <div class="work-tags">
-                                <span class="tag">Tools</span>
-                                <span class="tag">Toys</span>
-                            </div>
                             <a href="lab/sandai_banashi.html" class="btn-link btn-action">OPEN TOOL <span
                                     class="arrow">→</span></a>
                         </div>
                     </article>
 
                     <!-- Tool 2: One Hour Writing -->
-                    <article class="work-card" data-category="tools planning">
+                    <article class="work-card">
                         <a href="lab/one_hour_writing.html" class="work-thumb-link">
                             <div class="work-image"
                                 style="background: #000; color: #fff; display: flex; align-items: center; justify-content: center;">
@@ -189,22 +209,39 @@
                         <div class="work-content">
                             <h3 class="work-title">One Hour Writing 【ワンライ】</h3>
                             <p class="work-desc">
-                                <strong>「60分で執筆するワンドロの小説版」</strong><br>
+                                <strong>「60分で執筆するワンドロの小説版。」</strong><br>
                                 イベントページと各種便利ツール。
                             </p>
-                            <div class="work-tags">
-                                <span class="tag">Tools</span>
-                                <span class="tag">Planning</span>
-                            </div>
                             <a href="lab/one_hour_writing.html" class="btn-link btn-action">OPEN TOOL <span
                                     class="arrow">→</span></a>
                         </div>
                     </article>
+
+                    <!-- Tool 3: Character Counter -->
+                    <article class="work-card">
+                        <a href="lab/character_counter.html" class="work-thumb-link">
+                            <div class="work-image"
+                                style="background: #000; color: #fff; display: flex; align-items: center; justify-content: center;">
+                                COUNT
+                            </div>
+                        </a>
+                        <div class="work-content">
+                            <h3 class="work-title">文字数カウンター</h3>
+                            <p class="work-desc">
+                                <strong>「高機能ライティング分析ツール。」</strong><br>
+                                リアルタイムの文字数カウント、読了時間算出、原稿用紙換算など。
+                            </p>
+                            <a href="lab/character_counter.html" class="btn-link btn-action">OPEN TOOL <span
+                                    class="arrow">→</span></a>
+                        </div>
+                    </article>
+                </div>
+                <div style="text-align: center; margin-top: 4rem;">
+                    <a href="works.html" class="btn-link" style="font-size: 1.2rem; font-weight: 900;">VIEW ALL WORKS
+                        <span class="arrow">→</span></a>
                 </div>
             </div>
         </section>
-
-
 
         <!-- Portal / Links Section -->
         <section id="portal" class="section portal-section">
@@ -214,22 +251,18 @@
                     <a href="https://x.com/kagetica" target="_blank" class="portal-link">
                         <span class="portal-icon">𝕏</span>
                         <span class="portal-label">X (Twitter)</span>
-                        <span class="portal-desc">日常と思考の断片</span>
                     </a>
                     <a href="https://www.youtube.com/@kagetica" target="_blank" class="portal-link">
                         <span class="portal-icon">▶</span>
                         <span class="portal-label">YouTube</span>
-                        <span class="portal-desc">未来HACK研究所</span>
                     </a>
                     <a href="https://note.com/kagetica" target="_blank" class="portal-link">
                         <span class="portal-icon">✎</span>
                         <span class="portal-label">note</span>
-                        <span class="portal-desc">個人の記録</span>
                     </a>
                     <a href="https://invaders.co.jp/" target="_blank" class="portal-link highlight">
                         <span class="portal-icon">🏢</span>
                         <span class="portal-label">Invaders Inc.</span>
-                        <span class="portal-desc">コーポレートサイト</span>
                     </a>
                 </div>
             </div>
@@ -245,7 +278,9 @@
                     <p class="en">FUTURE HACKER</p>
                 </div>
                 <div class="contact-info">
-                    <p>Contact: <a href="mailto:kagetica@invaders.co.jp">kagetica@invaders.co.jp</a></p>
+                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdXy8Z_p6V_h1B4Zc6mX7VfW6zY8v-J5z1zQ8P_z6-lq6q9g/viewform"
+                        target="_blank" class="btn-link btn-action" style="padding: 1rem 3rem;">CONTACT FORM <span
+                            class="arrow">→</span></a>
                 </div>
             </div>
             <div class="copyright">

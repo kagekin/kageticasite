@@ -5,6 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>One Hour Writing 【ワンライ】</title>
+
+    <!-- OGP -->
+    <meta property="og:title" content="One Hour Writing 【ワンライ】 | Kagetica Lab">
+    <meta property="og:description" content="制限時間60分。一気に書き上げるスプリント執筆ツール。">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://kagetica.net/lab/one_hour_writing.html">
+    <meta property="og:image" content="https://kagetica.net/assets/onehour_ogp.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@kagetica">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- React & ReactDOM -->
@@ -285,7 +294,10 @@
                 const design = designs[selectedDesign];
                 const displayTheme = theme === 'その他' ? (customTheme || '自由形式') : theme;
                 const w = platform === 'x' ? 1200 : 1280;
-                const h = platform === 'x' ? 480 : 670;
+                let h;
+                if (platform === 'x') h = 480;
+                else if (platform === 'hd') h = 720;
+                else h = 670;
                 canvas.width = w; canvas.height = h;
 
                 ctx.clearRect(0, 0, w, h);
@@ -568,6 +580,7 @@
                                         <div className="flex bg-white p-1 rounded-xl border border-slate-200">
                                             <button onClick={() => setPlatform('x')} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${platform === 'x' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}>X (5:2)</button>
                                             <button onClick={() => setPlatform('note')} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${platform === 'note' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}>note Header</button>
+                                            <button onClick={() => setPlatform('hd')} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${platform === 'hd' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}>16:9 (HD)</button>
                                         </div>
                                         <button onClick={shuffleDesign} className="flex items-center gap-2 text-blue-600 px-3 py-1.5 rounded-lg text-[10px] font-bold hover:bg-blue-50 transition-colors">
                                             <Shuffle className="w-3 h-3" /> デザインをシャッフル

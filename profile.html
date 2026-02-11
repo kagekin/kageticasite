@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>吉田影近 | Future Hacker - Reality into SF</title>
+    <meta name="description" content="株式会社インベーダーズCEO・吉田影近の公式サイト。テクノロジーとナラティブで現実をSF世界へアップデートするFuture Hacker。">
+
+    <!-- Favicon -->
+    <link rel="icon" href="assets/icon.png" type="image/png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Shippori+Mincho:wght@400;500;600;700;800&family=Zen+Old+Mincho:wght@400;500;600;700;900&display=swap"
+        rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="loading">
+    <canvas id="matrix-canvas"></canvas>
+
+    <div class="sf-toggle" id="sf-toggle">
+        <span class="sf-toggle-icon">SF</span>
+    </div>
+
+    <!-- Navigation -->
+    <nav id="nav">
+        <div class="nav-container">
+            <a href="#" class="logo-mark">
+                <img src="assets/icon.png" alt="Kagetica Icon">
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="vertical-text">Top</a>
+                <a href="profile.html" class="vertical-text active">Profile</a>
+                <a href="news.html" class="vertical-text">News</a>
+                <a href="works.html" class="vertical-text">Works</a>
+                <a href="schedule.html" class="vertical-text">Schedule</a>
+                <a href="https://docs.google.com/forms/d/e/1FAIpQLSdXy8Z_p6V_h1B4Zc6mX7VfW6zY8v-J5z1zQ8P_z6-lq6q9g/viewform"
+                    target="_blank" class="vertical-text">Contact</a>
+            </div>
+            <div class="menu-trigger">
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        <header class="subpage-header">
+            <div class="container">
+                <h1 class="subpage-title">PROFILE</h1>
+            </div>
+        </header>
+
+        <!-- Detailed Profile Section -->
+        <section id="profile-detail" class="section about-section" style="padding-top: 0;">
+            <div class="container">
+                <div class="profile-layout"
+                    style="display: grid; grid-template-columns: 1fr 2fr; gap: 4rem; align-items: start;">
+                    <div class="profile-sidebar">
+                        <div class="profile-image glitch-hover" style="width: 100%; margin-bottom: 2rem;">
+                            <img src="assets/profile.png" alt="Yoshida Kagetica" style="width: 100%; height: auto;">
+                        </div>
+                        <div class="profile-meta">
+                            <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">吉田 影近</h2>
+                            <p
+                                style="font-family: var(--font-gothic); font-weight: 700; color: var(--accent-color); margin-bottom: 2rem;">
+                                Kagetica Yoshida</p>
+
+                            <div class="meta-item" style="margin-bottom: 1.5rem;">
+                                <h4
+                                    style="font-size: 0.8rem; text-transform: uppercase; color: #888; margin-bottom: 0.2rem;">
+                                    Title</h4>
+                                <p style="font-weight: 700;">Future Hacker / Entrepreneur / Writter</p>
+                            </div>
+
+                            <div class="meta-item" style="margin-bottom: 1.5rem;">
+                                <h4
+                                    style="font-size: 0.8rem; text-transform: uppercase; color: #888; margin-bottom: 0.2rem;">
+                                    Organization</h4>
+                                <p style="font-weight: 700;">Invaders Inc. CEO</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-main">
+                        <h3 class="section-subtitle"
+                            style="font-size: 2rem; margin-bottom: 2rem; border-left: 4px solid var(--accent-color); padding-left: 1.5rem;">
+                            Vision: テクノロジーとナラティブで、現実をSF世界へアップデートする
+                        </h3>
+
+                        <div class="bio-text" style="line-height: 1.8; margin-bottom: 3rem;">
+                            <p style="margin-bottom: 1.5rem;">
+                                吉田影近（よしだ・かげちか）は、起業家、作家、バーチャル活動家です。株式会社インベーダーズの代表取締役として、メタバース・生成AI・出版など、複数の領域を横断して「物語を社会に実装する」活動に従事しています。
+                            </p>
+                            <p style="margin-bottom: 1.5rem;">
+                                バーチャルSNS「VRChat」や「cluster」において、数多くの実験的なワールド制作やイベント企画を手がけ、現実と仮想の境界を曖昧にする「SF的な体験」の創出をライフワークとしています。
+                            </p>
+                            <p>
+                                ニックネームは「カゲキン」。かつてマッドバーチャリストの猫人間としてインターネットの深淵で活動していた経歴を持ち、その好奇心と実験精神は現在のビジネス活動の根幹となっています。
+                            </p>
+                        </div>
+
+                        <h3 class="section-subtitle" style="font-size: 1.5rem; margin-bottom: 1.5rem;">Biography
+                        </h3>
+                        <div class="timeline"
+                            style="border-left: 1px solid #ccc; padding-left: 2rem; margin-bottom: 4rem;">
+                            <div class="timeline-item" style="margin-bottom: 2rem; position: relative;">
+                                <span
+                                    style="position: absolute; left: calc(-2rem - 5px); top: 5px; width: 10px; height: 10px; background: #000; border-radius: 50%;"></span>
+                                <span
+                                    style="font-weight: 700; color: var(--accent-color); display: block; margin-bottom: 0.5rem;">Present</span>
+                                <p>株式会社インベーダーズ 代表取締役。ソーシャルノバ、LocalLabなどのプロジェクトを推進。</p>
+                            </div>
+                            <div class="timeline-item" style="margin-bottom: 2rem; position: relative;">
+                                <span
+                                    style="position: absolute; left: calc(-2rem - 5px); top: 5px; width: 10px; height: 10px; background: #000; border-radius: 50%;"></span>
+                                <span
+                                    style="font-weight: 700; color: var(--accent-color); display: block; margin-bottom: 0.5rem;">2022
+                                    - 2023</span>
+                                <p>メタバースエンジニアリング、コンテンツプロデュース事業を開始。多数のワールドコンテストにて受賞。</p>
+                            </div>
+                            <div class="timeline-item" style="margin-bottom: 2rem; position: relative;">
+                                <span
+                                    style="position: absolute; left: calc(-2rem - 5px); top: 5px; width: 10px; height: 10px; background: #000; border-radius: 50%;"></span>
+                                <span
+                                    style="font-weight: 700; color: var(--accent-color); display: block; margin-bottom: 0.5rem;">Historical</span>
+                                <p>バーチャル猫人間「カゲキン」として活動。マッドバーチャリストとしての知見を蓄積。</p>
+                            </div>
+                        </div>
+
+                        <h3 class="section-subtitle" style="font-size: 1.5rem; margin-bottom: 1.5rem;">Skills &
+                            Themes</h3>
+                        <div class="skills-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                            <div class="skill-category">
+                                <h4 style="font-weight: 900; border-bottom: 2px solid #000; margin-bottom: 1rem;">
+                                    Metaverse / VR</h4>
+                                <ul style="list-style: none; padding: 0;">
+                                    <li>World Creation (Unity / Cluster)</li>
+                                    <li>Event Planning & Direction</li>
+                                    <li>Avatar Interaction Design</li>
+                                </ul>
+                            </div>
+                            <div class="skill-category">
+                                <h4 style="font-weight: 900; border-bottom: 2px solid #000; margin-bottom: 1rem;">
+                                    Narrative / Content</h4>
+                                <ul style="list-style: none; padding: 0;">
+                                    <li>SF Writing / Scripting</li>
+                                    <li>AI Augmented Creativity</li>
+                                    <li>Media Mix Strategy</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer id="contact" class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <h2>吉田影近</h2>
+                    <p class="en">FUTURE HACKER</p>
+                </div>
+                <div class="contact-info">
+                    <p>Contact: <a href="mailto:kagetica@invaders.co.jp">kagetica@invaders.co.jp</a></p>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2024 INVADERS Inc. All Rights Reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>

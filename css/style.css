@@ -143,8 +143,28 @@ img {
     border-bottom: 2px solid #000;
 }
 
-/* Logo styles moved to specific adjustments block */
-/* .logo-mark img { ... } */
+body.sf-mode #nav.scrolled {
+    background: rgba(0, 0, 0, 0.9);
+    border-bottom: 2px solid #00ff41;
+}
+
+.logo-mark {
+    display: block;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    margin-right: auto;
+}
+
+.logo-mark img {
+    height: 45px;
+    width: auto;
+    object-fit: contain;
+    min-width: 100px;
+}
+
+body.sf-mode .logo-mark img {
+    filter: invert(1) brightness(2);
+}
 
 .nav-links {
     display: flex;
@@ -157,7 +177,6 @@ img {
     position: relative;
     padding: 0.5rem 0;
     writing-mode: horizontal-tb;
-    /* Horizontal nav for header */
 }
 
 .nav-links a::after {
@@ -171,16 +190,18 @@ img {
     transition: width 0.3s ease;
 }
 
-.nav-links a:hover {
+.nav-links a:hover,
+.nav-links a.active {
     color: var(--accent-color);
 }
 
-.nav-links a:hover::after {
+.nav-links a:hover::after,
+.nav-links a.active::after {
     width: 100%;
 }
 
 /* ==========================================================================
-   Hero Section
+   Hero Section (Top Page Only)
    ========================================================================== */
 .hero-section {
     position: relative;
@@ -205,12 +226,9 @@ img {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    /* ヘッダー画像を全体に見せる */
     background-color: var(--bg-color);
-    /* 画像の余白は背景色で埋める */
 }
 
-/* Glitch Overlay */
 .glitch-overlay {
     position: absolute;
     top: 0;
@@ -237,14 +255,11 @@ img {
 
 .hero-content {
     position: absolute;
-    /* 画像の上に重ねる */
     right: 15%;
-    /* 右側に配置 */
     top: 50%;
     transform: translateY(-50%);
     display: flex;
     flex-direction: row-reverse;
-    /* 縦書きなので右から左へ */
     gap: 2rem;
     z-index: 10;
 }
@@ -254,14 +269,12 @@ img {
     font-weight: 800;
     line-height: 1.5;
     height: 70vh;
-    /* 縦書きの高さを確保 */
     text-shadow:
         3px 3px 0px rgba(0, 0, 0, 0.1),
         -2px -2px 0 #fff,
         2px -2px 0 #fff,
         -2px 2px 0 #fff,
         2px 2px 0 #fff;
-    /* White outline for visibility */
 }
 
 .hero-subtitle {
@@ -271,6 +284,38 @@ img {
     align-self: flex-end;
     border-right: 1px solid var(--accent-color);
     padding-right: 1rem;
+}
+
+/* ==========================================================================
+   Topics Section
+   ========================================================================== */
+.topics-section {
+    padding: 80px 0;
+    background-color: #fff;
+    border-bottom: 2px solid #000;
+}
+
+.topics-section .container {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    gap: 4rem;
+}
+
+.topics-list {
+    flex: 1;
+}
+
+.topic-link {
+    transition: transform 0.3s ease;
+}
+
+.topic-link:hover {
+    transform: translateX(10px);
+}
+
+.topic-link .date {
+    font-family: var(--font-gothic);
 }
 
 /* Glitch Text Effect */
@@ -406,11 +451,10 @@ img {
 }
 
 /* ==========================================================================
-   About Section
+   About / Profile Summary
    ========================================================================== */
 .about-section {
     background-color: transparent;
-    /* Seamless with body bg */
     color: var(--text-color);
 }
 
@@ -430,7 +474,6 @@ img {
 
 .philosophy-text p {
     margin-left: 2rem;
-    /* 縦書きなので行間 */
 }
 
 .profile-card {
@@ -480,7 +523,6 @@ img {
     overflow: hidden;
 }
 
-/* 横スクロールのような配置、あるいはグリッド */
 .works-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -491,12 +533,10 @@ img {
 .work-card {
     background: #fff;
     border: 3px solid #000;
-    /* Bold border */
     padding: 2rem;
     position: relative;
     transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     box-shadow: 8px 8px 0 #000;
-    /* Hard shadow */
 }
 
 .work-card:hover {
@@ -522,11 +562,13 @@ img {
     letter-spacing: 0.1em;
 }
 
-/* Specific placeholders based on child index or class if added, 
-   for now generic cool pattern */
 .work-image::after {
     content: 'NO SIGNAL';
     z-index: 2;
+}
+
+#lab .work-image::after {
+    content: none;
 }
 
 .work-image::before {
@@ -536,12 +578,7 @@ img {
     left: 0;
     width: 100%;
     height: 100%;
-    background:
-        repeating-linear-gradient(45deg,
-            #000,
-            #000 10px,
-            #111 10px,
-            #111 20px);
+    background: repeating-linear-gradient(45deg, #000, #000 10px, #111 10px, #111 20px);
     opacity: 0.5;
     transition: all 0.3s;
 }
@@ -556,44 +593,16 @@ img {
     background-size: 150% 150%;
 }
 
-.work-card:nth-child(1) .work-image::after {
+#works .work-card:nth-child(1) .work-image::after {
     content: 'METAVERSE';
 }
 
-.work-card:nth-child(2) .work-image::after {
+#works .work-card:nth-child(2) .work-image::after {
     content: 'LOCAL DX';
 }
 
-.work-card:nth-child(3) .work-image::after {
+#works .work-card:nth-child(3) .work-image::after {
     content: 'PUBLISHING';
-}
-
-/* Logo adjustments */
-/* Logo adjustments */
-.logo-mark {
-    display: block;
-    /* Use padding instead of margin to avoid collapsing issues or layout shifts in flex */
-    padding-top: 15px;
-    padding-bottom: 15px;
-    margin-right: auto;
-    /* Push links to the right if in flex */
-}
-
-.logo-mark img {
-    height: 45px;
-    /* Reduced to balance */
-    width: auto;
-    object-fit: contain;
-    /* Ensure it doesn't get squashed */
-    min-width: 100px;
-}
-
-/* Navigation Links Spacing */
-.nav-links {
-    gap: 3rem;
-    /* Increase gap between links */
-    margin-left: auto;
-    /* Ensure links stay on the right */
 }
 
 .work-title {
@@ -610,7 +619,9 @@ img {
     font-family: var(--font-gothic);
 }
 
-/* Developed Items Filter Styles */
+/* ==========================================================================
+   Lab / Filter Styles
+   ========================================================================== */
 .section-header {
     display: flex;
     justify-content: space-between;
@@ -659,7 +670,6 @@ img {
     text-transform: uppercase;
 }
 
-
 .btn-link {
     display: flex;
     align-items: center;
@@ -681,7 +691,6 @@ img {
     transform: translateX(5px);
 }
 
-/* Action Button Style */
 .btn-action {
     display: inline-flex;
     background-color: #000;
@@ -711,7 +720,6 @@ img {
     opacity: 0.2;
     background-size: 150% 150%;
 }
-
 
 /* ==========================================================================
    Portal Section
@@ -743,16 +751,12 @@ img {
     border: 2px solid #333;
     transition: all 0.2s ease;
     background: #000;
-    /* Black cards on black bg */
     color: var(--bg-color);
-    /* Yellow text on black card */
 }
 
 .portal-link:hover {
     background: var(--bg-color);
-    /* Invert on hover: Yellow bg */
     color: #000;
-    /* Black text */
     border-color: #000;
     box-shadow: 5px 5px 0 var(--accent-color);
     transform: translate(-3px, -3px);
@@ -780,107 +784,126 @@ img {
     color: #666;
 }
 
-.portal-link.highlight {
-    border-color: var(--link-color);
+/* ==========================================================================
+   Profile Page Specifics
+   ========================================================================== */
+.profile-layout {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 4rem;
+    align-items: start;
 }
 
-.portal-link.highlight:hover {
-    box-shadow: 0 0 15px rgba(0, 0, 221, 0.3);
+.profile-sidebar {
+    position: sticky;
+    top: 120px;
 }
 
-.portal-link.highlight:hover {
-    box-shadow: 0 0 15px rgba(0, 0, 221, 0.3);
+.profile-meta h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.meta-item {
+    margin-bottom: 1.5rem;
+}
+
+.meta-item h4 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 0.2rem;
+}
+
+.meta-item p {
+    font-weight: 700;
+}
+
+.profile-main .section-subtitle {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    border-left: 4px solid var(--accent-color);
+    padding-left: 1.5rem;
+}
+
+.bio-text {
+    line-height: 1.8;
+    margin-bottom: 3rem;
+    font-family: var(--font-gothic);
+}
+
+.timeline {
+    border-left: 1px solid #ccc;
+    padding-left: 2rem;
+    margin-bottom: 4rem;
+}
+
+.timeline-item {
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: calc(-2rem - 5px);
+    top: 5px;
+    width: 10px;
+    height: 10px;
+    background: #000;
+    border-radius: 50%;
+}
+
+.timeline-item .date {
+    font-weight: 700;
+    color: var(--accent-color);
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.skills-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.skill-category h4 {
+    font-weight: 900;
+    border-bottom: 2px solid #000;
+    margin-bottom: 1rem;
+    font-family: var(--font-gothic);
+}
+
+.skill-category ul {
+    font-family: var(--font-gothic);
 }
 
 /* ==========================================================================
-   Novel Game Section
+   Works / History Specifics
    ========================================================================== */
-.novel-section {
-    position: relative;
-    background-color: #f8f9fa;
-    /* Slightly off-white */
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.novel-container {
-    width: 100%;
-    max-width: 1000px;
-    height: 600px;
-    position: relative;
+.history-section {
+    padding: 100px 0;
     background: #fff;
-    border: 4px solid #000;
-    box-shadow: 10px 10px 0 #000;
+    border-top: 2px solid #000;
 }
 
-.character-area {
-    position: absolute;
-    bottom: 0;
-    right: 50px;
-    width: 400px;
-    height: auto;
-    z-index: 10;
+.history-item {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 2rem;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid #eee;
 }
 
-.character-img {
-    width: 100%;
-    filter: drop-shadow(5px 5px 0 rgba(0, 0, 0, 0.2));
-}
-
-.message-window {
-    position: absolute;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 90%;
-    height: 180px;
-    background: rgba(0, 0, 0, 0.9);
-    border: 4px solid #fff;
-    border-radius: 8px;
-    padding: 2rem;
-    color: #fff;
+.history-date {
     font-family: var(--font-gothic);
-    z-index: 20;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    font-weight: 900;
+    color: var(--accent-color);
 }
 
-.name-tag {
-    position: absolute;
-    top: -20px;
-    left: 20px;
-    background: var(--accent-color);
-    color: #fff;
-    padding: 5px 20px;
-    font-weight: bold;
-    font-size: 1.1rem;
-    border: 2px solid #fff;
-    border-radius: 4px;
-}
-
-.message-text {
-    font-size: 1.1rem;
-    line-height: 1.8;
-}
-
-.next-indicator {
-    position: absolute;
-    bottom: 15px;
-    right: 20px;
-    animation: blink 1s infinite;
-}
-
-@keyframes blink {
-
-    0%,
-    100% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0;
-    }
+.history-title {
+    font-weight: 700;
+    font-family: var(--font-gothic);
 }
 
 /* ==========================================================================
@@ -932,7 +955,6 @@ img {
     .hero-content {
         right: 5%;
         top: 55%;
-        /* 少し下げる */
     }
 
     .hero-title {
@@ -961,12 +983,10 @@ img {
 
     .nav-links {
         display: none;
-        /* シンプル化のため一旦非表示、JSでメニュー実装必要 */
     }
 
     .menu-trigger {
         display: block;
-        /* ハンバーガーメニューなど */
     }
 }
 
@@ -976,13 +996,10 @@ img {
 body.sf-mode {
     --bg-color: #000000;
     --text-color: #00ff41;
-    /* Matrix Green */
     --accent-color: #003b00;
-    /* Darker Green */
     --secondary-accent: #ffffff;
     --gray-color: #008f11;
     --font-mincho: 'Courier New', monospace;
-    /* Terminal Font */
     --font-gothic: 'Courier New', monospace;
 }
 
@@ -1049,7 +1066,6 @@ body.sf-mode .sf-toggle-icon {
     text-shadow: 0 0 5px #00ff41;
 }
 
-/* Matrix Background Effect Canvas */
 #matrix-canvas {
     position: fixed;
     top: 0;
@@ -1057,7 +1073,6 @@ body.sf-mode .sf-toggle-icon {
     width: 100%;
     height: 100%;
     z-index: -2;
-    /* Behind everything */
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.5s ease;
@@ -1065,4 +1080,41 @@ body.sf-mode .sf-toggle-icon {
 
 body.sf-mode #matrix-canvas {
     opacity: 1;
+}
+
+@keyframes blink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+}
+
+/* Subpage Layout Fixes */
+body:not(.home) main {
+    padding-top: var(--header-height);
+}
+
+.subpage-header {
+    padding: 4rem 0 2rem;
+    border-bottom: 3px solid #000;
+    margin-bottom: 4rem;
+    background: #fff;
+}
+
+body.sf-mode .subpage-header {
+    background: #000;
+    border-bottom-color: #00ff41;
+}
+
+.subpage-title {
+    font-size: 3.5rem;
+    font-weight: 900;
+    margin: 0;
+    font-family: var(--font-gothic);
+    letter-spacing: 0.1em;
 }

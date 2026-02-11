@@ -5,6 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3つのお題から生まれた物語 - 3 Theme Story Maker</title>
+
+    <!-- OGP -->
+    <meta property="og:title" content="3つのお題から生まれた物語 | Kagetica Lab">
+    <meta property="og:description" content="ランダムに選ばれた3つのお題からストーリーを創作。創作を刺激するクリエイティブツール。">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://kagetica.net/lab/sandai_banashi.html">
+    <meta property="og:image" content="https://kagetica.net/assets/3theme_ogp.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@kagetica">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@900&family=Noto+Sans+JP:wght@300;700;900&display=swap"
@@ -228,13 +238,16 @@
                             <option value="cyber">CYBER (Neon / Glass)</option>
                         </select>
                         <div class="flex justify-between px-2" id="color-palette"></div>
-                        <div class="grid grid-cols-2 gap-2 mt-4">
+                        <div class="grid grid-cols-3 gap-2 mt-4">
                             <button id="mode-note"
                                 class="platform-btn active bg-black text-white px-3 py-2 rounded-lg text-[10px] font-black transition-all">note用
                                 (1.91:1)</button>
                             <button id="mode-x"
-                                class="platform-btn bg-gray-100 text-gray-600 px-3 py-2 rounded-lg text-[10px] font-black transition-all hover:bg-gray-200">X用
+                                class="platform-btn bg-gray-100 text-gray-600 px-3 py-2 rounded-lg text-[10px] font-black transition-all hover:bg-gray-200">Xヘッダー
                                 (5:2)</button>
+                            <button id="mode-hd"
+                                class="platform-btn bg-gray-100 text-gray-600 px-3 py-2 rounded-lg text-[10px] font-black transition-all hover:bg-gray-200">16:9
+                                (HD)</button>
                         </div>
                     </div>
                 </div>
@@ -333,6 +346,7 @@
         const colorPalette = document.getElementById('color-palette');
         const modeNote = document.getElementById('mode-note');
         const modeX = document.getElementById('mode-x');
+        const modeHD = document.getElementById('mode-hd');
         const toast = document.getElementById('toast');
         const toggleAllBtn = document.getElementById('toggle-all');
 
@@ -535,8 +549,16 @@
             if (currentWords.length === 0) return;
             const styleSet = colorConfigs[currentStyle][currentColorIdx];
 
-            canvas.width = currentPlatform === 'x' ? 1200 : 1280;
-            canvas.height = currentPlatform === 'x' ? 480 : 670;
+            if (currentPlatform === 'x') {
+                canvas.width = 1200;
+                canvas.height = 480;
+            } else if (currentPlatform === 'hd') {
+                canvas.width = 1280;
+                canvas.height = 720;
+            } else {
+                canvas.width = 1280;
+                canvas.height = 670;
+            }
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -567,8 +589,17 @@
 
             // Topics List (Left Aligned with Margin)
             const startX = canvas.width * 0.22;
-            const startY = currentPlatform === 'x' ? 150 : 220;
-            const gapY = currentPlatform === 'x' ? 100 : 140;
+            let startY, gapY;
+            if (currentPlatform === 'x') {
+                startY = 150;
+                gapY = 100;
+            } else if (currentPlatform === 'hd') {
+                startY = 240;
+                gapY = 150;
+            } else {
+                startY = 220;
+                gapY = 140;
+            }
 
             currentWords.forEach((item, index) => {
                 const y = startY + (index * gapY);
@@ -595,19 +626,26 @@
 
             // Footer
             ctx.textAlign = "left"; ctx.fillStyle = styleSet.text; ctx.font = "900 20px 'Noto Sans JP'"; ctx.letterSpacing = "0.5em"; ctx.globalAlpha = 0.3;
-            const footerY = currentPlatform === 'x' ? canvas.height - 70 : canvas.height - 85;
+            let footerY;
+            if (currentPlatform === 'x') {
+                footerY = canvas.height - 70;
+            } else if (currentPlatform === 'hd') {
+                footerY = canvas.height - 100;
+            } else {
+                footerY = canvas.height - 85;
+            }
             ctx.fillText("偶然から生まれた物語", 80, footerY); ctx.globalAlpha = 1.0; ctx.fillStyle = styleSet.accent; ctx.fillRect(80, footerY + 10, 200, 2);
         }
 
         function switchPlatform(p) {
             currentPlatform = p;
-            if (p === 'note') {
-                modeNote.classList.add('active', 'bg-black', 'text-white'); modeNote.classList.remove('bg-gray-100', 'text-gray-600');
-                modeX.classList.remove('active', 'bg-black', 'text-white'); modeX.classList.add('bg-gray-100', 'text-gray-600');
-            } else {
-                modeX.classList.add('active', 'bg-black', 'text-white'); modeX.classList.remove('bg-gray-100', 'text-gray-600');
-                modeNote.classList.remove('active', 'bg-black', 'text-white'); modeNote.classList.add('bg-gray-100', 'text-gray-600');
-            }
+            [modeNote, modeX, modeHD].forEach(btn => {
+                btn.classList.remove('active', 'bg-black', 'text-white');
+                btn.classList.add('bg-gray-100', 'text-gray-600');
+            });
+            const activeBtn = p === 'note' ? modeNote : (p === 'x' ? modeX : modeHD);
+            activeBtn.classList.add('active', 'bg-black', 'text-white');
+            activeBtn.classList.remove('bg-gray-100', 'text-gray-600');
             draw();
         }
 
@@ -633,6 +671,7 @@
         selectStyleMain.addEventListener('change', (e) => { currentStyle = e.target.value; currentColorIdx = 0; updateColorPalette(); draw(); });
         modeNote.addEventListener('click', () => switchPlatform('note'));
         modeX.addEventListener('click', () => switchPlatform('x'));
+        modeHD.addEventListener('click', () => switchPlatform('hd'));
     </script>
 </body>
 

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>吉田影近 | Future Hacker - Reality into SF</title>
+    <meta name="description" content="株式会社インベーダーズCEO・吉田影近の公式サイト。テクノロジーとナラティブで現実をSF世界へアップデートするFuture Hacker。">
+
+    <!-- Favicon -->
+    <link rel="icon" href="assets/icon.png" type="image/png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Shippori+Mincho:wght@400;500;600;700;800&family=Zen+Old+Mincho:wght@400;500;600;700;900&display=swap"
+        rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="loading">
+    <canvas id="matrix-canvas"></canvas>
+
+    <div class="sf-toggle" id="sf-toggle">
+        <span class="sf-toggle-icon">SF</span>
+    </div>
+
+    <!-- Navigation -->
+    <nav id="nav">
+        <div class="nav-container">
+            <a href="#" class="logo-mark">
+                <img src="assets/icon.png" alt="Kagetica Icon">
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="vertical-text">Top</a>
+                <a href="profile.html" class="vertical-text">Profile</a>
+                <a href="news.html" class="vertical-text">News</a>
+                <a href="works.html" class="vertical-text active">Works</a>
+                <a href="schedule.html" class="vertical-text">Schedule</a>
+                <a href="https://docs.google.com/forms/d/e/1FAIpQLSdXy8Z_p6V_h1B4Zc6mX7VfW6zY8v-J5z1zQ8P_z6-lq6q9g/viewform"
+                    target="_blank" class="vertical-text">Contact</a>
+            </div>
+            <div class="menu-trigger">
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        <header class="subpage-header">
+            <div class="container">
+                <h1 class="subpage-title">WORKS</h1>
+            </div>
+        </header>
+
+        <!-- Business Section -->
+        <section id="business" class="section works-section" style="padding-top: 0;">
+            <div class="container">
+                <h2 class="section-title vertical-text">主要事業</h2>
+                <div class="works-grid">
+                    <!-- Card 1: Social Nova -->
+                    <article class="work-card">
+                        <div class="work-image" style="background: #eee;"></div>
+                        <div class="work-content">
+                            <h3 class="work-title">Social Nova</h3>
+                            <p class="work-desc">
+                                <strong>「仮想空間に、熱狂とコミュニティを実装する。」</strong><br>
+                                イベントの企画・制作から、運営を支えるバーチャルスタッフの手配、バーチャルタレントのエージェント業務まで。
+                            </p>
+                            <a href="https://invaders.co.jp/" target="_blank" class="btn-link">Official Site <span
+                                    class="arrow">→</span></a>
+                        </div>
+                    </article>
+
+                    <!-- Card 2: LocalLab -->
+                    <article class="work-card">
+                        <div class="work-image" style="background: #eee;"></div>
+                        <div class="work-content">
+                            <h3 class="work-title">LocalLab</h3>
+                            <p class="work-desc">
+                                <strong>「地域の『縁起』を、デジタルの力で再発明する。」</strong><br>
+                                地域に眠る伝統、特産、そして人の繋がりを最新テクノロジーと掛け発わせ、次世代の地域創生モデルを実装。
+                            </p>
+                            <a href="#" class="btn-link">Project Detail <span class="arrow">→</span></a>
+                        </div>
+                    </article>
+
+                    <!-- Card 3: Invaders Publishing -->
+                    <article class="work-card">
+                        <div class="work-image" style="background: #eee;"></div>
+                        <div class="work-content">
+                            <h3 class="work-title">Invaders Publishing</h3>
+                            <p class="work-desc">
+                                <strong>「プラットフォームとしての新しい出版社」</strong><br>
+                                世界を面白く作り変えるコンテンツを創造。メディアミックス展開を積極的に行い、一冊の「未来」を形にします。
+                            </p>
+                            <a href="#" class="btn-link">Publisher Info <span class="arrow">→</span></a>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lab Section -->
+        <section id="lab" class="section works-section" style="background-color: #f8f8f8; border-top: 1px solid #ddd;">
+            <div class="container">
+                <h2 class="section-title vertical-text">実験作・ツール</h2>
+                <div class="works-grid">
+                    <article class="work-card">
+                        <a href="lab/sandai_banashi.html" class="work-thumb-link">
+                            <div class="work-image"
+                                style="background: #000; color: #fff; display: flex; align-items: center; justify-content: center;">
+                                3 THEME</div>
+                        </a>
+                        <div class="work-content">
+                            <h3 class="work-title">3つのお題から生まれた物語</h3>
+                            <p class="work-desc">ランダムな3つのお題からストーリーを創作するツール。</p>
+                            <a href="lab/sandai_banashi.html" class="btn-link btn-action">OPEN TOOL <span
+                                    class="arrow">→</span></a>
+                        </div>
+                    </article>
+
+                    <article class="work-card">
+                        <a href="lab/one_hour_writing.html" class="work-thumb-link">
+                            <div class="work-image"
+                                style="background: #000; color: #fff; display: flex; align-items: center; justify-content: center;">
+                                1 HOUR</div>
+                        </a>
+                        <div class="work-content">
+                            <h3 class="work-title">One Hour Writing</h3>
+                            <p class="work-desc">60分で執筆する「ワンライ」のためのイベントページとツール。</p>
+                            <a href="lab/one_hour_writing.html" class="btn-link btn-action">OPEN TOOL <span
+                                    class="arrow">→</span></a>
+                        </div>
+                    </article>
+
+                    <article class="work-card">
+                        <a href="lab/character_counter.html" class="work-thumb-link">
+                            <div class="work-image"
+                                style="background: #000; color: #fff; display: flex; align-items: center; justify-content: center;">
+                                COUNT</div>
+                        </a>
+                        <div class="work-content">
+                            <h3 class="work-title">文字数カウンター</h3>
+                            <p class="work-desc">リアルタイム文字数・行数カウント＆原稿用紙換算ツール。</p>
+                            <a href="lab/character_counter.html" class="btn-link btn-action">OPEN TOOL <span
+                                    class="arrow">→</span></a>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- History Section -->
+        <section id="history" class="section history-section">
+            <div class="container">
+                <h2 class="section-title">活動実績</h2>
+                <div class="history-list" style="margin-top: 3rem;">
+                    <div class="history-item"
+                        style="display: grid; grid-template-columns: 120px 1fr; gap: 2rem; margin-bottom: 2rem; border-bottom: 1px solid #eee; padding-bottom: 2rem;">
+                        <span class="year" style="font-weight: 900; color: var(--accent-color);">2023.11</span>
+                        <div class="content">
+                            <h4 style="font-weight: 700;">SUPER EXTREME 〇〇 受賞</h4>
+                            <p style="font-size: 0.9rem; color: #666;">
+                                clusterお題企画「スーパーウルトラハイパーアルティメット〇〇ワールド」：スーパーウルトラハイパーアルティメット想像の斜め上で賞</p>
+                        </div>
+                    </div>
+                    <div class="history-item"
+                        style="display: grid; grid-template-columns: 120px 1fr; gap: 2rem; margin-bottom: 2rem; border-bottom: 1px solid #eee; padding-bottom: 2rem;">
+                        <span class="year" style="font-weight: 900; color: var(--accent-color);">2023.10</span>
+                        <div class="content">
+                            <h4 style="font-weight: 700;">LAST BATTLE in Autumn 受賞</h4>
+                            <p style="font-size: 0.9rem; color: #666;">clusterお題企画「紅葉と共に散りゆく世界」：スワンマン賞</p>
+                        </div>
+                    </div>
+                    <div class="history-item"
+                        style="display: grid; grid-template-columns: 120px 1fr; gap: 2rem; margin-bottom: 2rem; border-bottom: 1px solid #eee; padding-bottom: 2rem;">
+                        <span class="year" style="font-weight: 900; color: var(--accent-color);">Award</span>
+                        <div class="content">
+                            <h4 style="font-weight: 700;">新世界メタバースTV!! メタバース一軒家コンテスト 優秀賞</h4>
+                            <p style="font-size: 0.9rem; color: #666;">テレビ朝日主催コンテストにて優秀賞を受賞。</p>
+                        </div>
+                    </div>
+                    <div class="history-item"
+                        style="display: grid; grid-template-columns: 120px 1fr; gap: 2rem; margin-bottom: 2rem; border-bottom: 1px solid #eee; padding-bottom: 2rem;">
+                        <span class="year" style="font-weight: 900; color: var(--accent-color);">Media</span>
+                        <div class="content">
+                            <h4 style="font-weight: 700;">テレ朝「メタメタ大作戦」公認アンバサダー就任</h4>
+                            <p style="font-size: 0.9rem; color: #666;">番組公認アンバサダーとしてメタバースの普及に貢献。</p>
+                        </div>
+                    </div>
+                    <div class="history-item"
+                        style="display: grid; grid-template-columns: 120px 1fr; gap: 2rem; margin-bottom: 2rem; border-bottom: 1px solid #eee; padding-bottom: 2rem;">
+                        <span class="year" style="font-weight: 900; color: var(--accent-color);">2022</span>
+                        <div class="content">
+                            <h4 style="font-weight: 700;">ClusterGAMEJAM 2022 in AUTUMN バラエティ賞</h4>
+                            <p style="font-size: 0.9rem; color: #666;">「不死者『カゲキン』のお墓」にて受賞。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer id="contact" class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <h2>吉田影近</h2>
+                    <p class="en">FUTURE HACKER</p>
+                </div>
+                <div class="contact-info">
+                    <p>Contact: <a href="mailto:kagetica@invaders.co.jp">kagetica@invaders.co.jp</a></p>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2024 INVADERS Inc. All Rights Reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>
