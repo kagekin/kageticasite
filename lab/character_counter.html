@@ -7,8 +7,8 @@
     <title>文字数カウント | Kagetica Lab</title>
 
     <!-- OGP -->
-    <meta property="og:title" content="文字数カウント | Kagetica Lab">
-    <meta property="og:description" content="執筆の進捗を確認するための高機能ライティング分析ツール。">
+    <meta property="og:title" content="文字数カウント＆文章チェッカー | Kagetica Lab">
+    <meta property="og:description" content="執筆の進捗確認・分析のための『文字数カウント＆文章チェッカー』。漢字比率や文末重複などを可視化。">
     <meta property="og:type" content="article">
     <meta property="og:url" content="https://kagetica.net/lab/character_counter.html">
     <meta property="og:image" content="https://kagetica.net/assets/mozicount_opg.png">
@@ -125,9 +125,61 @@
                 const lineCount = text === '' ? 0 : text.split(/\r\n|\r|\n/).length;
                 const manuscriptPages = Math.ceil(charCount / 400);
 
-                // Reading speeds: ~600 chars/min for reading, ~300 chars/min for speaking
+                // Reading speeds
                 const readingTime = Math.ceil(charCount / 600);
                 const speakingTime = Math.ceil(charCount / 300);
+
+                // 1. Ratio analysis (Kanji, Hiragana, Katakana)
+                const kanji = (text.match(/[\u4E00-\u9FFF]/g) || []).length;
+                const hiragana = (text.match(/[\u3040-\u309F]/g) || []).length;
+                const katakana = (text.match(/[\u30A0-\u30FF]/g) || []).length;
+                const other = charCount - (kanji + hiragana + katakana);
+                const kanjiRatio = charCount > 0 ? Math.round((kanji / charCount) * 100) : 0;
+                const hiraRatio = charCount > 0 ? Math.round((hiragana / charCount) * 100) : 0;
+
+                // 2. Sentence checks
+                const sentences = text.split(/[。！？]/).filter(s => s.trim().length > 0);
+                const avgSentenceLength = sentences.length > 0 ? Math.round(charCount / sentences.length) : 0;
+                const longSentences = sentences.filter(s => s.length > 60).length;
+
+                // 3. Dialogue ratio
+                const dialogueChars = (text.match(/「[^」]*」|『[^』]*』/g) || []).join('').length;
+                const dialogueRatio = charCount > 0 ? Math.round((dialogueChars / charCount) * 100) : 0;
+
+                // 4. Repeated end-of-sentence
+                const endings = text.split(/[\n。！？]/).filter(s => s.trim().length > 0).map(s => {
+                    const match = s.match(/[ぁ-んァ-ヶー]{2,4}$/);
+                    return match ? match[0] : null;
+                }).filter(Boolean);
+
+                let repeatedEndings = [];
+                let currentCount = 1;
+                for (let i = 1; i < endings.length; i++) {
+                    if (endings[i] === endings[i - 1]) {
+                        currentCount++;
+                        if (currentCount === 3) repeatedEndings.push(endings[i]);
+                    } else {
+                        currentCount = 1;
+                    }
+                }
+
+                // 5. Keyword analysis (using Intl.Segmenter)
+                let keywords = [];
+                if (window.Intl && window.Intl.Segmenter && text.length > 0) {
+                    const segmenter = new Intl.Segmenter('ja', { granularity: 'word' });
+                    const segments = segmenter.segment(text);
+                    const wordCounts = {};
+                    for (const segment of segments) {
+                        const word = segment.segment;
+                        // Filter for likely nouns (simplified: 2+ chars, Kanji or Katakana)
+                        if (word.length >= 2 && segment.isWordLike && /[\u4E00-\u9FFF\u30A0-\u30FF]/.test(word)) {
+                            wordCounts[word] = (wordCounts[word] || 0) + 1;
+                        }
+                    }
+                    keywords = Object.entries(wordCounts)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 5);
+                }
 
                 return {
                     charCount,
@@ -135,7 +187,12 @@
                     lineCount,
                     manuscriptPages,
                     readingTime,
-                    speakingTime
+                    speakingTime,
+                    ratios: { kanji, hiragana, katakana, other, kanjiRatio, hiraRatio },
+                    sentences: { avg: avgSentenceLength, long: longSentences },
+                    dialogueRatio,
+                    repeatedEndings: [...new Set(repeatedEndings)],
+                    keywords
                 };
             }, [text]);
 
@@ -155,9 +212,9 @@
                 <main className="min-h-screen">
                     <header className="subpage-header">
                         <div className="container">
-                            <h1 className="subpage-title">文字数カウント</h1>
+                            <h1 className="subpage-title">文字数カウント＆文章チェッカー</h1>
                             <p className="mt-4 font-gothic opacity-70">
-                                執筆の進捗を確認するための高機能分析ツールです。
+                                執筆の進捗を確認し、文章の読みやすさを分析するための高機能ツールです。
                             </p>
                         </div>
                     </header>
@@ -211,7 +268,81 @@
                                     </div>
 
                                     <div className="glass-panel p-6">
-                                        <h3 className="font-mono text-sm tracking-widest border-b border-black mb-6 pb-2" style={{ borderColor: 'currentColor' }}>WRITING ANALYSIS</h3>
+                                        <h3 className="font-mono text-sm tracking-widest border-b border-black mb-6 pb-2" style={{ borderColor: 'currentColor' }}>TEXT CHECKER</h3>
+                                        <div className="space-y-6">
+                                            {/* Ratios */}
+                                            <div className="space-y-2">
+                                                <div className="flex justify-between text-[10px] font-bold">
+                                                    <span>漢字比率 (開閉率)</span>
+                                                    <span className={stats.ratios.kanjiRatio > 40 ? "text-red-500" : stats.ratios.kanjiRatio < 20 ? "text-blue-500" : ""}>
+                                                        {stats.ratios.kanjiRatio}% {stats.ratios.kanjiRatio > 40 ? "（硬め）" : stats.ratios.kanjiRatio < 20 ? "（和らかめ）" : "（理想的）"}
+                                                    </span>
+                                                </div>
+                                                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden flex">
+                                                    <div className="h-full bg-black" style={{ width: `${stats.ratios.kanjiRatio}%` }} />
+                                                    <div className="h-full bg-gray-400" style={{ width: `${stats.ratios.hiraRatio}%` }} />
+                                                </div>
+                                                <p className="text-[10px] opacity-50">理想：漢字30%前後</p>
+                                            </div>
+
+                                            {/* Sentences */}
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="flex flex-col">
+                                                    <span className="text-[10px] opacity-70 mb-1">平均一文長</span>
+                                                    <div>
+                                                        <span className={`text-xl font-black font-mono ${stats.sentences.avg > 60 ? "text-red-500" : ""}`}>{stats.sentences.avg}</span>
+                                                        <span className="text-[10px] ml-1 font-bold">字</span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-[10px] opacity-70 mb-1">長文(60字〜)</span>
+                                                    <div>
+                                                        <span className={`text-xl font-black font-mono ${stats.sentences.long > 0 ? "text-red-500" : ""}`}>{stats.sentences.long}</span>
+                                                        <span className="text-[10px] ml-1 font-bold">箇所</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Dialogue */}
+                                            <div className="space-y-2">
+                                                <div className="flex justify-between text-[10px] font-bold">
+                                                    <span>会話文比率</span>
+                                                    <span>{stats.dialogueRatio}%</span>
+                                                </div>
+                                                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                                                    <div className="h-full bg-pink-500" style={{ width: `${stats.dialogueRatio}%` }} />
+                                                </div>
+                                            </div>
+
+                                            {/* Repetition */}
+                                            {stats.repeatedEndings.length > 0 && (
+                                                <div className="p-3 bg-red-50 border border-red-100 rounded-lg animate-pulse">
+                                                    <h4 className="text-[10px] font-bold text-red-600 mb-1">文末重複アラート</h4>
+                                                    <p className="text-[10px] text-red-500 leading-tight">
+                                                        同じ文末が3回以上連続しています：<br />
+                                                        {stats.repeatedEndings.join(', ')}
+                                                    </p>
+                                                </div>
+                                            )}
+
+                                            {/* Keywords */}
+                                            {stats.keywords.length > 0 && (
+                                                <div className="pt-4 border-t border-black/10" style={{ borderColor: 'currentColor' }}>
+                                                    <h4 className="text-[10px] font-bold opacity-50 mb-2 uppercase">Frequent Keywords</h4>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {stats.keywords.map(([word, count]) => (
+                                                            <span key={word} className="text-[10px] bg-black/5 px-2 py-1 rounded-md font-bold">
+                                                                {word} <span className="opacity-40">{count}</span>
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="glass-panel p-6">
+                                        <h3 className="font-mono text-sm tracking-widest border-b border-black mb-6 pb-2" style={{ borderColor: 'currentColor' }}>READING TIME</h3>
                                         <div className="space-y-6">
                                             <div className="flex justify-between items-end">
                                                 <span className="text-sm opacity-70">推定読了時間</span>
@@ -229,7 +360,7 @@
                                             </div>
                                         </div>
                                         <p className="mt-6 text-[10px] leading-tight opacity-50 border-t border-black pt-4" style={{ borderColor: 'currentColor' }}>
-                                            ※読了時間は 600字/分、朗読時間は 300字/分 で計算しています。
+                                            ※読了 600字/分、朗読 300字/分 で計算。
                                         </p>
                                     </div>
                                 </div>
@@ -258,7 +389,7 @@
     <!-- Global Footer -->
     <footer className="footer">
         <div className="container">
-            <div className="copyright">&copy; 2024 INVADERS Inc. All Rights Reserved.</div>
+            <div className="copyright">&copy; 2026 Yoshida Kagetica</div>
         </div>
     </footer>
 
