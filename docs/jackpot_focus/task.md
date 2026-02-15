@@ -34,4 +34,7 @@
     - [x] Replace `window.confirm` with modal logic
 - [x] Refine Quick Sort Button Label
     - [x] Add text "クイックソート" to the button
+- [x] Add OGP Tags
+    - [x] Locate `jackpot-focus-ogp.png` and rename (remove space)
+    - [x] Add `og:title`, `og:description`, `og:image`, `twitter:card` etc.
 - [ ] Notify user
