@@ -11,13 +11,10 @@ Refine "Jackpot Focus" UI.
 
 ### Lab Directory
 #### [MODIFY] [jackpot_focus.html](file:///d:/github/kageticasite/lab/jackpot_focus.html)
-- **UI Improvement**: "Start Now!" Indicator.
-    - Define custom `poke` animation (translateX) in Tailwind config.
-    - Move indicator to `absolute -right-24 top-1/2 -translate-y-1/2`.
-    - Rotate Hand icon `-90deg` (pointing left).
-    - Apply `animate-poke`.
+- **UI Improvement**: Quick Sort Button Label.
+    - Change button from icon-only to Pill shape with Icon + Text "クイックソート".
 
 ## Verification Plan
 
 ### Manual Verification
-- **UI**: Verify "Start Now!" is on the right, pointing at the timer, and moving left-right ("poking").
+- **UI**: Verify Quick Sort button displays the text "クイックソート".

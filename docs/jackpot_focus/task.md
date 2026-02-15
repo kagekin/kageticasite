@@ -28,4 +28,10 @@
     - [x] Add `poke` animation to Tailwind config
     - [x] Move element to the right of the timer
     - [x] Update icon rotation and text layout
+- [x] Implement Quick Sort Button & Modal
+    - [x] Create `SortModal` component
+    - [x] Add round "Quick Sort" button above timer
+    - [x] Replace `window.confirm` with modal logic
+- [x] Refine Quick Sort Button Label
+    - [x] Add text "クイックソート" to the button
 - [ ] Notify user

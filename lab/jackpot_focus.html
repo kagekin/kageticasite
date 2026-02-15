@@ -339,6 +339,41 @@
             </div>
         );
 
+        const SortModal = ({ onConfirm, onClose }) => (
+            <div className="fixed inset-0 bg-slate-950/95 z-[100] flex flex-col items-center justify-center p-6 text-center animate-in fade-in">
+                <div className="w-full max-w-sm bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-2xl relative">
+                    <button onClick={onClose} className="absolute top-4 right-4 text-slate-500 hover:text-white">
+                        <X size={24} />
+                    </button>
+
+                    <div className="mb-4 flex justify-center text-indigo-500">
+                        <ArrowUpDown size={48} />
+                    </div>
+
+                    <h2 className="text-xl font-black text-white mb-2">タスクを並び替えますか？</h2>
+                    <p className="text-slate-400 mb-6 text-sm">
+                        「すぐ終わる（瞬殺）」タスクが最優先され、<br />
+                        次に「緊急×重要」なものが続きます。
+                    </p>
+
+                    <div className="flex gap-3">
+                        <button
+                            onClick={onClose}
+                            className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl font-bold text-slate-300 transition-colors"
+                        >
+                            キャンセル
+                        </button>
+                        <button
+                            onClick={onConfirm}
+                            className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-bold text-white transition-colors shadow-lg shadow-indigo-500/20"
+                        >
+                            並び替える
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+
         // --- Onboarding Component ---
         const Onboarding = ({ onFinish }) => {
             const [step, setStep] = useState(0);
@@ -437,8 +472,9 @@
             const [flash, setFlash] = useState(false);
             const [shake, setShake] = useState(false);
 
-            // Onboarding/Help State
+            // Onboarding/Help/Sort State
             const [showHelp, setShowHelp] = useState(false);
+            const [showSortModal, setShowSortModal] = useState(false);
             const [showOnboarding, setShowOnboarding] = useState(() => {
                 return !localStorage.getItem('jackpot_visited');
             });
@@ -607,15 +643,15 @@
             };
 
             const handleAutoSort = () => {
-                if (window.confirm("タスクを優先度順に並び替えますか？")) {
-                    const pending = tasks.filter(t => t.status === 'pending');
-                    const completed = tasks.filter(t => t.status === 'completed');
+                // Sort Logic
+                const pending = tasks.filter(t => t.status === 'pending');
+                const completed = tasks.filter(t => t.status === 'completed');
 
-                    pending.sort((a, b) => calculateScore(b) - calculateScore(a));
+                pending.sort((a, b) => calculateScore(b) - calculateScore(a));
 
-                    setTasks([...pending, ...completed]);
-                    triggerSound('tick');
-                }
+                setTasks([...pending, ...completed]);
+                triggerSound('tick');
+                setShowSortModal(false); // Close Modal
             };
 
             useEffect(() => {
@@ -663,9 +699,7 @@
                                     <button onClick={() => setMuted(!muted)} className="p-1 text-slate-500 hover:text-white">
                                         {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
                                     </button>
-                                    <button onClick={handleAutoSort} className="p-1 text-slate-500 hover:text-white" title="自動ソート">
-                                        <ArrowUpDown size={16} />
-                                    </button>
+                                    {/* Removed old sort button from header */}
                                     <button onClick={() => setMode('input')} className="text-xs bg-slate-800 px-3 py-1 rounded text-slate-300 flex items-center gap-1 hover:bg-slate-700">
                                         <Plus size={12} /> 追加
                                     </button>
@@ -722,6 +756,19 @@
                         </div>
 
                         <div className="h-[40%] bg-slate-950 p-4 flex flex-col items-center justify-center relative shadow-[0_-5px_30px_rgba(0,0,0,0.5)] z-20">
+
+                            {/* Quick Sort Button */}
+                            {!isTimerRunning && (
+                                <button
+                                    onClick={() => setShowSortModal(true)}
+                                    className="absolute top-4 left-1/2 -translate-x-1/2 xs:top-6 bg-slate-900 border border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800 hover:border-indigo-500 rounded-full px-4 py-2 flex items-center gap-2 transition-all shadow-lg z-20"
+                                    title="優先度順に並び替え"
+                                >
+                                    <ArrowUpDown size={16} />
+                                    <span className="text-xs font-bold">クイックソート</span>
+                                </button>
+                            )}
+
                             <div className="w-full text-center mb-2"><span className="text-xs text-slate-500 font-mono">CURRENT TARGET</span><h3 className="text-lg font-black text-white truncate px-4">{activeTask ? activeTask.text : 'No Target Selected'}</h3></div>
 
                             {/* Timer Display & Toggle */}
@@ -793,6 +840,7 @@
 
                     {showOnboarding && <Onboarding onFinish={() => setShowOnboarding(false)} />}
                     {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
+                    {showSortModal && <SortModal onConfirm={handleAutoSort} onClose={() => setShowSortModal(false)} />}
 
                     {mode === 'input' && (
                         <div className="flex flex-col h-full p-6 animate-in fade-in">
