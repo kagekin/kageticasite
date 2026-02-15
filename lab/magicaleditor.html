@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マジカル編集者 - 小説宣伝ポップメーカー | Kagetica Lab</title>
+    <meta property="og:title" content="マジカル編集者 - 小説宣伝ポップメーカー | Kagetica Lab">
+    <meta property="og:description" content="24人の編集者キャラ × 24種のデザインで、あなたの小説の宣伝画像を爆速生成！">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://kagetica.net/lab/magicaleditor.html">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@kagetica">
+    <link rel="icon" href="../assets/icon.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Shippori+Mincho:wght@400;500;600;700;800&family=DotGothic16&family=Hachi+Maru+Pop&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { colors: { retropink: '#FF6B9D', retroorange: '#FF8E53', retroyellow: '#FFC837', retrocyan: '#00E5FF', retrogreen: '#69F0AE', retropurple: '#B388FF' }, fontFamily: { dot: ['"DotGothic16"', 'sans-serif'], pop: ['"Hachi Maru Pop"', 'cursive'], gothic: ['"Noto Sans JP"', 'sans-serif'], mincho: ['"Shippori Mincho"', 'serif'] } } } }
+    </script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #FFE0F0 0%, #FFF5E0 50%, #E0F0FF 100%) !important;
+            min-height: 100vh
+        }
+
+        .retro-border {
+            border: 4px solid #000;
+            box-shadow: 6px 6px 0 #000
+        }
+
+        .retro-border:hover {
+            box-shadow: 8px 8px 0 #FF6B9D
+        }
+
+        .char-card {
+            cursor: pointer;
+            transition: all .2s;
+            border: 3px solid #000;
+            box-shadow: 4px 4px 0 #000;
+            border-radius: 12px;
+            padding: 8px;
+            text-align: center
+        }
+
+        .char-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 #FF6B9D
+        }
+
+        .char-card.selected {
+            border-color: #FF6B9D;
+            box-shadow: 6px 6px 0 #FF6B9D;
+            background: linear-gradient(135deg, #FFF0F5, #FFE0EB)
+        }
+
+        .design-card {
+            cursor: pointer;
+            transition: all .2s;
+            border: 3px solid #000;
+            box-shadow: 3px 3px 0 #000;
+            border-radius: 8px;
+            padding: 6px;
+            text-align: center;
+            font-size: 11px
+        }
+
+        .design-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0 #00E5FF
+        }
+
+        .design-card.selected {
+            border-color: #00E5FF;
+            box-shadow: 5px 5px 0 #00E5FF;
+            background: linear-gradient(135deg, #E0FFFF, #E0F5FF)
+        }
+
+        .retro-input {
+            border: 3px solid #000;
+            box-shadow: 4px 4px 0 #000;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 14px;
+            width: 100%;
+            outline: none;
+            transition: all .2s
+        }
+
+        .retro-input:focus {
+            border-color: #FF6B9D;
+            box-shadow: 4px 4px 0 #FF6B9D
+        }
+
+        .retro-btn {
+            border: 3px solid #000;
+            box-shadow: 4px 4px 0 #000;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all .15s;
+            font-family: 'Noto Sans JP', sans-serif
+        }
+
+        .retro-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 #000
+        }
+
+        .retro-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 #000
+        }
+
+        .step-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #000;
+            color: #FFC837;
+            font-weight: 900;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-family: 'DotGothic16', sans-serif
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0)
+            }
+
+            50% {
+                transform: translateY(-8px)
+            }
+        }
+
+        @keyframes sparkle {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1)
+            }
+
+            50% {
+                opacity: .5;
+                transform: scale(1.2)
+            }
+        }
+
+        @keyframes bounce-in {
+            0% {
+                opacity: 0;
+                transform: scale(.3)
+            }
+
+            50% {
+                transform: scale(1.05)
+            }
+
+            70% {
+                transform: scale(.9)
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1)
+            }
+        }
+
+        .float-anim {
+            animation: float 3s ease-in-out infinite
+        }
+
+        .sparkle-anim {
+            animation: sparkle 2s ease-in-out infinite
+        }
+
+        .bounce-in {
+            animation: bounce-in .6s ease
+        }
+
+        .checkerboard {
+            background-image: linear-gradient(45deg, rgba(0, 0, 0, .05) 25%, transparent 25%, transparent 75%, rgba(0, 0, 0, .05) 75%), linear-gradient(45deg, rgba(0, 0, 0, .05) 25%, transparent 25%, transparent 75%, rgba(0, 0, 0, .05) 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px
+        }
+
+        .dots-pattern {
+            background-image: radial-gradient(circle, rgba(0, 0, 0, .08) 1px, transparent 1px);
+            background-size: 12px 12px
+        }
+
+        .stripe-pattern {
+            background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0, 0, 0, .03) 10px, rgba(0, 0, 0, .03) 20px)
+        }
+
+        .canvas-wrapper {
+            width: 420px;
+            height: 600px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 2px;
+            box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        @media(max-width:1280px) {
+            .canvas-wrapper {
+                width: 360px;
+                height: 514px
+            }
+        }
+
+        @media(max-width:768px) {
+            .canvas-wrapper {
+                width: 100%;
+                aspect-ratio: 7/10;
+                height: auto
+            }
+        }
+    </style>
+</head>
+
+<body class="loading">
+    <canvas id="matrix-canvas"></canvas>
+    <div class="sf-toggle" id="sf-toggle"><span class="sf-toggle-icon">SF</span></div>
+    <nav id="nav">
+        <div class="nav-container">
+            <a href="../index.html" class="logo-mark"><img src="../assets/icon.png" alt="Kagetica Icon"></a>
+            <div class="nav-links">
+                <a href="../index.html" class="vertical-text">Top</a>
+                <a href="../profile.html" class="vertical-text">Profile</a>
+                <a href="../news.html" class="vertical-text">News</a>
+                <a href="../works.html" class="vertical-text active">Works</a>
+                <a href="../schedule.html" class="vertical-text">Schedule</a>
+                <a href="https://docs.google.com/forms/d/e/1FAIpQLSdXy8Z_p6V_h1B4Zc6mX7VfW6zY8v-J5z1zQ8P_z6-lq6q9g/viewform"
+                    target="_blank" class="vertical-text">Contact</a>
+            </div>
+        </div>
+    </nav>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useCallback } = React;
+        const CHARACTERS = [
+            { id: 1, name: '恋する乙女ギャル', emoji: '💖', bg: 'from-pink-300 to-rose-200', text: 'text-rose-950', boxBg: 'bg-white/80', defaultQuote: '尊すぎて無理…全員読んで！', tweet: 'ちょっと待って、尊すぎて無理…😭全人類、この沼にハマって！！', tags: '#恋愛小説 #ラブコメ' },
+            { id: 13, name: 'ツンデレ幼馴染', emoji: '🎀', bg: 'from-red-200 to-rose-300', text: 'text-red-950', boxBg: 'bg-white/90', defaultQuote: 'べ、別にあんたの小説なんて読んでないんだからね！', tweet: 'べ、別にあんたの小説なんて読んでないんだからね！…でも、次はいつ更新するの？///', tags: '#青春 #ラブコメ #ツンデレ' },
+            { id: 14, name: 'ゆるふわお姉さん', emoji: '🌸', bg: 'from-rose-100 to-pink-100', text: 'text-rose-800', boxBg: 'bg-white/90', defaultQuote: 'はわわ…尊すぎてお茶こぼしちゃいましたぁ', tweet: 'はわわ…尊すぎてお茶こぼしちゃいましたぁ🍵 心がポカポカする、とっても素敵なお話です✨', tags: '#百合 #日常 #癒やし' },
+            { id: 2, name: '名探偵の弟子', emoji: '🕵️', bg: 'from-slate-300 to-gray-300', text: 'text-slate-900', boxBg: 'bg-white/80', defaultQuote: 'このトリック、見破れますか？', tweet: '先生、とんでもない事件を見つけました。この謎、解けますか？🕵️', tags: '#ミステリ #読書好きと繋がりたい' },
+            { id: 3, name: 'お化けのQちゃん', emoji: '👻', bg: 'from-purple-500 to-indigo-600', text: 'text-white', boxBg: 'bg-black/40', defaultQuote: 'ヒヒヒ…今夜は眠れないねぇ', tweet: 'ヒヒヒ…今夜は眠らせないよぉ…👻怖いのが好きな子、寄っといで……', tags: '#ホラー小説 #怪談' },
+            { id: 8, name: '裏社会の顔役', emoji: '🍷', bg: 'from-zinc-900 to-gray-800', text: 'text-gray-100', boxBg: 'bg-black/60 border border-red-900', defaultQuote: 'ククク…こういう絶望を待っていた', tweet: 'ククク……美しい絶望だ。甘い物語に飽きた奴は、ここへ来い🍷', tags: '#ダークファンタジー #アングラ' },
+            { id: 18, name: '毒舌メイド', emoji: '🧹', bg: 'from-slate-800 to-slate-900', text: 'text-slate-100', boxBg: 'bg-black/60 border border-slate-500', defaultQuote: '…ふん、少しはマシな文章が書けるようですね', tweet: '…ふん、少しはマシな文章が書けるようですね。仕方ありません、私が皆様にお勧めしてあげましょう🧹', tags: '#アンチヒーロー #ダークコメディ' },
+            { id: 7, name: '熱血勇者', emoji: '🔥', bg: 'from-red-500 to-orange-400', text: 'text-white', boxBg: 'bg-white/20', defaultQuote: 'うおお！ここからが激アツだぜ！', tweet: 'うおおおお！胸が熱くなる展開キタコレ！絶対読んでくれよな！🔥', tags: '#アクション #バトル' },
+            { id: 19, name: '歴戦の傭兵', emoji: '⚔️', bg: 'from-amber-700 to-orange-900', text: 'text-amber-50', boxBg: 'bg-black/50 border border-amber-600', defaultQuote: 'いい目をしてやがる。俺の背中は預けたぜ', tweet: 'いい目をしてやがる。俺の背中はお前の物語に預けたぜ。生き残りたきゃ、これを読め⚔️', tags: '#ミリタリー #サバイバル #ハードボイルド' },
+            { id: 4, name: 'エルフの賢者', emoji: '🧝‍♀️', bg: 'from-emerald-400 to-teal-200', text: 'text-teal-950', boxBg: 'bg-white/80', defaultQuote: '久々に魂が震える物語じゃ', tweet: '長き時を生きる我でも、これほどの物語には滅多に出会えぬ。刮目せよ🧝‍♀️', tags: '#ファンタジー #異世界' },
+            { id: 15, name: '天使の司書', emoji: '👼', bg: 'from-sky-100 to-blue-200', text: 'text-sky-900', boxBg: 'bg-white/90', defaultQuote: '天界の図書館にも、ぜひ収蔵したい一冊です', tweet: '天界の図書館にも、ぜひ収蔵したい一冊です📖 澄み切った世界観に心が洗われますよ。', tags: '#ハイファンタジー #神話' },
+            { id: 5, name: '未来型AIロボ', emoji: '🤖', bg: 'from-cyan-400 to-blue-500', text: 'text-white', boxBg: 'bg-black/50 border border-cyan-300', defaultQuote: '解析完了。推奨度、測定不能', tweet: '【解析完了】本作品ノ推奨度、計測不能。直チニ アクセスヲ 推奨シマス。🤖⚡', tags: '#SF #サイバーパンク' },
+            { id: 16, name: '狂気の科学者', emoji: '🧪', bg: 'from-lime-300 to-green-500', text: 'text-green-950', boxBg: 'bg-white/80 border border-lime-500', defaultQuote: 'クハハ！この設定、私の理論を凌駕している！', tweet: 'クハハハ！見事だ！この設定の緻密さ、私の理論すら凌駕しているぞ！🧪✨', tags: '#SF #ハードSF #科学' },
+            { id: 17, name: '宇宙からの訪問者', emoji: '👽', bg: 'from-violet-500 to-fuchsia-600', text: 'text-white', boxBg: 'bg-black/40 border border-fuchsia-400', defaultQuote: 'ワレワレノ星ニモ、コレホドノ物語ハ 存在シナイ', tweet: 'ワレワレノ星ニモ、コレホドノ物語ハ 存在シナイ👽 チキュウジン、オソルベシ。', tags: '#不条理 #宇宙 #SF' },
+            { id: 9, name: '癒やしの柴犬', emoji: '🐾', bg: 'from-orange-200 to-yellow-100', text: 'text-orange-950', boxBg: 'bg-white/80', defaultQuote: '読むと心がポカポカするワン', tweet: 'ワン！🐾（疲れたときは、このお話を読んでほっこりするワン！）', tags: '#日常 #ほのぼの' },
+            { id: 11, name: '陽気なピエロ', emoji: '🎈', bg: 'from-yellow-400 to-red-400', text: 'text-red-950', boxBg: 'bg-white/90', defaultQuote: 'あはは！お腹痛い！最高傑作！', tweet: 'アハハハ！🤣お腹痛い！笑いたい奴は絶対にこれ読むべきだよ！🎈', tags: '#コメディ #ギャグ' },
+            { id: 10, name: 'バーのマスター', emoji: '🍸', bg: 'from-indigo-950 to-blue-900', text: 'text-blue-50', boxBg: 'bg-white/10 backdrop-blur-md', defaultQuote: '今夜は、この物語に酔いませんか', tweet: 'お疲れ様です。今夜は、この極上の物語で静かに酔いしれませんか？🥃', tags: '#人間ドラマ #現代劇' },
+            { id: 6, name: '明治の文豪幽霊', emoji: '🖋️', bg: 'from-amber-200 to-orange-100', text: 'text-amber-950', boxBg: 'bg-white/70 border border-amber-300', defaultQuote: 'ふむ、悪くない。筆致に味がある', tweet: 'ふむ……実に興趣が尽きぬ。魂を削って書かれた文字には熱が宿るものだ🖋️', tags: '#純文学 #歴史小説' },
+            { id: 20, name: 'バリキャリ編集長', emoji: '👩‍💼', bg: 'from-blue-100 to-indigo-100', text: 'text-indigo-900', boxBg: 'bg-white/90 border border-blue-200', defaultQuote: '圧倒的な熱量。今すぐ企画書を通したいわ', tweet: '圧倒的な熱量。今すぐ企画書を通して書籍化したいレベルの作品よ。必読です👩‍💼✨', tags: '#お仕事小説 #ビジネス #必読' },
+            { id: 21, name: '敏腕プロデューサー', emoji: '🕶️', bg: 'from-gray-300 to-gray-400', text: 'text-gray-900', boxBg: 'bg-white/80', defaultQuote: '売れる匂いがする。私がプロデュースしよう', tweet: '売れる匂いがするね。私がプロデュースして、世界に見せつけてやろう🕶️💸', tags: '#エンタメ #話題作' },
+            { id: 22, name: 'ベテラン書評家', emoji: '☕', bg: 'from-stone-200 to-stone-400', text: 'text-stone-900', boxBg: 'bg-stone-50/90', defaultQuote: '近年稀に見る傑作。読書の醍醐味がここにある', tweet: '近年稀に見る傑作。言葉の端々から、読書の醍醐味を深く味わえる一冊です☕📖', tags: '#書評 #読書記録 #名作' },
+            { id: 23, name: '運命の占い師', emoji: '🔮', bg: 'from-purple-900 to-indigo-900', text: 'text-purple-100', boxBg: 'bg-black/50 border border-purple-500', defaultQuote: '見えます…この作品が世界を席巻する未来が…', tweet: '見えます…この作品が多くの人の心を打ち、世界を席巻する未来が…🔮✨', tags: '#スピリチュアル #運命の出会い' },
+            { id: 24, name: 'シンプルな黒猫', emoji: '🐈‍⬛', bg: 'from-gray-100 to-gray-200', text: 'text-gray-900', boxBg: 'bg-white/90 shadow-sm', defaultQuote: 'ニャー。（とりあえず読んでみたら？）', tweet: 'ニャー🐾（四の五の言わずに、とりあえず読んでみたら？面白いから）', tags: '#おすすめ小説 #読書' },
+            { id: 12, name: 'マジカル編集者', emoji: '🧙‍♀️', bg: 'from-fuchsia-400 to-pink-400', text: 'text-white', boxBg: 'bg-white/30 backdrop-blur-md', defaultQuote: 'ジャンルなんて関係ない、面白い！', tweet: '見つけちゃいました！ジャンルの壁を超える、圧倒的な「面白さ」を！✨', tags: '#マジカル編集者 #小説紹介' }
+        ];
+
+        const DESIGNS = [
+            { id: 1, name: 'ポップ☆スター', emoji: '⭐', pattern: 'checkerboard', titleStyle: 'font-pop text-3xl', accentColor: '#FF6B9D', cornerDeco: 'stars', bgExtra: 'bg-gradient-to-br' },
+            { id: 2, name: 'ネオンナイト', emoji: '🌃', pattern: 'none', titleStyle: 'font-gothic font-black text-3xl tracking-tight', accentColor: '#00E5FF', cornerDeco: 'neon-border', bgExtra: 'bg-gradient-to-b' },
+            { id: 3, name: 'レトロゲーム', emoji: '🎮', pattern: 'dots-pattern', titleStyle: 'font-dot text-2xl', accentColor: '#69F0AE', cornerDeco: 'pixel', bgExtra: 'bg-gradient-to-br' },
+            { id: 4, name: '和モダン', emoji: '🎋', pattern: 'none', titleStyle: 'font-mincho text-3xl font-bold', accentColor: '#D4A574', cornerDeco: 'washi', bgExtra: 'bg-gradient-to-b' },
+            { id: 5, name: 'マガジン風', emoji: '📰', pattern: 'none', titleStyle: 'font-gothic font-black text-4xl italic', accentColor: '#FF0050', cornerDeco: 'magazine', bgExtra: 'bg-gradient-to-br' },
+            { id: 6, name: 'パステルドリーム', emoji: '🦄', pattern: 'dots-pattern', titleStyle: 'font-pop text-3xl', accentColor: '#C8A2FF', cornerDeco: 'pastel-cloud', bgExtra: 'bg-gradient-to-br' },
+            { id: 7, name: 'ダーク＆エッジ', emoji: '🖤', pattern: 'stripe-pattern', titleStyle: 'font-gothic font-black text-3xl uppercase', accentColor: '#FF2D55', cornerDeco: 'edge', bgExtra: 'bg-gradient-to-b' },
+            { id: 8, name: 'キュートリボン', emoji: '🎀', pattern: 'checkerboard', titleStyle: 'font-pop text-2xl', accentColor: '#FF69B4', cornerDeco: 'ribbon', bgExtra: 'bg-gradient-to-br' },
+            { id: 9, name: 'コズミック', emoji: '🌌', pattern: 'none', titleStyle: 'font-gothic font-bold text-3xl', accentColor: '#7C4DFF', cornerDeco: 'cosmic', bgExtra: 'bg-gradient-to-b' },
+            { id: 10, name: 'ヴィンテージ', emoji: '📜', pattern: 'dots-pattern', titleStyle: 'font-mincho text-3xl', accentColor: '#8B6914', cornerDeco: 'vintage', bgExtra: 'bg-gradient-to-br' },
+            { id: 11, name: 'サイバーパンク', emoji: '💾', pattern: 'none', titleStyle: 'font-dot text-2xl tracking-widest', accentColor: '#00FF41', cornerDeco: 'cyber', bgExtra: 'bg-gradient-to-b' },
+            { id: 12, name: 'バブルポップ', emoji: '🫧', pattern: 'none', titleStyle: 'font-pop text-3xl', accentColor: '#FF8E53', cornerDeco: 'bubbles', bgExtra: 'bg-gradient-to-br' },
+            { id: 13, name: 'ストリート', emoji: '🛹', pattern: 'stripe-pattern', titleStyle: 'font-gothic font-black text-4xl', accentColor: '#FFD700', cornerDeco: 'street', bgExtra: 'bg-gradient-to-b' },
+            { id: 14, name: 'フローラル', emoji: '🌺', pattern: 'none', titleStyle: 'font-mincho text-3xl font-medium', accentColor: '#E91E63', cornerDeco: 'floral', bgExtra: 'bg-gradient-to-br' },
+            { id: 15, name: 'ミニマル白', emoji: '◻️', pattern: 'none', titleStyle: 'font-gothic font-light text-3xl tracking-wider', accentColor: '#000000', cornerDeco: 'minimal', bgExtra: 'bg-white' },
+            { id: 16, name: 'グリッチ', emoji: '📺', pattern: 'stripe-pattern', titleStyle: 'font-dot text-3xl', accentColor: '#FF0080', cornerDeco: 'glitch', bgExtra: 'bg-gradient-to-b' },
+            { id: 17, name: 'トロピカル', emoji: '🌴', pattern: 'none', titleStyle: 'font-gothic font-bold text-3xl', accentColor: '#FF6D00', cornerDeco: 'tropical', bgExtra: 'bg-gradient-to-br' },
+            { id: 18, name: 'ゴシックロマン', emoji: '🥀', pattern: 'none', titleStyle: 'font-mincho text-3xl font-bold', accentColor: '#8B0000', cornerDeco: 'gothic', bgExtra: 'bg-gradient-to-b' },
+            { id: 19, name: 'キャンディ', emoji: '🍬', pattern: 'checkerboard', titleStyle: 'font-pop text-3xl', accentColor: '#FF1493', cornerDeco: 'candy', bgExtra: 'bg-gradient-to-br' },
+            { id: 20, name: 'アクアマリン', emoji: '🐬', pattern: 'dots-pattern', titleStyle: 'font-gothic font-bold text-3xl', accentColor: '#00BCD4', cornerDeco: 'aqua', bgExtra: 'bg-gradient-to-br' },
+            { id: 21, name: 'オーロラ', emoji: '🌈', pattern: 'none', titleStyle: 'font-gothic font-bold text-3xl', accentColor: '#E040FB', cornerDeco: 'aurora', bgExtra: 'bg-gradient-to-br' },
+            { id: 22, name: 'スチームパンク', emoji: '⚙️', pattern: 'stripe-pattern', titleStyle: 'font-mincho text-3xl font-bold', accentColor: '#CD7F32', cornerDeco: 'steam', bgExtra: 'bg-gradient-to-b' },
+            { id: 23, name: 'ファンシー', emoji: '💝', pattern: 'dots-pattern', titleStyle: 'font-pop text-3xl', accentColor: '#FF69B4', cornerDeco: 'fancy', bgExtra: 'bg-gradient-to-br' },
+            { id: 24, name: 'シンプル黒', emoji: '◼️', pattern: 'none', titleStyle: 'font-gothic font-black text-3xl', accentColor: '#FFFFFF', cornerDeco: 'minimal-dark', bgExtra: 'bg-black' }
+        ];
+
+        const designBgMap = {
+            1: 'linear-gradient(135deg,#FFE0F0,#FFF5E0,#E0F0FF)', 2: 'linear-gradient(180deg,#0a0a2e,#1a1a4e,#0a0a2e)',
+            3: 'linear-gradient(135deg,#1a1a2e,#2d1b69,#1a1a2e)', 4: 'linear-gradient(180deg,#f5f0e8,#e8dcc8)',
+            5: 'linear-gradient(135deg,#ffffff,#f0f0f0)', 6: 'linear-gradient(135deg,#fce4f3,#e8d5f5,#d5e8f5)',
+            7: 'linear-gradient(180deg,#1a1a1a,#2d2d2d)', 8: 'linear-gradient(135deg,#fff0f5,#ffe0eb)',
+            9: 'linear-gradient(180deg,#0d0221,#150535,#1a0a3e)', 10: 'linear-gradient(135deg,#f5e6c8,#e8d5a8)',
+            11: 'linear-gradient(180deg,#0a0a0a,#1a0a2e)', 12: 'linear-gradient(135deg,#fff0e0,#ffe0f0,#e0f0ff)',
+            13: 'linear-gradient(180deg,#2d2d2d,#1a1a1a)', 14: 'linear-gradient(135deg,#fce4ec,#f8e0f0)',
+            15: '#ffffff', 16: 'linear-gradient(180deg,#1a1a2e,#0a0a1e)',
+            17: 'linear-gradient(135deg,#e0f7fa,#fff9c4,#fce4ec)', 18: 'linear-gradient(180deg,#1a0a1e,#2d1020)',
+            19: 'linear-gradient(135deg,#fce4ec,#fff9c4,#e8f5e9)', 20: 'linear-gradient(135deg,#e0f7fa,#e0f2f1)',
+            21: 'linear-gradient(135deg,#e8d5f5,#d5e8f5,#f5e6d5)', 22: 'linear-gradient(180deg,#3e2723,#4e342e)',
+            23: 'linear-gradient(135deg,#fce4f3,#fff0f5)', 24: '#111111'
+        };
+
+        const getDesignDecoStyle = (designId) => {
+            const s = { position: 'absolute', pointerEvents: 'none' };
+            switch (designId) {
+                case 1: return { ...s, top: 0, left: 0, right: 0, bottom: 0, background: 'radial-gradient(circle at 10% 10%,rgba(255,107,157,.3) 0%,transparent 40%),radial-gradient(circle at 90% 90%,rgba(255,200,55,.3) 0%,transparent 40%)' };
+                case 2: return { ...s, top: 0, left: 0, right: 0, bottom: 0, boxShadow: 'inset 0 0 60px rgba(0,229,255,.15)', border: '2px solid rgba(0,229,255,.3)' };
+                case 9: return { ...s, top: 0, left: 0, right: 0, bottom: 0, background: 'radial-gradient(ellipse at 30% 20%,rgba(124,77,255,.2),transparent 50%),radial-gradient(ellipse at 70% 80%,rgba(224,64,251,.2),transparent 50%)' };
+                case 11: return { ...s, top: 0, left: 0, right: 0, bottom: 0, boxShadow: 'inset 0 0 40px rgba(0,255,65,.1)', border: '1px solid rgba(0,255,65,.3)' };
+                case 16: return { ...s, top: 0, left: 0, right: 0, bottom: 0, background: 'repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,0,128,.03) 2px,rgba(255,0,128,.03) 4px)' };
+                case 21: return { ...s, top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(135deg,rgba(224,64,251,.1),rgba(0,188,212,.1),rgba(255,109,0,.1))' };
+                default: return { ...s, display: 'none' };
+            }
+        };
+
+        function App() {
+            const [charId, setCharId] = useState(12);
+            const [designId, setDesignId] = useState(1);
+            const [title, setTitle] = useState('');
+            const [catchcopy, setCatchcopy] = useState('');
+            const [point1, setPoint1] = useState('');
+            const [point2, setPoint2] = useState('');
+            const [point3, setPoint3] = useState('');
+            const [quote, setQuote] = useState('');
+            const [url, setUrl] = useState('');
+            const [copied, setCopied] = useState(false);
+            const [saving, setSaving] = useState(false);
+            const [step, setStep] = useState(1);
+            const canvasRef = useRef(null);
+            const qrRef = useRef(null);
+
+            const char = CHARACTERS.find(c => c.id === charId) || CHARACTERS[0];
+            const design = DESIGNS.find(d => d.id === designId) || DESIGNS[0];
+            const displayQuote = quote || char.defaultQuote;
+            const displayTitle = title || 'あなたの作品タイトル';
+            const displayCatch = catchcopy || 'ここにキャッチコピーが入ります';
+            const charImg = `../assets/magical_editor/char_${charId}.svg`;
+
+            // Dynamic font sizing based on text length - larger for book format
+            const titleFontSize = displayTitle.length > 20 ? '24px' : displayTitle.length > 12 ? '30px' : '36px';
+            const catchFontSize = displayCatch.length > 30 ? '16px' : displayCatch.length > 18 ? '20px' : '24px';
+            const quoteFontSize = displayQuote.length > 30 ? '12px' : '14px';
+
+            useEffect(() => {
+                if (!qrRef.current) return;
+                qrRef.current.innerHTML = '';
+                if (url) {
+                    try { new QRCode(qrRef.current, { text: url, width: 50, height: 50, colorDark: '#000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M }); } catch (e) { }
+                }
+            }, [url]);
+
+            const handleSave = useCallback(async () => {
+                if (!canvasRef.current || saving) return;
+                setSaving(true);
+                try {
+                    const c = await html2canvas(canvasRef.current, { scale: 2, useCORS: true, backgroundColor: null, width: 420, height: 600 });
+                    const link = document.createElement('a');
+                    link.download = `magical_editor_${Date.now()}.png`;
+                    link.href = c.toDataURL('image/png');
+                    link.click();
+                } catch (e) { alert('画像の保存に失敗しました: ' + e.message); }
+                setSaving(false);
+            }, [saving]);
+
+            const tweetText = `${char.tweet}\n\n📕『${title || '作品タイトル'}』\n${catchcopy ? '✨' + catchcopy + '\n' : ''}${url ? '🔗' + url + '\n' : ''}${char.tags} #マジカル編集者`;
+
+            const handleCopyTweet = () => {
+                navigator.clipboard.writeText(tweetText).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
+            };
+
+            const isDark = [2, 3, 7, 9, 11, 13, 16, 18, 22, 24].includes(designId);
+            const textColor = isDark ? '#fff' : '#000';
+            const bookBg = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.92)';
+            const bookBorder = isDark ? `2px solid ${design.accentColor}` : '2px solid rgba(0,0,0,0.15)';
+            const bookSpineColor = design.accentColor;
+            const fontFamily = design.titleStyle.includes('font-mincho') ? '"Shippori Mincho",serif' : design.titleStyle.includes('font-dot') ? '"DotGothic16",sans-serif' : design.titleStyle.includes('font-pop') ? '"Hachi Maru Pop",cursive' : '"Noto Sans JP",sans-serif';
+
+            const points = [point1, point2, point3].filter(Boolean);
+
+            return (
+                <main className="min-h-screen">
+                    <header className="subpage-header"><div className="container">
+                        <h1 className="subpage-title" style={{ fontFamily: '"DotGothic16",sans-serif' }}>
+                            <span className="sparkle-anim inline-block mr-2">🧙‍♀️</span>マジカル編集者
+                            <span className="block text-lg mt-2 font-gothic font-normal opacity-70">小説宣伝ポップメーカー</span>
+                        </h1>
+                        <p className="mt-2 font-gothic opacity-60 text-sm">24人の編集者キャラ × 24種のデザインで、あなたの小説の宣伝画像を爆速生成！</p>
+                    </div></header>
+
+                    <section className="section pb-20" style={{ paddingTop: 0 }}>
+                        <div className="container">
+                            <div className="flex flex-col xl:flex-row gap-8 items-start">
+
+                                {/* Preview */}
+                                <div className="xl:sticky xl:top-24 flex flex-col items-center gap-4 w-full xl:w-auto">
+                                    <div className="retro-border rounded-lg p-3 bg-white" style={{ display: 'inline-block' }}>
+                                        <div ref={canvasRef} className="canvas-wrapper" style={{ background: designBgMap[designId] || '#fff', color: textColor, fontFamily: '"Noto Sans JP",sans-serif', position: 'relative', overflow: 'hidden', display: 'flex' }}>
+
+                                            {/* Left spine */}
+                                            <div style={{ width: '18px', minHeight: '100%', background: `linear-gradient(180deg, ${design.accentColor}, ${design.accentColor}dd)`, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'inset -3px 0 6px rgba(0,0,0,0.15)', position: 'relative', zIndex: 5 }}>
+                                                <span style={{ writingMode: 'vertical-rl', fontSize: '9px', fontWeight: 900, color: isDark ? '#000' : '#fff', letterSpacing: '0.15em', whiteSpace: 'nowrap', fontFamily: '"Noto Sans JP",sans-serif' }}>マジカル編集者</span>
+                                            </div>
+
+                                            {/* Book cover body */}
+                                            <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+                                                {/* Pattern overlay */}
+                                                {design.pattern !== 'none' && <div className={design.pattern} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1 }} />}
+                                                <div style={{ ...getDesignDecoStyle(designId), zIndex: 1 }} />
+
+                                                {/* Cover content */}
+                                                <div style={{ position: 'relative', zIndex: 2, width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+
+                                                    {/* ===== COVER AREA (top ~60%) ===== */}
+                                                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '28px 24px 16px 24px' }}>
+                                                        {/* Points as small tags at top */}
+                                                        {points.length > 0 && (
+                                                            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '14px' }}>
+                                                                {points.map((p, i) => (
+                                                                    <span key={i} style={{ background: isDark ? 'rgba(255,255,255,.12)' : 'rgba(0,0,0,.05)', padding: '3px 10px', borderRadius: '4px', fontSize: '11px', fontWeight: 700, border: `1px solid ${isDark ? 'rgba(255,255,255,.15)' : 'rgba(0,0,0,.08)'}` }}>⭐ {p}</span>
+                                                                ))}
+                                                            </div>
+                                                        )}
+
+                                                        {/* Title - large, prominent */}
+                                                        <div style={{ fontWeight: 900, fontSize: titleFontSize, lineHeight: 1.35, fontFamily: fontFamily, wordBreak: 'break-word', marginBottom: '12px' }}>
+                                                            {displayTitle}
+                                                        </div>
+
+                                                        {/* Decorative line */}
+                                                        <div style={{ width: '60px', height: '3px', background: design.accentColor, marginBottom: '12px', borderRadius: '2px' }} />
+
+                                                        {/* Catchcopy */}
+                                                        <div style={{ fontSize: catchFontSize, fontWeight: 500, lineHeight: 1.5, fontFamily: fontFamily, wordBreak: 'break-word', opacity: 0.8 }}>
+                                                            {displayCatch}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* ===== OBI / 帯 (bottom ~40%) ===== */}
+                                                    <div style={{ background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.88)', backdropFilter: 'blur(6px)', borderTop: `3px solid ${design.accentColor}`, borderBottom: `2px solid ${design.accentColor}`, padding: '14px 18px 12px 18px', position: 'relative' }}>
+                                                        {/* Logo badge */}
+                                                        <div style={{ position: 'absolute', top: '-14px', right: '16px', background: design.accentColor, color: isDark ? '#000' : '#fff', padding: '3px 12px', borderRadius: '4px', fontSize: '10px', fontWeight: 900, letterSpacing: '0.08em', fontFamily: '"DotGothic16",sans-serif', boxShadow: '2px 2px 0 rgba(0,0,0,.2)' }}>
+                                                            🧙‍♀️ マジカル編集者
+                                                        </div>
+
+                                                        {/* Character recommendation line */}
+                                                        <div style={{ fontSize: '13px', fontWeight: 900, color: design.accentColor, marginBottom: '8px', fontFamily: '"Noto Sans JP",sans-serif' }}>
+                                                            {char.emoji} {char.name}の推薦
+                                                        </div>
+
+                                                        {/* Quote + character row */}
+                                                        <div style={{ display: 'flex', alignItems: 'flex-end', gap: '10px' }}>
+                                                            {/* Speech bubble */}
+                                                            <div style={{ flex: 1, fontSize: quoteFontSize, fontWeight: 600, lineHeight: 1.5, wordBreak: 'break-word', color: isDark ? '#fff' : '#333' }}>
+                                                                「{displayQuote}」
+                                                            </div>
+                                                            {/* Character image */}
+                                                            <img src={charImg} alt={char.name} crossOrigin="anonymous" style={{ width: '70px', height: '98px', objectFit: 'contain', flexShrink: 0 }} />
+                                                        </div>
+
+                                                        {/* QR + URL row */}
+                                                        {url && (
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px', borderTop: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : 'rgba(0,0,0,.06)'}`, paddingTop: '8px' }}>
+                                                                <div ref={qrRef} style={{ width: 50, height: 50, background: '#fff', borderRadius: '4px', padding: '2px', flexShrink: 0, border: '1px solid rgba(0,0,0,0.08)' }} />
+                                                                <span style={{ fontSize: '9px', opacity: .5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{url}</span>
+                                                            </div>
+                                                        )}
+                                                        {!url && <div ref={qrRef} style={{ display: 'none' }} />}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Save button */}
+                                    <button onClick={handleSave} disabled={saving} className="retro-btn w-full" style={{ background: '#FF6B9D', color: '#fff', fontSize: '16px' }}>
+                                        {saving ? '⏳ 保存中...' : '💾 画像を保存（PNG）'}
+                                    </button>
+                                </div>
+
+                                {/* Controls */}
+                                <div className="flex-1 space-y-6 w-full min-w-0">
+
+                                    {/* Step tabs */}
+                                    <div className="flex gap-2 flex-wrap">
+                                        {[{ n: 1, label: '👤 キャラ選択' }, { n: 2, label: '🎨 デザイン選択' }, { n: 3, label: '✏️ 情報入力' }, { n: 4, label: '📤 出力' }].map(s => (
+                                            <button key={s.n} onClick={() => setStep(s.n)} className={`retro-btn text-sm ${step === s.n ? '' : 'opacity-60'}`}
+                                                style={{ background: step === s.n ? '#FFC837' : '#fff', fontWeight: step === s.n ? 900 : 500 }}>{s.label}</button>
+                                        ))}
+                                    </div>
+
+                                    {/* Step 1: Characters */}
+                                    {step === 1 && (<div className="retro-border rounded-lg p-6 bg-white/90">
+                                        <div className="flex items-center gap-3 mb-4"><span className="step-badge">STEP 1</span><h3 className="font-gothic font-bold text-lg">担当編集者を選ぶ</h3></div>
+                                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                                            {CHARACTERS.map(c => (
+                                                <div key={c.id} onClick={() => setCharId(c.id)} className={`char-card ${charId === c.id ? 'selected' : ''} bg-white`}>
+                                                    <div className="text-3xl mb-1">{c.emoji}</div>
+                                                    <div className="text-xs font-bold font-gothic leading-tight">{c.name}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>)}
+
+                                    {/* Step 2: Designs */}
+                                    {step === 2 && (<div className="retro-border rounded-lg p-6 bg-white/90">
+                                        <div className="flex items-center gap-3 mb-4"><span className="step-badge">STEP 2</span><h3 className="font-gothic font-bold text-lg">デザインを選ぶ</h3></div>
+                                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                                            {DESIGNS.map(d => (
+                                                <div key={d.id} onClick={() => setDesignId(d.id)} className={`design-card ${designId === d.id ? 'selected' : ''} bg-white`}>
+                                                    <div className="text-2xl mb-1">{d.emoji}</div>
+                                                    <div className="text-xs font-bold font-gothic leading-tight">{d.name}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>)}
+
+                                    {/* Step 3: Form */}
+                                    {step === 3 && (<div className="retro-border rounded-lg p-6 bg-white/90">
+                                        <div className="flex items-center gap-3 mb-4"><span className="step-badge">STEP 3</span><h3 className="font-gothic font-bold text-lg">作品情報を入力</h3></div>
+                                        <div className="space-y-4">
+                                            <div><label className="text-sm font-bold font-gothic block mb-1">📕 作品タイトル</label><input className="retro-input" value={title} onChange={e => setTitle(e.target.value)} placeholder="あなたの作品タイトル" /></div>
+                                            <div><label className="text-sm font-bold font-gothic block mb-1">✨ キャッチコピー</label><input className="retro-input" value={catchcopy} onChange={e => setCatchcopy(e.target.value)} placeholder="心を掴む一言！" /></div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                                <div><label className="text-sm font-bold font-gothic block mb-1">⭐ 推しポイント1</label><input className="retro-input" value={point1} onChange={e => setPoint1(e.target.value)} placeholder="例: 泣ける" /></div>
+                                                <div><label className="text-sm font-bold font-gothic block mb-1">⭐ 推しポイント2</label><input className="retro-input" value={point2} onChange={e => setPoint2(e.target.value)} placeholder="例: 胸キュン" /></div>
+                                                <div><label className="text-sm font-bold font-gothic block mb-1">⭐ 推しポイント3</label><input className="retro-input" value={point3} onChange={e => setPoint3(e.target.value)} placeholder="例: 一気読み" /></div>
+                                            </div>
+                                            <div><label className="text-sm font-bold font-gothic block mb-1">💬 キャラのセリフ（空欄でデフォルト）</label><input className="retro-input" value={quote} onChange={e => setQuote(e.target.value)} placeholder={char.defaultQuote} /></div>
+                                            <div><label className="text-sm font-bold font-gothic block mb-1">🔗 作品URL（QRコード生成）</label><input className="retro-input" type="url" value={url} onChange={e => setUrl(e.target.value)} placeholder="https://..." /></div>
+                                        </div>
+                                    </div>)}
+
+                                    {/* Step 4: Output */}
+                                    {step === 4 && (<div className="retro-border rounded-lg p-6 bg-white/90">
+                                        <div className="flex items-center gap-3 mb-4"><span className="step-badge">STEP 4</span><h3 className="font-gothic font-bold text-lg">ツイート文</h3></div>
+                                        <div className="retro-border rounded-lg p-4 bg-gray-50 mb-4">
+                                            <pre className="whitespace-pre-wrap text-sm font-gothic leading-relaxed">{tweetText}</pre>
+                                        </div>
+                                        <div className="flex gap-3">
+                                            <button onClick={handleCopyTweet} className="retro-btn flex-1" style={{ background: copied ? '#69F0AE' : '#00E5FF', color: '#000', fontSize: '14px' }}>
+                                                {copied ? '✅ コピーしました！' : '📋 ツイート文をコピー'}
+                                            </button>
+                                            <button onClick={handleSave} disabled={saving} className="retro-btn flex-1" style={{ background: '#FF6B9D', color: '#fff', fontSize: '14px' }}>
+                                                {saving ? '⏳ 保存中...' : '💾 画像を保存'}
+                                            </button>
+                                        </div>
+                                    </div>)}
+
+                                    {/* Current selection display */}
+                                    <div className="retro-border rounded-lg p-4 bg-white/80 flex items-center gap-4 flex-wrap">
+                                        <span className="text-sm font-gothic font-bold opacity-60">現在の設定:</span>
+                                        <span className="text-sm font-gothic"><span className="text-2xl mr-1">{char.emoji}</span>{char.name}</span>
+                                        <span className="text-sm font-gothic opacity-40">×</span>
+                                        <span className="text-sm font-gothic"><span className="text-xl mr-1">{design.emoji}</span>{design.name}</span>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </main>
+            );
+        }
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="copyright">&copy; 2026 Yoshida Kagetica</div>
+        </div>
+    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="../js/main.js"></script>
+</body>
+
+</html>

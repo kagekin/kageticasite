@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jackpot Focus - ADHDハック型ToDo</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'spin-slow': 'spin 3s linear infinite',
+                        'poke': 'poke 1s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        poke: {
+                            '0%, 100%': { transform: 'translateX(0)' },
+                            '50%': { transform: 'translateX(-5px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Scrollbar hide utility */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body class="bg-slate-950 text-slate-200">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- Lucide Icon Wrapper ---
+        // Maps Lucide icon names (PascalCase) to lucide.icons keys (kebab-case or camelCase depending on version)
+        // lucide.icons keys are usually lowerCamelCase in the generic bundle? 
+        // Let's check typical usage. "arrow-right" vs "arrowRight". 
+        // In the unpkg bundle (v0.263+), keys are camelCase e.g. "arrowRight".
+        // https://unpkg.com/browse/lucide@latest/
+
+        const Icon = ({ name, size = 24, className }) => {
+            const ref = useRef(null);
+
+            useEffect(() => {
+                if (!ref.current || !window.lucide) return;
+
+                // Normalize name: Lucide icons are usually lowerCamelCase in the library
+                const camelName = name.charAt(0).toLowerCase() + name.slice(1);
+                const pascalName = name.charAt(0).toUpperCase() + name.slice(1);
+
+                // Try to find the icon definition
+                const iconNode = window.lucide.icons[camelName] || window.lucide.icons[pascalName] || window.lucide.icons[name];
+
+                if (!iconNode) {
+                    console.warn(`Icon not found: ${name}`);
+                    return;
+                }
+
+                // Use lucide.createElement to generate the SVG element
+                if (typeof window.lucide.createElement === 'function') {
+                    const svg = window.lucide.createElement(iconNode);
+
+                    // Apply override props
+                    svg.setAttribute('width', size);
+                    svg.setAttribute('height', size);
+
+                    // Combine classes if needed, or just set it
+                    if (className) {
+                        // If the SVG already has a class, append? usually it doesn't from createElement
+                        svg.setAttribute('class', `lucide lucide-${camelName} ${className}`);
+                    } else {
+                        svg.setAttribute('class', `lucide lucide-${camelName}`);
+                    }
+
+                    ref.current.innerHTML = '';
+                    ref.current.appendChild(svg);
+                } else {
+                    console.error('lucide.createElement is not available');
+                }
+            }, [name, size, className]);
+
+            return <span ref={ref} style={{ display: 'inline-flex', alignItems: 'center' }} />;
+        };
+
+        // Custom Hook to ensure icons are rendered if we use <i> tags? 
+        // Better to use SVG string.
+
+        // Define Icon Components
+        const createIcon = (name) => (props) => <Icon name={name} {...props} />;
+
+        const Play = createIcon('Play');
+        const Pause = createIcon('Pause');
+        const Check = createIcon('Check');
+        const Plus = createIcon('Plus');
+        const Zap = createIcon('Zap');
+        const Star = createIcon('Star');
+        const Brain = createIcon('Brain');
+        const X = createIcon('X');
+        const Flame = createIcon('Flame');
+        const Feather = createIcon('Feather');
+        const Dumbbell = createIcon('Dumbbell');
+        const Award = createIcon('Award');
+        const ArrowRight = createIcon('ArrowRight');
+        const Hand = createIcon('Hand');
+        const Gift = createIcon('Gift');
+        const Dices = createIcon('Dices');
+        const Volume2 = createIcon('Volume2');
+        const VolumeX = createIcon('VolumeX');
+        const HelpCircle = createIcon('HelpCircle');
+        const ChevronRight = createIcon('ChevronRight');
+        const CornerDownLeft = createIcon('CornerDownLeft');
+        const Save = createIcon('Save');
+        const ArrowUpDown = createIcon('ArrowUpDown');
+        const RefreshCw = createIcon('RefreshCw');
+
+        /**
+         * JACKPOT FOCUS Ver 7.1 (Fixed)
+         * - Fixed: Missing Onboarding component definition
+         * - パラメーター変更: 「急ぎ？」「すぐ終わる？」「重要？」の3点構成へ
+         * - ソートロジック修正: 瞬殺(Light)最優先 -> 緊急x重要 -> 緊急 -> 重要
+         * - ヘルプページ実装: ソートロジックの明文化
+         * - LocalStorage実装: データの永続化
+         */
+
+        // --- Audio Utility ---
+        const playSound = (type) => {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+            const ctx = new AudioContext();
+            const now = ctx.currentTime;
+
+            const createOsc = (type, freq, start, dur, vol = 0.1) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, start);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                gain.gain.setValueAtTime(vol, start);
+                gain.gain.exponentialRampToValueAtTime(0.01, start + dur);
+                osc.start(start);
+                osc.stop(start + dur);
+            };
+
+            if (type === 'coin') {
+                createOsc('sine', 1200, now, 0.1, 0.1);
+                createOsc('square', 2000, now + 0.05, 0.1, 0.05);
+            } else if (type === 'fanfare') {
+                [523.25, 659.25, 783.99, 1046.50, 783.99, 1046.50].forEach((f, i) => {
+                    createOsc('triangle', f, now + i * 0.08, 0.3, 0.1);
+                });
+            } else if (type === 'tick') {
+                createOsc('square', 200, now, 0.05, 0.05);
+            } else if (type === 'boom') {
+                createOsc('sawtooth', 100, now, 0.4, 0.2);
+                createOsc('square', 50, now, 0.5, 0.2);
+            } else if (type === 'pop') {
+                createOsc('sine', 800, now, 0.1, 0.1);
+            }
+        };
+
+        const playSystemVoice = (text, type = 'normal') => {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const uttr = new SpeechSynthesisUtterance(text);
+            uttr.volume = 1;
+            if (type === 'excited') { uttr.rate = 1.3; uttr.pitch = 1.2; }
+            else if (type === 'deep') { uttr.rate = 1.0; uttr.pitch = 0.6; }
+            else { uttr.rate = 1.2; uttr.pitch = 0.9; }
+
+            const voices = window.speechSynthesis.getVoices();
+            const jpVoice = voices.find(v => v.lang.includes('ja'));
+            if (jpVoice) uttr.voice = jpVoice;
+            window.speechSynthesis.speak(uttr);
+        };
+
+        // --- Visual Effects System ---
+
+        class ConfettiParticle {
+            constructor(x, y, burst = false) {
+                this.x = x;
+                this.y = y;
+                const angle = burst ? (Math.random() * Math.PI) + Math.PI : Math.random() * Math.PI * 2;
+                const velocity = Math.random() * (burst ? 20 : 15) + 5;
+                this.vx = Math.cos(angle) * velocity;
+                this.vy = Math.sin(angle) * velocity - (burst ? 5 : 0);
+                this.gravity = 0.5;
+                this.friction = 0.92;
+                this.color = ['#FFD700', '#FF4500', '#00BFFF', '#32CD32', '#FF69B4', '#FFFFFF'][Math.floor(Math.random() * 6)];
+                this.size = Math.random() * 8 + 4;
+                this.rotation = Math.random() * 360;
+                this.rotationSpeed = (Math.random() - 0.5) * 15;
+                this.life = 100;
+                this.decay = Math.random() * 1.5 + 0.5;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.vx *= this.friction;
+                this.rotation += this.rotationSpeed;
+                this.life -= this.decay;
+            }
+            draw(ctx) {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.life / 100);
+                ctx.translate(this.x, this.y);
+                ctx.rotate((this.rotation * Math.PI) / 180);
+                ctx.fillStyle = this.color;
+                ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
+                ctx.restore();
+            }
+        }
+
+        const VisualEffects = ({ burstPos, flash, onComplete }) => {
+            const canvasRef = useRef(null);
+            const requestRef = useRef();
+
+            useEffect(() => {
+                if (!burstPos && !flash) return;
+                const canvas = canvasRef.current;
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+
+                if (burstPos) {
+                    for (let i = 0; i < 60; i++) {
+                        particles.push(new ConfettiParticle(burstPos.x, burstPos.y, true));
+                    }
+                }
+
+                const animate = () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach((p, index) => {
+                        p.update();
+                        p.draw(ctx);
+                        if (p.life <= 0) particles.splice(index, 1);
+                    });
+                    if (particles.length > 0) {
+                        requestRef.current = requestAnimationFrame(animate);
+                    } else {
+                        if (onComplete) onComplete();
+                    }
+                };
+
+                const resize = () => {
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                };
+                window.addEventListener('resize', resize);
+                resize();
+                requestRef.current = requestAnimationFrame(animate);
+
+                return () => {
+                    window.removeEventListener('resize', resize);
+                    if (requestRef.current) cancelAnimationFrame(requestRef.current);
+                };
+            }, [burstPos]);
+
+            return (
+                <React.Fragment>
+                    <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-[60]" />
+                    <div className={`fixed inset-0 bg-white pointer-events-none z-[70] transition-opacity duration-300 ${flash ? 'opacity-80' : 'opacity-0'}`} />
+                </React.Fragment>
+            );
+        };
+
+        // --- Help Modal ---
+        const HelpModal = ({ onClose }) => (
+            <div className="fixed inset-0 bg-slate-950/95 z-[100] flex flex-col items-center justify-center p-6 text-center animate-in fade-in">
+                <div className="w-full max-w-sm bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-2xl relative">
+                    <button onClick={onClose} className="absolute top-4 right-4 text-slate-500 hover:text-white">
+                        <X size={24} />
+                    </button>
+
+                    <div className="mb-4 flex justify-center text-yellow-400">
+                        <HelpCircle size={48} />
+                    </div>
+
+                    <h2 className="text-xl font-black text-white mb-6">推奨タスクの選び方</h2>
+
+                    <div className="text-left space-y-4 text-sm text-slate-300 bg-slate-950/50 p-4 rounded-xl border border-slate-800">
+                        <p className="font-bold text-white border-b border-slate-700 pb-2 mb-2">優先順位ロジック</p>
+
+                        <div className="flex items-start gap-3">
+                            <span className="bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded text-xs whitespace-nowrap">最優先</span>
+                            <div>
+                                <p className="font-bold text-emerald-400">すぐ終わるもの</p>
+                                <p className="text-xs text-slate-500">まずは瞬殺して勢いをつける！</p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-3 mt-4">
+                            <span className="bg-slate-700 text-slate-400 font-bold px-2 py-0.5 rounded text-xs whitespace-nowrap">その次</span>
+                            <div className="space-y-1">
+                                <p>残りのタスクは以下の順でソートされます：</p>
+                                <ol className="list-decimal list-inside text-slate-400 space-y-1 pl-1">
+                                    <li><span className="text-red-400">緊急</span> かつ <span className="text-yellow-400">重要</span></li>
+                                    <li><span className="text-red-400">緊急</span> なもの</li>
+                                    <li><span className="text-yellow-400">重要</span> なもの</li>
+                                    <li>その他</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={onClose}
+                        className="w-full mt-6 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl font-bold text-white transition-colors"
+                    >
+                        閉じる
+                    </button>
+                </div>
+            </div>
+        );
+
+        // --- Onboarding Component ---
+        const Onboarding = ({ onFinish }) => {
+            const [step, setStep] = useState(0);
+
+            const steps = [
+                {
+                    title: "ADHDハックへようこそ",
+                    desc: "「興味ないことは先延ばし、好きなことは過集中」...そんなあなたの脳のバグを、ド派手な演出と報酬でハックするアプリです。",
+                    icon: <Brain size={64} className="text-pink-500 animate-pulse" />
+                },
+                {
+                    title: "1. 脳内を空っぽに",
+                    desc: "まずは「やらなきゃいけないこと」を全て箇条書きで吐き出してください。改行すると自動でカード化されます。",
+                    icon: <ArrowRight size={64} className="text-blue-500" />
+                },
+                {
+                    title: "2. 優先順位は自動で",
+                    desc: "「瞬殺（すぐ終わる）」タスクが最優先。まずは簡単な敵を倒して、脳のアイドリングを温めましょう。",
+                    icon: <Zap size={64} className="text-orange-500 animate-pulse" />
+                },
+                {
+                    title: "3. 3回に1回の確変",
+                    desc: "タスクを3つ消すごとに『ルーレットチャンス』！ 1/3の確率で大当たり演出が出ます。脳汁を出しましょう。",
+                    icon: <Dices size={64} className="text-yellow-400 animate-bounce" />
+                }
+            ];
+
+            const handleNext = () => {
+                if (step < steps.length - 1) {
+                    playSound('pop');
+                    setStep(step + 1);
+                } else {
+                    playSound('fanfare');
+                    onFinish();
+                }
+            };
+
+            return (
+                <div className="fixed inset-0 bg-slate-950/95 z-[100] flex flex-col items-center justify-center p-6 text-center animate-in fade-in">
+                    <div className="w-full max-w-sm bg-slate-900 border border-slate-700 rounded-2xl p-8 shadow-2xl flex flex-col items-center">
+                        <div className="mb-6 bg-slate-800 p-6 rounded-full shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+                            {steps[step].icon}
+                        </div>
+                        <h2 className="text-2xl font-black text-white mb-4">{steps[step].title}</h2>
+                        <p className="text-slate-400 mb-8 leading-relaxed font-medium">
+                            {steps[step].desc}
+                        </p>
+
+                        <div className="flex gap-2 mb-6">
+                            {steps.map((_, i) => (
+                                <div key={i} className={`h-2 w-2 rounded-full transition-all ${i === step ? 'bg-yellow-400 w-6' : 'bg-slate-700'}`} />
+                            ))}
+                        </div>
+
+                        <button
+                            onClick={handleNext}
+                            className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl font-bold text-white text-lg shadow-lg hover:scale-105 transition-transform flex items-center justify-center gap-2"
+                        >
+                            {step === steps.length - 1 ? "ハックを開始する" : "次へ"} <ChevronRight size={20} />
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Main App ---
+        function App() {
+            // State Initialization with LocalStorage
+            const [tasks, setTasks] = useState(() => {
+                try {
+                    const saved = localStorage.getItem('jackpot_tasks');
+                    return saved ? JSON.parse(saved) : [];
+                } catch (e) { return []; }
+            });
+
+            const [completedCount, setCompletedCount] = useState(() => {
+                try {
+                    const saved = localStorage.getItem('jackpot_count');
+                    return saved ? parseInt(saved, 10) : 0;
+                } catch (e) { return 0; }
+            });
+
+            const [bulkInput, setBulkInput] = useState('');
+            const [mode, setMode] = useState(tasks.length > 0 ? 'dashboard' : 'input');
+            const [targetTaskId, setTargetTaskId] = useState(null);
+
+            const [timerDuration, setTimerDuration] = useState(30);
+            const [timeLeft, setTimeLeft] = useState(30 * 60);
+            const [isTimerRunning, setIsTimerRunning] = useState(false);
+            const [muted, setMuted] = useState(false);
+
+            const [rouletteState, setRouletteState] = useState('idle');
+
+            // Visual Effects State
+            const [burstPos, setBurstPos] = useState(null);
+            const [flash, setFlash] = useState(false);
+            const [shake, setShake] = useState(false);
+
+            // Onboarding/Help State
+            const [showHelp, setShowHelp] = useState(false);
+            const [showOnboarding, setShowOnboarding] = useState(() => {
+                return !localStorage.getItem('jackpot_visited');
+            });
+
+            // Persistence Effects
+            useEffect(() => {
+                localStorage.setItem('jackpot_tasks', JSON.stringify(tasks));
+            }, [tasks]);
+
+            useEffect(() => {
+                localStorage.setItem('jackpot_count', completedCount.toString());
+            }, [completedCount]);
+
+            useEffect(() => {
+                if (!showOnboarding && localStorage.getItem('jackpot_visited') !== 'true') {
+                    localStorage.setItem('jackpot_visited', 'true');
+                }
+            }, [showOnboarding]);
+
+
+            // --- Sound Wrapper ---
+            const triggerSound = (type, voiceText, voiceType) => {
+                if (muted) return;
+                if (type) playSound(type);
+                if (voiceText) playSystemVoice(voiceText, voiceType);
+            };
+
+            // --- Visual Trigger ---
+            const triggerEffect = (e) => {
+                if (e) {
+                    const rect = e.target.getBoundingClientRect();
+                    setBurstPos({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
+                }
+                setFlash(true);
+                setTimeout(() => setFlash(false), 200);
+                setShake(true);
+                setTimeout(() => setShake(false), 500);
+            };
+
+            const toggleTimerDuration = () => {
+                if (isTimerRunning) return;
+                const newDuration = timerDuration === 30 ? 15 : 30;
+                setTimerDuration(newDuration);
+                setTimeLeft(newDuration * 60);
+                triggerSound('tick');
+            };
+
+            // --- Logic ---
+            const processBulkInput = () => {
+                if (!bulkInput.trim()) return;
+                const lines = bulkInput.split('\n').filter(line => line.trim() !== '');
+                const newTasks = lines.map(line => ({
+                    id: Date.now() + Math.random(),
+                    text: line,
+                    urgency: 'low',
+                    importance: 'low',
+                    weight: 'heavy', // default is 'not light' (not quick)
+                    status: 'pending'
+                }));
+                setTasks([...tasks, ...newTasks]);
+                setBulkInput('');
+                setMode('dashboard');
+                triggerSound('coin', "解析完了。", 'deep');
+            };
+
+            const startMission = () => {
+                if (!targetTaskId) {
+                    alert("ターゲットがいません！");
+                    return;
+                }
+                triggerSound('coin', "ミッションスタート！", 'excited');
+                setIsTimerRunning(true);
+            };
+
+            const handleTaskComplete = (taskId, e) => {
+                if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
+                triggerEffect(e);
+
+                setTasks(prev => prev.map(t =>
+                    t.id === taskId ? { ...t, status: 'completed' } : t
+                ));
+
+                setIsTimerRunning(false);
+                setTimeLeft(timerDuration * 60);
+                if (targetTaskId === taskId) {
+                    setTargetTaskId(null);
+                }
+
+                const newCount = completedCount + 1;
+                setCompletedCount(newCount);
+
+                if (newCount > 0 && newCount % 3 === 0) {
+                    // Roulette
+                    setTimeout(() => {
+                        triggerSound('fanfare', "ルーレットチャンス！", 'excited');
+                        setMode('roulette');
+                        setRouletteState('spinning');
+
+                        let tickCount = 0;
+                        const tickInterval = setInterval(() => {
+                            tickCount++;
+                            if (tickCount < 15) triggerSound('tick');
+                        }, 150);
+
+                        setTimeout(() => {
+                            clearInterval(tickInterval);
+                            const isWin = Math.random() < 0.33;
+                            if (isWin) {
+                                setRouletteState('win');
+                                triggerSound('fanfare', "ジャックポット！！", 'excited');
+                            } else {
+                                setRouletteState('lose');
+                                triggerSound('boom', "残念！", 'normal');
+                            }
+                        }, 2500);
+                    }, 500);
+
+                } else {
+                    triggerSound('coin', "ナイスキル。", 'normal');
+                }
+            };
+
+            const deleteTask = (id) => {
+                setShake(true);
+                setTimeout(() => setShake(false), 300);
+                triggerSound('boom');
+                setTasks(tasks.filter(t => t.id !== id));
+            };
+
+            useEffect(() => {
+                let interval = null;
+                if (isTimerRunning && timeLeft > 0) {
+                    interval = setInterval(() => {
+                        setTimeLeft(t => t - 1);
+                    }, 1000);
+                } else if (timeLeft === 0) {
+                    setIsTimerRunning(false);
+                    triggerSound('boom', "タイムアップ。", 'deep');
+                }
+                return () => clearInterval(interval);
+            }, [isTimerRunning, timeLeft]);
+
+            // --- Sorting Logic Update ---
+            const calculateScore = (t) => {
+                let score = 0;
+                if (t.weight === 'light') score += 10000; // すぐ終わる = 最優先 (Absolute top)
+                if (t.urgency === 'high') score += 2000;
+                if (t.importance === 'high') score += 1000;
+                return score;
+            };
+
+            const getRecommendedTask = () => {
+                const pending = tasks.filter(t => t.status === 'pending');
+                if (pending.length === 0) return null;
+
+                // Sort logic based on user request:
+                // 1. Quick tasks (weight === 'light') -> Highest priority
+                // 2. Urgent & Important
+                // 3. Urgent
+                // 4. Important
+                // 5. Neither
+
+                return [...pending].sort((a, b) => {
+                    return calculateScore(b) - calculateScore(a);
+                })[0];
+            };
+
+            const handleAutoSort = () => {
+                if (window.confirm("タスクを優先度順に並び替えますか？")) {
+                    const pending = tasks.filter(t => t.status === 'pending');
+                    const completed = tasks.filter(t => t.status === 'completed');
+
+                    pending.sort((a, b) => calculateScore(b) - calculateScore(a));
+
+                    setTasks([...pending, ...completed]);
+                    triggerSound('tick');
+                }
+            };
+
+            useEffect(() => {
+                if (!isTimerRunning && mode === 'dashboard') {
+                    const rec = getRecommendedTask();
+                    // Don't auto-select if we already have a selection that is still pending?
+                    // Original logic was always auto-selecting recommended. 
+                    // Let's keep it simple as per original V7.1
+                    if (rec) setTargetTaskId(rec.id);
+                }
+            }, [tasks, mode, isTimerRunning]);
+
+
+            // --- UI Components ---
+
+            const RouletteGauge = () => {
+                const progress = completedCount % 3;
+                return (
+                    <div className="bg-slate-900 p-2 rounded-lg border border-slate-800 flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold text-slate-400">NEXT ROULETTE</span>
+                        <div className="flex gap-2">
+                            {[0, 1, 2].map(i => (
+                                <div key={i} className={`w-8 h-2 rounded-full transition-all duration-500 ${i < progress ? 'bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.8)]' : 'bg-slate-700'}`} />
+                            ))}
+                        </div>
+                        <Dices size={16} className={progress === 2 ? 'text-yellow-400 animate-bounce' : 'text-slate-600'} />
+                    </div>
+                );
+            };
+
+            const renderDashboard = () => {
+                const pendingTasks = tasks.filter(t => t.status === 'pending');
+                const activeTask = tasks.find(t => t.id === targetTaskId);
+
+                return (
+                    <div className="flex flex-col h-full bg-slate-950">
+                        <div className="p-4 bg-slate-950/90 backdrop-blur z-10 border-b border-slate-800">
+                            <RouletteGauge />
+                            <div className="flex justify-between items-center mt-2">
+                                <h2 className="text-sm font-bold text-slate-400 tracking-wider">TARGET LIST</h2>
+                                <div className="flex gap-2">
+                                    <button onClick={() => setShowHelp(true)} className="p-1 text-slate-500 hover:text-white">
+                                        <HelpCircle size={16} />
+                                    </button>
+                                    <button onClick={() => setMuted(!muted)} className="p-1 text-slate-500 hover:text-white">
+                                        {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                                    </button>
+                                    <button onClick={handleAutoSort} className="p-1 text-slate-500 hover:text-white" title="自動ソート">
+                                        <ArrowUpDown size={16} />
+                                    </button>
+                                    <button onClick={() => setMode('input')} className="text-xs bg-slate-800 px-3 py-1 rounded text-slate-300 flex items-center gap-1 hover:bg-slate-700">
+                                        <Plus size={12} /> 追加
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-4 bg-slate-900/50">
+                            <div className="space-y-3 pb-20">
+                                {pendingTasks.map(task => {
+                                    const isTarget = task.id === targetTaskId;
+                                    return (
+                                        <div key={task.id}
+                                            className={`relative p-3 rounded-xl border transition-all duration-300 ${isTarget ? 'bg-slate-800 border-yellow-500/50 shadow-[0_0_15px_rgba(234,179,8,0.1)] scale-[1.01]' : 'bg-slate-900 border-slate-800 opacity-70 hover:opacity-100'
+                                                }`}
+                                            onClick={() => !isTimerRunning && setTargetTaskId(task.id)}
+                                        >
+                                            {isTarget && <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-1 h-8 bg-yellow-500 rounded-r shadow-[0_0_10px_rgba(234,179,8,0.8)]" />}
+                                            <div className="flex justify-between items-start mb-3 pl-2">
+                                                <span className={`font-bold text-base leading-snug break-words pr-2 ${isTarget ? 'text-white' : 'text-slate-400'}`}>
+                                                    {task.text}
+                                                </span>
+                                                <div className="flex items-center gap-1">
+                                                    <button onClick={(e) => { e.stopPropagation(); handleTaskComplete(task.id, e); }} className="bg-slate-800 hover:bg-emerald-600 text-slate-400 hover:text-white p-2 rounded-lg transition-colors border border-slate-700 hover:border-emerald-500"><Check size={16} /></button>
+                                                    <button onClick={(e) => { e.stopPropagation(); deleteTask(task.id); }} className="text-slate-700 hover:text-red-500 p-2"><X size={16} /></button>
+                                                </div>
+                                            </div>
+
+                                            {/* Updated Parameters: Urgency, Weight (Quick?), Importance */}
+                                            <div className="flex gap-2 pl-2 overflow-x-auto pb-1 scrollbar-hide">
+                                                {/* Urgency */}
+                                                <button onClick={(e) => { e.stopPropagation(); setTasks(prev => prev.map(t => t.id === task.id ? { ...t, urgency: t.urgency === 'high' ? 'low' : 'high' } : t)); triggerSound('tick'); }}
+                                                    className={`px-2 py-1 rounded text-[10px] font-bold border flex items-center gap-1 transition-colors ${task.urgency === 'high' ? 'bg-red-600 text-white border-red-500' : 'bg-slate-950 text-slate-500 border-slate-700'}`}>
+                                                    {task.urgency === 'high' ? <React.Fragment><Flame size={10} /> 超急ぎ</React.Fragment> : '急ぎ？'}
+                                                </button>
+
+                                                {/* Weight (Quick?) */}
+                                                <button onClick={(e) => { e.stopPropagation(); setTasks(prev => prev.map(t => t.id === task.id ? { ...t, weight: t.weight === 'light' ? 'heavy' : 'light' } : t)); triggerSound('tick'); }}
+                                                    className={`px-2 py-1 rounded text-[10px] font-bold border flex items-center gap-1 transition-colors ${task.weight === 'light' ? 'bg-emerald-600 text-white border-emerald-500' : 'bg-slate-950 text-slate-500 border-slate-700'}`}>
+                                                    {task.weight === 'light' ? <React.Fragment><Feather size={10} /> 瞬殺</React.Fragment> : 'すぐ終わる？'}
+                                                </button>
+
+                                                {/* Importance */}
+                                                <button onClick={(e) => { e.stopPropagation(); setTasks(prev => prev.map(t => t.id === task.id ? { ...t, importance: t.importance === 'high' ? 'low' : 'high' } : t)); triggerSound('tick'); }}
+                                                    className={`px-2 py-1 rounded text-[10px] font-bold border flex items-center gap-1 transition-colors ${task.importance === 'high' ? 'bg-yellow-500 text-black border-yellow-400' : 'bg-slate-950 text-slate-500 border-slate-700'}`}>
+                                                    {task.importance === 'high' ? <React.Fragment><Star size={10} /> 重要</React.Fragment> : '重要？'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                                {pendingTasks.length === 0 && <div className="text-center text-slate-500 py-10 text-sm">タスクなし</div>}
+                            </div>
+                        </div>
+
+                        <div className="h-[40%] bg-slate-950 p-4 flex flex-col items-center justify-center relative shadow-[0_-5px_30px_rgba(0,0,0,0.5)] z-20">
+                            <div className="w-full text-center mb-2"><span className="text-xs text-slate-500 font-mono">CURRENT TARGET</span><h3 className="text-lg font-black text-white truncate px-4">{activeTask ? activeTask.text : 'No Target Selected'}</h3></div>
+
+                            {/* Timer Display & Toggle */}
+                            <div className="relative flex flex-col items-center mb-6">
+                                <div className={`text-6xl font-mono font-bold tracking-widest transition-colors duration-300 ${isTimerRunning ? 'text-yellow-400 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'text-slate-600'}`}>
+                                    {Math.floor(timeLeft / 60).toString().padStart(2, '0')}:{(timeLeft % 60).toString().padStart(2, '0')}
+                                </div>
+                                {!isTimerRunning && (
+                                    <button onClick={toggleTimerDuration} className="absolute -left-20 top-1/2 -translate-y-1/2 bg-slate-800 text-slate-400 text-xs font-bold px-2 py-1 rounded border border-slate-700 hover:bg-slate-700 hover:text-white transition-colors flex items-center gap-1 group">
+                                        <RefreshCw size={12} className="group-hover:rotate-180 transition-transform" /> {timerDuration}min
+                                    </button>
+                                )}
+                            </div>
+
+                            <div className="w-full max-w-xs relative">
+                                {!isTimerRunning ? (
+                                    <React.Fragment>
+                                        <button onClick={startMission} disabled={!activeTask} className="w-full py-4 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-xl font-black text-slate-950 text-xl shadow-[0_0_20px_rgba(234,179,8,0.3)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 group"><Zap className="fill-slate-950 group-hover:animate-pulse" /> START MISSION</button>
+
+                                        {activeTask && (
+                                            <div className="absolute -right-20 top-1/2 -translate-y-1/2 animate-poke flex items-center pointer-events-none z-30 whitespace-nowrap">
+                                                <Hand size={32} className="fill-yellow-400 text-yellow-400 -rotate-90 mr-2" />
+                                                <span className="text-yellow-400 font-bold text-xs bg-yellow-900/50 px-2 py-1 rounded border border-yellow-500">今すぐ<br />始めよう！</span>
+                                            </div>
+                                        )}
+                                    </React.Fragment>
+                                ) : (
+                                    <div className="flex gap-3">
+                                        <button onClick={(e) => handleTaskComplete(targetTaskId, e)} className="flex-1 py-4 bg-slate-100 hover:bg-white text-black font-black text-lg rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"><Check size={24} strokeWidth={3} /> DONE!</button>
+                                        <button onClick={() => setIsTimerRunning(false)} className="w-16 bg-slate-800 rounded-xl text-slate-400 hover:text-white flex items-center justify-center"><Pause size={24} /></button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            const renderRoulette = () => (
+                <div className={`flex flex-col h-full items-center justify-center text-center p-6 relative overflow-hidden ${rouletteState === 'win' ? 'bg-black' : 'bg-black'}`}>
+                    <div className={`absolute inset-0 bg-gradient-to-br from-purple-900 to-black ${rouletteState === 'spinning' ? 'animate-pulse' : ''}`} />
+                    {rouletteState === 'win' && <div className="absolute inset-0 bg-gradient-to-r from-red-500 via-green-500 to-blue-500 opacity-20 animate-pulse mix-blend-overlay" />}
+
+                    <VisualEffects burstPos={rouletteState === 'win' ? { x: window.innerWidth / 2, y: window.innerHeight / 2 } : null} flash={rouletteState === 'win'} />
+
+                    <div className="relative z-10 flex flex-col items-center">
+                        <div className="mb-8">
+                            {rouletteState === 'spinning' ? <Dices size={120} className="text-white animate-spin duration-150" /> :
+                                rouletteState === 'win' ? <Gift size={150} className="text-yellow-400 drop-shadow-[0_0_50px_rgba(234,179,8,1)] animate-bounce" /> :
+                                    <Dumbbell size={100} className="text-slate-500" />}
+                        </div>
+                        <h2 className={`text-5xl font-black mb-4 italic transform ${rouletteState === 'win' ? 'text-yellow-400 scale-125 transition-transform' : 'text-white'}`}>
+                            {rouletteState === 'spinning' && "SPINNING..."}
+                            {rouletteState === 'win' && "JACKPOT!!"}
+                            {rouletteState === 'lose' && "NEXT TIME..."}
+                        </h2>
+                        {rouletteState !== 'spinning' && (
+                            <button onClick={() => { setMode('dashboard'); setRouletteState('idle'); setTimeLeft(timerDuration * 60); }} className="relative z-[100] w-full max-w-xs py-4 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl font-bold text-white shadow-lg hover:scale-105 transition-transform mt-8">
+                                次のミッションへ
+                            </button>
+                        )}
+                    </div>
+                </div>
+            );
+
+            return (
+                <div className={`bg-slate-950 text-slate-200 h-screen w-full max-w-md mx-auto shadow-2xl overflow-hidden font-sans select-none flex flex-col transition-transform duration-100 ${shake ? 'translate-x-1 translate-y-1 rotate-1' : ''}`}>
+                    <VisualEffects burstPos={burstPos} flash={flash} onComplete={() => setBurstPos(null)} />
+
+                    {showOnboarding && <Onboarding onFinish={() => setShowOnboarding(false)} />}
+                    {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
+
+                    {mode === 'input' && (
+                        <div className="flex flex-col h-full p-6 animate-in fade-in">
+                            <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-600 mb-2 italic">JACKPOT FOCUS</h1>
+
+                            <div className="bg-slate-900/80 p-3 rounded-lg border border-slate-700 mb-4 flex gap-3 items-start">
+                                <div className="bg-slate-800 p-2 rounded text-yellow-400 shrink-0">
+                                    <ArrowRight size={16} className="rotate-90" />
+                                </div>
+                                <div className="text-sm text-slate-300">
+                                    <p className="font-bold text-white mb-1">使い方メモ</p>
+                                    <p>思いついたことを<strong>改行して</strong>どんどん書いてください。</p>
+                                    <p className="text-xs text-slate-500 mt-1">※ 1行 = 1タスクとしてカード化されます</p>
+                                </div>
+                            </div>
+
+                            <textarea className="flex-1 bg-slate-800/50 border border-slate-700 rounded-xl p-4 text-slate-100 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 resize-none font-mono text-lg mb-4 leading-relaxed" placeholder={`例：\n洗濯機を回す\n牛乳を買う\nレポートの下書き`} value={bulkInput} onChange={(e) => setBulkInput(e.target.value)} />
+                            <button onClick={processBulkInput} disabled={!bulkInput.trim()} className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl font-bold text-white shadow-lg flex items-center justify-center gap-2"><Brain size={20} /> 解析してダッシュボードへ</button>
+                            {tasks.length > 0 && <button onClick={() => setMode('dashboard')} className="mt-4 text-slate-500 text-sm underline w-full text-center">戻る</button>}
+                        </div>
+                    )}
+                    {mode === 'dashboard' && renderDashboard()}
+                    {mode === 'roulette' && renderRoulette()}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>

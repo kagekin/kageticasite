@@ -1,0 +1,31 @@
+- [x] Create `lab/jackpot_focus.html`
+- [x] Adapt React code for standalone HTML usage
+    - [x] Setup HTML structure with CDN links
+    - [x] Implement Lucide icon wrapper
+    - [x] Port application logic
+- [x] Fix Icon rendering issue
+- [x] Implement Manual Sort Button
+    - [x] Add `ArrowUpDown` icon
+    - [x] Extract scoring logic
+    - [x] Implement sort handler with confirmation
+    - [x] Add button to UI
+- [x] Fix "Start Now!" text overlap
+    - [x] Adjust CSS positioning of the floating element
+- [x] Implement Timer Duration Toggle
+    - [x] Add state for timer duration (15/30)
+    - [x] Add toggle UI
+    - [x] Update timer logic to respect selected duration
+- [x] Refine Timer Button Placement
+    - [x] Move toggle button to the left
+    - [x] Resolve overlap with "Start Now!" text
+- [x] Refine Timer Toggle Icon & Position
+    - [x] Move button further left
+    - [x] Add `RefreshCw` icon
+    - [x] Update button content
+- [x] Fix Timer Reset on Completion
+    - [x] Reset `timeLeft` in `handleTaskComplete`
+- [x] Refine "Start Now!" Position & Animation
+    - [x] Add `poke` animation to Tailwind config
+    - [x] Move element to the right of the timer
+    - [x] Update icon rotation and text layout
+- [ ] Notify user
