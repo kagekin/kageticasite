@@ -37,4 +37,10 @@
 - [x] Add OGP Tags
     - [x] Locate `jackpot-focus-ogp.png` and rename (remove space)
     - [x] Add `og:title`, `og:description`, `og:image`, `twitter:card` etc.
+- [/] Implement Cat Reward Images
+    - [x] Generate 3 square cat images (used SVGs as fallback)
+    - [x] Modify `jackpot_focus.html` to pick and display random cat on WIN
+    - [x] Add cat image display to 'win' UI state
+    - [x] Implement Realistic Black Cat Placeholders (Due to API errors, using SVGs)
+    - [x] Update code to include black cat options
 - [ ] Notify user

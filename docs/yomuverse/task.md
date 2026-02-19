@@ -1,0 +1,25 @@
+- [x] Initialize Yomuverse Project
+    - [x] Create `docs/yomuverse` directory
+    - [x] Create `lab/yomuverse.html` structure
+- [x] Implement UI/UX (Frontend)
+    - [x] Login Screen (Name input, Avatar generation)
+    - [x] Main HUD (Clock, Participant Count, Toolbar)
+    - [x] Spatial Layout (PDF Center, Avatar Field)
+- [x] Implement Core Features (Prototype Logic)
+    - [x] PDF Viewer (Partial: Mock Content)
+    - [x] PDF Pagination (Prev/Next)
+    - [x] Avatar Movement (Restored click handler)
+    - [x] Simulated Multiplayer (Mock cursors/avatars)
+- [x] Implement Collaboration Tools
+    - [x] Canvas Layer (Konva.js integration)
+    - [x] Pen Tool (Drawing logic)
+    - [x] Highlighter Tool (Yellow, transparent)
+    - [x] Eraser Tool
+    - [x] Sticky Notes (Add/Edit/Delete)
+- [x] Implement Audio/Comm UI
+    - [x] Spatial Audio Switcher (UI only)
+    - [x] Megaphone/Mute controls (UI only)
+- [ ] Refine & Polish
+    - [ ] Visual polish (Tailwind)
+    - [ ] Responsive adjustments
+- [ ] Notify User

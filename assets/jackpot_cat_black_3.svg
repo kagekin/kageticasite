@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <rect width="400" height="400" fill="#263238"/>
+  
+  <!-- Sleeping Bun -->
+  <ellipse cx="200" cy="220" rx="140" ry="100" fill="#000"/>
+  <path d="M300 200 Q360 150 320 250" stroke="#000" stroke-width="25" fill="none" stroke-linecap="round"/> <!-- Tail curled -->
+  
+  <!-- Ears tucked -->
+  <path d="M100 180 L80 140 L130 160 Z" fill="#000"/>
+  
+  <!-- Closed Eyes -->
+  <path d="M140 220 Q160 230 180 220" stroke="#757575" stroke-width="3" fill="none"/>
+  <path d="M220 220 Q240 230 260 220" stroke="#757575" stroke-width="3" fill="none"/>
+  
+  <!-- Zzz -->
+  <text x="300" y="100" font-family="serif" font-size="40" fill="#B0BEC5">Zzz...</text>
+
+  <text x="50%" y="360" font-family="serif" font-size="30" text-anchor="middle" fill="#B0BEC5">Cozy...</text>
+</svg>

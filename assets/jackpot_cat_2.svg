@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="400" height="400">
+  <rect width="200" height="200" rx="20" fill="#E3F2FD"/>
+  
+  <!-- Background Hearts -->
+  <circle cx="30" cy="30" r="10" fill="#90CAF9" opacity="0.5"/>
+  <circle cx="170" cy="170" r="15" fill="#BBDEFB" opacity="0.5"/>
+  
+  <!-- Cat -->
+  <circle cx="100" cy="115" r="55" fill="#CFD8DC"/> <!-- Face -->
+  <path d="M55 80 L45 30 L85 60 Z" fill="#B0BEC5"/> <!-- Left Ear -->
+  <path d="M145 80 L155 30 L115 60 Z" fill="#B0BEC5"/> <!-- Right Ear -->
+  
+  <!-- Eyes (Hearts) -->
+  <path d="M80 100 q-8 -15 -16 0 t16 20 q8 -15 16 -20 t-16 0" fill="#F06292"/>
+  <path d="M120 100 q-8 -15 -16 0 t16 20 q8 -15 16 -20 t-16 0" fill="#F06292"/>
+  
+  <!-- Mouth (Open Happy) -->
+  <path d="M95 135 Q100 150 105 135 Z" fill="#F48FB1"/>
+  
+  <text x="50%" y="185" font-family="'Comic Sans MS', sans-serif" font-size="16" text-anchor="middle" fill="#0277BD">Lovely!</text>
+</svg>

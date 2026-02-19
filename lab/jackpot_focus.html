@@ -475,7 +475,8 @@
             const [isTimerRunning, setIsTimerRunning] = useState(false);
             const [muted, setMuted] = useState(false);
 
-            const [rouletteState, setRouletteState] = useState('idle');
+            const [rouletteState, setRouletteState] = useState('idle'); // idle, spinning, win, lose
+            const [rewardImage, setRewardImage] = useState(null);
 
             // Visual Effects State
             const [burstPos, setBurstPos] = useState(null);
@@ -559,6 +560,30 @@
                 setIsTimerRunning(true);
             };
 
+            const handleRouletteComplete = (result) => {
+                setRouletteState(result);
+                if (result === 'win') {
+                    // Pick random cat image
+                    const cats = [
+                        '../assets/jackpot_cat_1.svg',
+                        '../assets/jackpot_cat_2.svg',
+                        '../assets/jackpot_cat_3.svg',
+                        '../assets/jackpot_cat_black_1.svg',
+                        '../assets/jackpot_cat_black_2.svg',
+                        '../assets/jackpot_cat_black_3.svg'
+                    ];
+                    setRewardImage(cats[Math.floor(Math.random() * cats.length)]);
+
+                    triggerSound('fanfare'); // Changed from 'win' to 'fanfare' to match existing sounds
+                    // triggerConfetti(); // Confetti not defined, keeping original behavior
+                    // Voice
+                    playSystemVoice("ジャックポット！おめでとうございます！", 'excited'); // Using existing playSystemVoice
+                } else {
+                    setRewardImage(null);
+                    triggerSound('boom'); // Changed from 'lose' to 'boom' to match existing sounds
+                }
+            };
+
             const handleTaskComplete = (taskId, e) => {
                 if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
                 triggerEffect(e);
@@ -592,13 +617,7 @@
                         setTimeout(() => {
                             clearInterval(tickInterval);
                             const isWin = Math.random() < 0.33;
-                            if (isWin) {
-                                setRouletteState('win');
-                                triggerSound('fanfare', "ジャックポット！！", 'excited');
-                            } else {
-                                setRouletteState('lose');
-                                triggerSound('boom', "残念！", 'normal');
-                            }
+                            handleRouletteComplete(isWin ? 'win' : 'lose');
                         }, 2500);
                     }, 500);
 
@@ -677,7 +696,7 @@
 
             // --- UI Components ---
 
-            const RouletteGauge = () => {
+            const RouletteGaugeProgress = () => { // Renamed to avoid conflict with new RouletteGauge
                 const progress = completedCount % 3;
                 return (
                     <div className="bg-slate-900 p-2 rounded-lg border border-slate-800 flex items-center justify-between mb-2">
@@ -699,7 +718,7 @@
                 return (
                     <div className="flex flex-col h-full bg-slate-950">
                         <div className="p-4 bg-slate-950/90 backdrop-blur z-10 border-b border-slate-800">
-                            <RouletteGauge />
+                            <RouletteGaugeProgress />
                             <div className="flex justify-between items-center mt-2">
                                 <h2 className="text-sm font-bold text-slate-400 tracking-wider">TARGET LIST</h2>
                                 <div className="flex gap-2">

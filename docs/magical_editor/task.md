@@ -1,0 +1,7 @@
+- [x] Remove Navigation Header from `magicaleditor.html`
+- [ ] Generate Character Images (24 Total, Blue Background)
+    - [ ] Test Generation (Char 12: Magical Editor)
+    - [ ] 1. 恋する乙女ギャル (Gal)
+    - [ ] 13. ツンデレ幼馴染 (Tsundere)
+    - [ ] ... (Remaining characters)
+- [ ] Update `magicaleditor.html` to use PNGs

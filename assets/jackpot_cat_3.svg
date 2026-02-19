@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="400" height="400">
+  <rect width="200" height="200" rx="20" fill="#FFF3E0"/>
+  
+  <!-- Radiant Background -->
+  <path d="M100 100 L100 0" stroke="#FFE0B2" stroke-width="10" opacity="0.5"/>
+  <path d="M100 100 L170 30" stroke="#FFE0B2" stroke-width="10" opacity="0.5"/>
+  <path d="M100 100 L200 100" stroke="#FFE0B2" stroke-width="10" opacity="0.5"/>
+  <path d="M100 100 L170 170" stroke="#FFE0B2" stroke-width="10" opacity="0.5"/>
+  <path d="M100 100 L100 200" stroke="#FFE0B2" stroke-width="10" opacity="0.5"/>
+  <path d="M100 100 L30 170" stroke="#FFE0B2" stroke-width="10" opacity="0.5"/>
+  <path d="M100 100 L0 100" stroke="#FFE0B2" stroke-width="10" opacity="0.5"/>
+  <path d="M100 100 L30 30" stroke="#FFE0B2" stroke-width="10" opacity="0.5"/>
+
+  <!-- Cat -->
+  <path d="M50 70 L40 20 L80 60 Z" fill="#FFCC80"/>
+  <path d="M150 70 L160 20 L120 60 Z" fill="#FFCC80"/>
+  <ellipse cx="100" cy="115" rx="65" ry="55" fill="#FFE0B2"/>
+
+  <!-- Eyes -->
+  <circle cx="75" cy="110" r="6" fill="#3E2723"/> <!-- Left Eye -->
+  <path d="M115 110 L135 110 L125 115 Z" fill="#3E2723"/> <!-- Right Eye (Wink - simplified to triangle/dash) -->
+  <path d="M115 112 Q125 105 135 112" stroke="#3E2723" stroke-width="3" fill="none"/>
+
+  <!-- Mouth -->
+  <path d="M95 130 Q100 135 105 130" stroke="#3E2723" stroke-width="3" fill="none"/>
+
+  <!-- Crown -->
+  <path d="M70 55 L85 25 L100 55 L115 25 L130 55 L70 55 Z" fill="#FFD700" stroke="#F57F17" stroke-width="2"/>
+
+  <text x="50%" y="190" font-family="'Comic Sans MS', sans-serif" font-size="18" text-anchor="middle" fill="#EF6C00">You Did It!</text>
+</svg>
