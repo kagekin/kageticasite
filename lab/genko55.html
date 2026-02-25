@@ -38,19 +38,8 @@
 <body class="bg-[#fcfbf9] text-gray-900 selection-pink min-h-screen pb-20">
   <div id="app" class="max-w-md mx-auto p-4 sm:p-6"></div>
 
-  <!-- Firebase & アプリケーションロジック -->
+  <!-- アプリケーションロジック (localStorage保存版) -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-    // --- Firebase Setup ---
-    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-    const app = Object.keys(firebaseConfig).length > 0 ? initializeApp(firebaseConfig) : null;
-    const auth = app ? getAuth(app) : null;
-    const db = app ? getFirestore(app) : null;
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-
     // --- 定数定義 ---
     const MANGA_STEPS = [
       { id: 'plot', name: 'プロット' },
@@ -208,23 +197,26 @@
       state.speechState = { type: 'status', text: formatMessage(msg, stats) };
     };
 
-    // --- データ保存処理 ---
-    const saveData = async () => {
-      if (!state.user || !db) return;
+    // --- データ保存処理 (localStorage) ---
+    const saveData = () => {
       state.isSaving = true;
       renderHeaderOnly(); // ローディング表示
+
       try {
-        const docRef = doc(db, 'artifacts', appId, 'users', state.user.uid, 'settings', 'main');
-        await setDoc(docRef, {
+        const dataToSave = {
           project: state.project,
           progress: state.progress,
           concierge: state.concierge
-        }, { merge: true });
+        };
+        localStorage.setItem('genko55_data', JSON.stringify(dataToSave));
       } catch (error) {
         console.error("Save error:", error);
       }
-      state.isSaving = false;
-      renderHeaderOnly(); // ローディング消去
+
+      setTimeout(() => {
+        state.isSaving = false;
+        renderHeaderOnly(); // ローディング消去
+      }, 300); // 保存したというフィードバックを少しだけ見せるための遅延
     };
 
     // --- UI レンダリング ---
@@ -328,6 +320,21 @@
             : `<div class="w-full h-full flex flex-col items-center justify-end pb-8 bg-gray-100 rounded-t-[60px] border-4 border-b-0 border-gray-800">${fallbackIcon}</div>`)
         }
             </div>
+          </div>
+
+          <!-- 自動計算・進捗評価エリア -->
+          <div class="bg-gray-50 border-4 border-gray-800 rounded-2xl p-4 sm:p-5 shadow-sm text-gray-800">
+            <h3 class="font-black text-lg mb-2 flex items-center gap-2">
+              <i data-lucide="activity" class="w-5 h-5"></i> 進捗レポート
+            </h3>
+            <p class="font-bold text-sm sm:text-base leading-relaxed">
+              ${stats.status === 'success'
+          ? `脱稿おめでとうございます！すべての作業が完了しました。`
+          : stats.status === 'panic'
+            ? `現在のペースは <span class="text-pink-600 font-black text-lg">${stats.currentPace.toFixed(1)}</span> ${state.project.unitName}/日 ですが、<br/>しめきりに間に合わせるには <span class="text-blue-600 font-black text-lg">${stats.requiredPace.toFixed(1)}</span> ${state.project.unitName}/日 のペースが必要です！少し頑張りどころです！`
+            : `現在のペースは <span class="text-pink-600 font-black text-lg">${stats.currentPace.toFixed(1)}</span> ${state.project.unitName}/日 で進行中です！<br/>（目標ペース: ${stats.requiredPace.toFixed(1)} ${state.project.unitName}/日）この調子で進めましょう！`
+        }
+            </p>
           </div>
 
           <div class="flex gap-4">
@@ -530,8 +537,7 @@
       }
     });
 
-    // 入力フォームのデータバインディング (入力時にStateを自動更新)
-    appDiv.addEventListener('input', (e) => {
+    const handleDataBind = (e) => {
       const bindPath = e.target.dataset.bind;
       if (!bindPath) return;
 
@@ -547,6 +553,21 @@
       if (bindPath === 'project.type') {
         state.progress = {};
       }
+
+      // 変更を自動保存（少し遅延させて連続入力をまとめる）
+      clearTimeout(window._saveTimer);
+      window._saveTimer = setTimeout(() => {
+        saveData();
+      }, 1000);
+    };
+
+    // 入力フォームのデータバインディング (入力時にStateを自動更新し、保存)
+    appDiv.addEventListener('input', handleDataBind);
+    // selectなどの変更イベントも拾って保存する
+    appDiv.addEventListener('change', (e) => {
+      if (e.target.dataset.bind) {
+        handleDataBind(e);
+      }
     });
 
     // 画像アップロードのイベントハンドラ
@@ -558,6 +579,7 @@
         try {
           const base64Url = await processImageFile(file);
           state.concierge.states[stateKey].imageUrl = base64Url;
+          saveData(); // 画像変更時にすぐ保存
           renderApp(); // 画像更新のため再描画
         } catch (error) {
           console.error("画像の処理に失敗しました:", error);
@@ -565,53 +587,27 @@
       }
     });
 
-    // --- Firebase 初期化フロー ---
-    if (!auth) {
+    // --- 初期化フロー (localStorage) ---
+    const initApp = () => {
+      try {
+        const savedDataStr = localStorage.getItem('genko55_data');
+        if (savedDataStr) {
+          const savedData = JSON.parse(savedDataStr);
+          if (savedData.project) state.project = savedData.project;
+          if (savedData.progress) state.progress = savedData.progress;
+          if (savedData.concierge) state.concierge = { ...DEFAULT_CONCIERGE, ...savedData.concierge };
+        }
+      } catch (error) {
+        console.error("Load error:", error);
+      }
+
       state.loading = false;
       updateSpeechStatus();
       renderApp();
-    } else {
-      const initAuth = async () => {
-        try {
-          if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-            await signInWithCustomToken(auth, __initial_auth_token);
-          } else {
-            await signInAnonymously(auth);
-          }
-        } catch (e) {
-          console.error("Auth error:", e);
-          state.loading = false;
-          renderApp();
-        }
-      };
-      initAuth();
+    };
 
-      onAuthStateChanged(auth, (currentUser) => {
-        state.user = currentUser;
-        if (!currentUser) {
-          state.loading = false;
-          renderApp();
-          return;
-        }
-
-        const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'settings', 'main');
-        onSnapshot(docRef, (docSnap) => {
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            if (data.project) state.project = data.project;
-            if (data.progress) state.progress = data.progress;
-            if (data.concierge) state.concierge = { ...DEFAULT_CONCIERGE, ...data.concierge };
-          }
-          state.loading = false;
-          updateSpeechStatus();
-          renderApp();
-        }, (error) => {
-          console.error("Firestore error:", error);
-          state.loading = false;
-          renderApp();
-        });
-      });
-    }
+    // アプリ起動
+    initApp();
   </script>
 </body>
 
