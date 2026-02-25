@@ -296,6 +296,15 @@
         `;
       }).join('');
 
+      let progressTextForShare = "";
+      steps.forEach(step => {
+        const currentVal = state.progress[step.id] || 0;
+        progressTextForShare += `${step.name}: ${currentVal}/${state.project.totalUnits}${state.project.unitName}\n`;
+      });
+
+      const shareText = encodeURIComponent(`【${state.project.title} 進捗報告】\nしめきりまであと ${stats.remainingDays > 0 ? stats.remainingDays : 0}日！\n\n${progressTextForShare}\n今のペース: ${stats.currentPace.toFixed(1)}${state.project.unitName}/日\n#原稿進行コンシェルジュ `);
+      const shareUrl = encodeURIComponent("https://kagetica.net/lab/genko55.html");
+
       return `
         <div class="space-y-8 pb-10">
           <div data-action="tap-character" class="relative flex flex-col items-center cursor-pointer group select-none">
@@ -308,10 +317,15 @@
               <p id="speech-text" class="font-bold text-gray-800 whitespace-pre-wrap leading-relaxed text-center text-sm sm:text-base min-h-[3rem] flex items-center justify-center">${escapeHtml(state.speechState.text)}</p>
             </div>
             <div class="w-56 h-64 sm:w-64 sm:h-80 flex items-end justify-center overflow-hidden transition-transform duration-200 group-active:scale-95 group-active:translate-y-2">
-              ${currentStateConfig.imageUrl
-          ? `<img src="${escapeHtml(currentStateConfig.imageUrl)}" alt="Concierge" class="max-w-full max-h-full object-contain object-bottom" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                   <div class="hidden w-full h-full flex-col items-center justify-end pb-8 bg-gray-100 rounded-t-[60px] border-4 border-b-0 border-gray-800">${fallbackIcon}</div>`
-          : `<div class="w-full h-full flex flex-col items-center justify-end pb-8 bg-gray-100 rounded-t-[60px] border-4 border-b-0 border-gray-800">${fallbackIcon}</div>`
+              ${(state.speechState.type === 'tip' || state.speechState.type === 'lucky') ?
+          (state.concierge.states['default'].imageUrl
+            ? `<img src="${escapeHtml(state.concierge.states['default'].imageUrl)}" alt="Concierge" class="max-w-full max-h-full object-contain object-bottom" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                     <div class="hidden w-full h-full flex-col items-center justify-end pb-8 bg-gray-100 rounded-t-[60px] border-4 border-b-0 border-gray-800">${fallbackIcon}</div>`
+            : `<div class="w-full h-full flex flex-col items-center justify-end pb-8 bg-gray-100 rounded-t-[60px] border-4 border-b-0 border-gray-800">${fallbackIcon}</div>`)
+          : (currentStateConfig.imageUrl
+            ? `<img src="${escapeHtml(currentStateConfig.imageUrl)}" alt="Concierge" class="max-w-full max-h-full object-contain object-bottom" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                     <div class="hidden w-full h-full flex-col items-center justify-end pb-8 bg-gray-100 rounded-t-[60px] border-4 border-b-0 border-gray-800">${fallbackIcon}</div>`
+            : `<div class="w-full h-full flex flex-col items-center justify-end pb-8 bg-gray-100 rounded-t-[60px] border-4 border-b-0 border-gray-800">${fallbackIcon}</div>`)
         }
             </div>
           </div>
@@ -336,6 +350,13 @@
               <i data-lucide="check-circle-2"></i> チェックリスト
             </h2>
             <div class="space-y-3">${checklistHTML}</div>
+          </div>
+
+          <div class="mt-8 pt-6 border-t-2 border-dashed border-gray-300">
+            <a href="https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}" target="_blank" rel="noopener noreferrer" class="w-full flex justify-center items-center gap-2 bg-black text-white font-bold py-3 px-6 rounded-xl hover:bg-gray-800 transition-colors shadow-sm">
+              <svg viewBox="0 0 24 24" aria-hidden="true" class="w-5 h-5 fill-current"><g><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></g></svg>
+              進捗をX(Twitter)で報告する
+            </a>
           </div>
         </div>
       `;
@@ -504,9 +525,8 @@
           else state.speechState = { type: 'tip', text: tipsList[Math.floor(Math.random() * tipsList.length)] };
         }
 
-        // テキスト部分のみ更新 (画面全体の再描画を防ぐ)
-        const speechEl = document.getElementById('speech-text');
-        if (speechEl) speechEl.textContent = state.speechState.text;
+        // state更新後にrenderAppを呼んで画像を更新する
+        renderApp();
       }
     });
 
