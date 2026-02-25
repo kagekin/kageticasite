@@ -107,11 +107,11 @@
     ].join("\n\n");
 
     const DEFAULT_LUCKY_MESSAGES = [
-      "今日は『一粒万倍日』！\n新しい作業を始めるのに最強の日だよ！",
-      "今日は『天赦日』！\nつまずいていたシーンを一気に進めるチャンス！",
-      "今日は『大安』！\n何事もうまくいく日！作業がサクサクはかどるかも！",
-      "今日は『寅の日』！\n資料や素材を買うなら今日がおすすめ！",
-      "今日は『己巳の日』！\n芸術の女神の縁日！今日の君は最高に冴えてるよ！"
+      "1/1\nあけましておめでとう！今年も原稿がんばろう！",
+      "毎年 12/25\nメリークリスマス！原稿への最高のプレゼントは進捗だよ！",
+      "ランダム\n今日は『一粒万倍日』！\n新しい作業を始めるのに最強の日だよ！",
+      "ランダム\n今日は『天赦日』！\nつまずいていたシーンを一気に進めるチャンス！",
+      "ランダム\n今日は『己巳の日』！\n芸術の女神の縁日！今日の君は最高に冴えてるよ！"
     ].join('\n\n');
 
     const DEFAULT_CONCIERGE = {
@@ -119,9 +119,9 @@
       tips: DEFAULT_TIPS,
       luckyMessages: DEFAULT_LUCKY_MESSAGES,
       states: {
-        default: { imageUrl: "../assets/genko55/nomal.png", message: "今のペースは {pace}{unit}/日 だよ。\nしめきりまであと {days}日！" },
-        good: { imageUrl: "../assets/genko55/good.png", message: "いいペース！\nこのまま {pace}{unit}/日 で進めよう！" },
-        panic: { imageUrl: "../assets/genko55/pinch.png", message: "しめきりまで あと {days}日！\nまにあう！？\n必要なペースは {requiredPace}{unit}/日 だよ！" },
+        default: { imageUrl: "../assets/genko55/nomal.png", message: "現在の目標ペースは {targetPace}{unit} ぐらいだよ。\nしめきりまであと {days}日！" },
+        good: { imageUrl: "../assets/genko55/good.png", message: "いいペース！\nこのまま {targetPace}{unit} 以上で進めよう！" },
+        panic: { imageUrl: "../assets/genko55/pinch.png", message: "しめきりまで あと {days}日！\nまにあう！？\n全体の残り {remains} だよ！" },
         success: { imageUrl: "../assets/genko55/done.png", message: "脱稿おめでとう！！\n本当におつかれさま！" }
       }
     };
@@ -152,21 +152,43 @@
 
     const getLuckyDayMessage = () => {
       const today = new Date();
-      // 日付のシード値を作る（毎日同じ結果にするため）
-      const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+      const m = today.getMonth() + 1;
+      const d = today.getDate();
+      const y = today.getFullYear();
 
-      // カスタム設定があればそれを使用、なければデフォルト
+      const exactDateStr = `${y}/${m}/${d}`;
+      const annualDateStr = `毎年 ${m}/${d}`;
+
       const luckyRaw = state.concierge.luckyMessages || DEFAULT_LUCKY_MESSAGES;
-      const luckyList = luckyRaw.split(/\n\s*\n/).map(t => t.trim()).filter(Boolean);
+      const luckyBlocks = luckyRaw.split(/\n\s*\n/).map(t => t.trim()).filter(Boolean);
 
-      if (luckyList.length === 0) return null;
+      let randomMessages = [];
 
-      // 5日（25日など）に1回の頻度で吉日メッセージを出す確率計算
-      const mod = seed % 25;
+      // 1. 日付指定のメッセージを探す
+      for (const block of luckyBlocks) {
+        const lines = block.split('\n');
+        const header = lines[0].trim();
 
-      if (mod < luckyList.length) {
-        return luckyList[mod];
+        if (header === exactDateStr || header === annualDateStr) {
+          // 日付が一致したら確定でそれを返す（1行目は日付設定なので除外）
+          return lines.slice(1).join('\n');
+        } else if (header === 'ランダム') {
+          randomMessages.push(lines.slice(1).join('\n'));
+        } else if (!header.includes('/')) {
+          // 古い形式（日付指定なし）はすべてランダム扱いとする
+          randomMessages.push(block);
+        }
       }
+
+      // 2. 日付指定がなく、ランダムメッセージがあれば確率で出す
+      if (randomMessages.length > 0) {
+        const seed = y * 10000 + m * 100 + d;
+        const mod = seed % 25; // 25日に1回の確率
+        if (mod < randomMessages.length) {
+          return randomMessages[mod];
+        }
+      }
+
       return null;
     };
 
@@ -289,7 +311,8 @@
       return msgTemplate
         .replace(/{days}/g, stats.remainingDays)
         .replace(/{pace}/g, stats.currentPace.toFixed(1))
-        .replace(/{requiredPace}/g, stats.targetPace) // キャラクターメッセージでは設定した目標目標を優先する
+        .replace(/{requiredPace}/g, stats.targetPace) // 互換性のため残すが、基本使わない
+        .replace(/{targetPace}/g, stats.targetPace)
         .replace(/{unit}/g, state.project.unitName + '/' + stats.pacePeriodLabel)
         .replace(/{remains}/g, stats.remainingPercentage.toFixed(1) + '%');
     };
@@ -434,8 +457,8 @@
               ${stats.status === 'success'
           ? `脱稿おめでとうございます！すべての作業が完了しました。`
           : stats.status === 'panic'
-            ? `現在のペースは <span class="text-pink-600 font-black text-lg">${stats.currentPace.toFixed(1)}</span> ${state.project.unitName} / ${stats.pacePeriodLabel} です。<br/>目標の <span class="text-blue-600 font-black text-lg">${stats.targetPace}</span> ${state.project.unitName} あるいは、しめきりに間に合わせるための <span class="text-blue-600 font-black text-lg">${stats.requiredPace.toFixed(1)}</span> ${state.project.unitName} に届いていません！少し頑張りどころです！`
-            : `現在のペースは <span class="text-pink-600 font-black text-lg">${stats.currentPace.toFixed(1)}</span> ${state.project.unitName} / ${stats.pacePeriodLabel} で進行中です！（目標: ${stats.targetPace} ${state.project.unitName}）<br/>この調子で進めましょう！`
+            ? `現在の進行ペースは目標（${stats.targetPace} ${state.project.unitName} / ${stats.pacePeriodLabel}）に届いておらず、しめきりに間に合わない可能性があります！<br/>少しペースを上げて頑張りどころです！`
+            : `現在の進行ペースは目標（${stats.targetPace} ${state.project.unitName} / ${stats.pacePeriodLabel}）をクリアして順調です！<br/>この調子で進めましょう！`
         }
             </p>
           </div>
@@ -656,20 +679,25 @@
             <span class="text-pink-600">■ 推奨サイズ:</span> 縦横400px〜600px程度<br/>
             ※大きい画像でも自動で軽いサイズに縮小されます。<br/>
             <span class="text-pink-600">{days}</span> : 残り日数 / 
-            <span class="text-pink-600">{pace}</span> : 今のペース / 
-            <span class="text-pink-600">{requiredPace}</span> : ユーザーが設定した目標ペース / 
-            <span class="text-pink-600">{unit}</span> : P/週 などの単位セット
+            <span class="text-pink-600">{targetPace}</span> : 目標ペース / 
+            <span class="text-pink-600">{unit}</span> : P/週 などの設定単位 / 
+            <span class="text-pink-600">{remains}</span> : 全体の残り〇〇%
           </p>
 
           <div class="space-y-8">${statesHTML}</div>
 
           <div class="mt-8 p-4 bg-purple-50 rounded-xl border-2 border-purple-200">
             <h3 class="font-black text-lg mb-2 text-purple-700 flex items-center gap-2">
-              <i data-lucide="sparkles" class="w-5 h-5"></i> 吉日・占いメッセージ
+              <i data-lucide="sparkles" class="w-5 h-5"></i> 吉日・記念日・占いメッセージ
             </h3>
-            <p class="text-xs font-bold text-purple-600 mb-2">※複数登録すると、たまに今日の運勢としてランダムに表示されます。</p>
-            <p class="text-xs font-bold text-purple-600 mb-3">※表示される時の表情は「通常時」の画像になります。</p>
-            <textarea data-bind="concierge.luckyMessages" rows="6" placeholder="今日は最高の作業日和！&#13;&#10;&#13;&#10;今日は推しカプ記念日！気合入れていこう！" class="w-full p-3 border-2 border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 text-sm font-bold bg-white leading-relaxed">${escapeHtml(state.concierge.luckyMessages || DEFAULT_LUCKY_MESSAGES)}</textarea>
+            <p class="text-xs font-bold text-purple-600 mb-2 leading-relaxed">
+              1行目に「日付」を書き、2行目以降にその日のセリフを書きます。<br/>
+              ・<span class="bg-white px-1 border border-purple-200 rounded">2026/5/5</span> (特定の年月日)<br/>
+              ・<span class="bg-white px-1 border border-purple-200 rounded">毎年 10/31</span> (毎年の特定日)<br/>
+              ・<span class="bg-white px-1 border border-purple-200 rounded">ランダム</span> (日付に関係なくたまに出るおみくじ・運勢用)<br/>
+              ※各設定は1行の空行で区切ってください。
+            </p>
+            <textarea data-bind="concierge.luckyMessages" rows="8" placeholder="毎年 1/1&#13;&#10;あけましておめでとう！&#13;&#10;&#13;&#10;ランダム&#13;&#10;今日は最高の作業日和！" class="w-full p-3 border-2 border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 text-sm font-bold bg-white leading-relaxed">${escapeHtml(state.concierge.luckyMessages || DEFAULT_LUCKY_MESSAGES)}</textarea>
           </div>
 
           <div class="mt-12 pt-6 border-t-2 border-dashed border-red-200">
@@ -790,9 +818,10 @@
       }
       current[keys[keys.length - 1]] = val;
 
-      // プロジェクトタイプ変更時は進捗をリセット
+      // プロジェクトタイプ変更時は進捗をリセットし、画面を再描画してウェイト設定UIを切り替える
       if (bindPath === 'project.type') {
         state.progress = {};
+        renderApp();
       }
 
       // 変更を自動保存（少し遅延させて連続入力をまとめる）
