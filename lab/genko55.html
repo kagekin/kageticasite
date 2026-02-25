@@ -434,7 +434,11 @@
                   <label for="file-${stateKey}" class="cursor-pointer bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-2">
                     <i data-lucide="upload" class="w-4 h-4"></i> 画像を選択
                   </label>
-                  ${stateData.imageUrl && stateData.imageUrl.startsWith('data:image') ? `<span class="text-xs text-green-700 font-bold bg-green-100 px-2 py-1 rounded">アップロード済</span>` : ''}
+                  ${stateData.imageUrl && stateData.imageUrl !== DEFAULT_CONCIERGE.states[stateKey].imageUrl ?
+          `<button data-action="reset-image" data-state-key="${stateKey}" class="cursor-pointer bg-white border border-red-300 hover:bg-red-50 text-red-600 text-sm font-bold py-1.5 px-3 rounded-lg transition-colors flex items-center gap-1">
+                      <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> デフォルトに戻す
+                    </button>`
+          : ''}
                 </div>
                 <div class="flex items-center gap-2 text-sm">
                   <span class="text-gray-500 font-bold text-xs w-10 text-center">または</span>
@@ -533,6 +537,13 @@
         }
 
         // state更新後にrenderAppを呼んで画像を更新する
+        renderApp();
+      }
+      else if (action === 'reset-image') {
+        const stateKey = btn.dataset.stateKey;
+        // デフォルト画像を復元
+        state.concierge.states[stateKey].imageUrl = DEFAULT_CONCIERGE.states[stateKey].imageUrl;
+        saveData();
         renderApp();
       }
     });
