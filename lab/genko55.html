@@ -85,7 +85,9 @@
       totalUnits: 30,
       unitName: "P",
       startDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      targetPace: 2, // 目標ペースの数値
+      targetPacePeriod: 'day' // 目標ペースの期間 ('day', 'week', 'month')
     };
 
     const DEFAULT_TIPS = [
@@ -93,12 +95,23 @@
       "疲れたら15分だけ仮眠をとるとスッキリするよ。\n寝すぎには注意！",
       "水分補給はしっかりね！\nコーヒーやエナジードリンクの飲み過ぎは禁物だよ。",
       "どうしてもやる気が出ない時は、\nとりあえず机に向かって1分だけ作業してみよう！",
-      "手首や肩のストレッチをしておこう！\n体が資本だからね！"
+      "手首や肩のストレッチをしておこう！\n体が資本だからね！",
+      "椅子に座りっぱなしは体に毒だよ。\n30分に1回は立ち上がって歩き回ろう！",
+      "集中力を高めたい時は、画面の特定の1点（文字や色）を数分間じっと\n瞬きせずに見つめ続けるといいらしいよ。知らんけど。"
     ].join("\n\n");
+
+    const DEFAULT_LUCKY_MESSAGES = [
+      "今日は『一粒万倍日』！\n新しい作業を始めるのに最強の日だよ！",
+      "今日は『天赦日』！\nつまずいていたシーンを一気に進めるチャンス！",
+      "今日は『大安』！\n何事もうまくいく日！作業がサクサクはかどるかも！",
+      "今日は『寅の日』！\n資料や素材を買うなら今日がおすすめ！",
+      "今日は『己巳の日』！\n芸術の女神の縁日！今日の君は最高に冴えてるよ！"
+    ].join('\n\n');
 
     const DEFAULT_CONCIERGE = {
       name: "ナビゲーター",
       tips: DEFAULT_TIPS,
+      luckyMessages: DEFAULT_LUCKY_MESSAGES,
       states: {
         default: { imageUrl: "../assets/genko55/nomal.png", message: "今のペースは {pace}{unit}/日 だよ。\nしめきりまであと {days}日！" },
         good: { imageUrl: "../assets/genko55/good.png", message: "いいペース！\nこのまま {pace}{unit}/日 で進めよう！" },
@@ -133,16 +146,22 @@
 
     const getLuckyDayMessage = () => {
       const today = new Date();
+      // 日付のシード値を作る（毎日同じ結果にするため）
       const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+
+      // カスタム設定があればそれを使用、なければデフォルト
+      const luckyRaw = state.concierge.luckyMessages || DEFAULT_LUCKY_MESSAGES;
+      const luckyList = luckyRaw.split(/\n\s*\n/).map(t => t.trim()).filter(Boolean);
+
+      if (luckyList.length === 0) return null;
+
+      // 5日（25日など）に1回の頻度で吉日メッセージを出す確率計算
       const mod = seed % 25;
-      switch (mod) {
-        case 0: return "今日は『一粒万倍日』！\n新しい作業を始めるのに最強の日だよ！";
-        case 1: return "今日は『天赦日』！\nつまずいていたシーンを一気に進めるチャンス！";
-        case 2: return "今日は『大安』！\n何事もうまくいく日！作業がサクサクはかどるかも！";
-        case 3: return "今日は『寅の日』！\n資料や素材を買うなら今日がおすすめ！";
-        case 4: return "今日は『己巳の日』！\n芸術の女神の縁日！今日の君は最高に冴えてるよ！";
-        default: return null;
+
+      if (mod < luckyList.length) {
+        return luckyList[mod];
       }
+      return null;
     };
 
     const processImageFile = (file) => {
@@ -192,16 +211,45 @@
       const completedVirtualUnits = state.project.totalUnits * overallProgressRatio;
       const remainingVirtualUnits = state.project.totalUnits - completedVirtualUnits;
 
-      const currentPace = completedVirtualUnits / passedDays;
-      const requiredPace = remainingDays > 0 ? remainingVirtualUnits / remainingDays : remainingVirtualUnits;
+      const currentDailyPace = completedVirtualUnits / passedDays;
+      const requiredDailyPaceToFinish = remainingDays > 0 ? remainingVirtualUnits / remainingDays : remainingVirtualUnits;
+
+      // ユーザー設定の目標ペースを「1日あたり」に換算
+      let userTargetDailyPace = state.project.targetPace || 0;
+      if (state.project.targetPacePeriod === 'week') userTargetDailyPace /= 7;
+      else if (state.project.targetPacePeriod === 'month') userTargetDailyPace /= 30;
+
+      // 画面表示用の現在ペースと目標ペース（設定された期間に合わせる）
+      let displayCurrentPace = currentDailyPace;
+      let displayRequiredPace = requiredDailyPaceToFinish;
+      let pacePeriodLabel = '日';
+
+      if (state.project.targetPacePeriod === 'week') {
+        displayCurrentPace = currentDailyPace * 7;
+        displayRequiredPace = requiredDailyPaceToFinish * 7;
+        pacePeriodLabel = '週';
+      } else if (state.project.targetPacePeriod === 'month') {
+        displayCurrentPace = currentDailyPace * 30;
+        displayRequiredPace = requiredDailyPaceToFinish * 30;
+        pacePeriodLabel = '月';
+      }
 
       let status = 'default';
       if (remainingVirtualUnits <= 0) status = 'success';
       else if (remainingDays < 0) status = 'panic';
-      else if (remainingDays <= 3 || requiredPace > currentPace * 1.5) status = 'panic';
-      else if (currentPace >= requiredPace) status = 'good';
+      // 目標ペースを下回った場合、またはしめきりに対する必要なペースに全く足りていない場合をピンチとする
+      else if (currentDailyPace < (userTargetDailyPace * 0.7) || requiredDailyPaceToFinish > (currentDailyPace * 1.5)) status = 'panic';
+      else if (currentDailyPace >= userTargetDailyPace) status = 'good';
 
-      return { remainingDays, remainingVirtualUnits, currentPace, requiredPace, status };
+      return {
+        remainingDays,
+        remainingVirtualUnits,
+        currentPace: displayCurrentPace,
+        requiredPace: displayRequiredPace, // 締め切り基準の必要ペース
+        targetPace: state.project.targetPace, // ユーザー設定の目標ペース
+        pacePeriodLabel,
+        status
+      };
     };
 
     const formatMessage = (msgTemplate, stats) => {
@@ -209,8 +257,8 @@
       return msgTemplate
         .replace(/{days}/g, stats.remainingDays)
         .replace(/{pace}/g, stats.currentPace.toFixed(1))
-        .replace(/{requiredPace}/g, stats.requiredPace.toFixed(1))
-        .replace(/{unit}/g, state.project.unitName)
+        .replace(/{requiredPace}/g, stats.targetPace) // キャラクターメッセージでは設定した目標目標を優先する
+        .replace(/{unit}/g, state.project.unitName + '/' + stats.pacePeriodLabel)
         .replace(/{remains}/g, stats.remainingVirtualUnits.toFixed(1));
     };
 
@@ -291,9 +339,9 @@
         return `
           <div class="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border-4 border-gray-800 rounded-2xl transition-colors shadow-sm ${isCompleted ? 'bg-gray-50' : 'bg-white'}">
             <div class="flex items-center gap-3 mb-3 sm:mb-0">
-              <div class="w-8 h-8 rounded-lg border-4 border-gray-800 flex items-center justify-center flex-shrink-0 transition-colors ${isCompleted ? 'bg-pink-500 border-pink-500' : 'bg-white'}">
+              <button data-action="toggle-complete" data-step="${step.id}" class="w-8 h-8 rounded-lg border-4 border-gray-800 flex items-center justify-center flex-shrink-0 transition-colors hover:scale-105 active:scale-95 ${isCompleted ? 'bg-pink-500 border-pink-500' : 'bg-white hover:bg-gray-100'}">
                 ${isCompleted ? `<i data-lucide="check" class="w-[18px] h-[18px] text-white stroke-[4]"></i>` : ''}
-              </div>
+              </button>
               <span class="font-bold text-lg sm:text-xl text-gray-800">${escapeHtml(step.name)}</span>
             </div>
             <div class="flex items-center justify-end gap-2 sm:gap-4 font-bold text-lg">
@@ -317,7 +365,7 @@
         progressTextForShare += `${step.name}: ${currentVal}/${state.project.totalUnits}${state.project.unitName}\n`;
       });
 
-      const shareText = encodeURIComponent(`【${state.project.title} 進捗報告】\nしめきりまであと ${stats.remainingDays > 0 ? stats.remainingDays : 0}日！\n\n${progressTextForShare}\n今のペース: ${stats.currentPace.toFixed(1)}${state.project.unitName}/日\n#原稿進行コンシェルジュ `);
+      const shareText = encodeURIComponent(`【${state.project.title} 進捗報告】\nしめきりまであと ${stats.remainingDays > 0 ? stats.remainingDays : 0}日！\n\n${progressTextForShare}\n今のペース: ${stats.currentPace.toFixed(1)}${state.project.unitName}/${stats.pacePeriodLabel} (目標: ${stats.targetPace.toFixed(1)})\n#原稿進行コンシェルジュ `);
       const shareUrl = encodeURIComponent("https://kagetica.net/lab/genko55.html");
 
       return `
@@ -354,17 +402,19 @@
               ${stats.status === 'success'
           ? `脱稿おめでとうございます！すべての作業が完了しました。`
           : stats.status === 'panic'
-            ? `現在のペースは <span class="text-pink-600 font-black text-lg">${stats.currentPace.toFixed(1)}</span> ${state.project.unitName}/日 ですが、<br/>しめきりに間に合わせるには <span class="text-blue-600 font-black text-lg">${stats.requiredPace.toFixed(1)}</span> ${state.project.unitName}/日 のペースが必要です！少し頑張りどころです！`
-            : `現在のペースは <span class="text-pink-600 font-black text-lg">${stats.currentPace.toFixed(1)}</span> ${state.project.unitName}/日 で進行中です！<br/>（目標ペース: ${stats.requiredPace.toFixed(1)} ${state.project.unitName}/日）この調子で進めましょう！`
+            ? `現在のペースは <span class="text-pink-600 font-black text-lg">${stats.currentPace.toFixed(1)}</span> ${state.project.unitName} / ${stats.pacePeriodLabel} です。<br/>目標の <span class="text-blue-600 font-black text-lg">${stats.targetPace}</span> ${state.project.unitName} あるいは、しめきりに間に合わせるための <span class="text-blue-600 font-black text-lg">${stats.requiredPace.toFixed(1)}</span> ${state.project.unitName} に届いていません！少し頑張りどころです！`
+            : `現在のペースは <span class="text-pink-600 font-black text-lg">${stats.currentPace.toFixed(1)}</span> ${state.project.unitName} / ${stats.pacePeriodLabel} で進行中です！（目標: ${stats.targetPace} ${state.project.unitName}）<br/>この調子で進めましょう！`
         }
             </p>
           </div>
 
           <div class="flex gap-4">
-            <div class="flex-1 bg-white border-4 border-gray-800 rounded-2xl p-4 text-center shadow-sm">
-              <div class="text-sm font-bold text-gray-500 mb-1">しめきりまで</div>
-              <div class="text-2xl sm:text-3xl font-black text-gray-800">
-                あと ${stats.remainingDays > 0 ? stats.remainingDays : 0} <span class="text-lg">日</span>
+            <div class="flex-1 ${stats.remainingDays <= 7 && stats.status !== 'success' ? 'bg-red-50 border-red-500 animate-pulse' : 'bg-white border-gray-800'} border-4 rounded-2xl p-4 text-center shadow-sm transition-colors">
+              <div class="text-sm font-bold ${stats.remainingDays <= 7 && stats.status !== 'success' ? 'text-red-500' : 'text-gray-500'} mb-1">
+                ${stats.remainingDays <= 7 && stats.status !== 'success' ? '🚨 しめきりカウントダウン 🚨' : 'しめきりまで'}
+              </div>
+              <div class="text-2xl sm:text-3xl font-black ${stats.remainingDays <= 7 && stats.status !== 'success' ? 'text-red-600 font-mono tracking-widest' : 'text-gray-800'}">
+                あと <span class="${stats.remainingDays <= 7 && stats.status !== 'success' ? 'text-4xl' : ''}">${stats.remainingDays > 0 ? stats.remainingDays : 0}</span> <span class="text-lg">日</span>
               </div>
             </div>
             <div class="flex-1 bg-white border-4 border-gray-800 rounded-2xl p-4 text-center shadow-sm">
@@ -387,6 +437,44 @@
               <svg viewBox="0 0 24 24" aria-hidden="true" class="w-5 h-5 fill-current"><g><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></g></svg>
               進捗をX(Twitter)で報告する
             </a>
+          </div>
+
+          <!-- プリセットキャラクター募集 -->
+          <div class="mt-8 bg-pink-50 border-4 border-pink-200 rounded-2xl p-5 sm:p-6 text-gray-800 shadow-sm relative overflow-hidden">
+            <div class="absolute -right-4 -top-4 w-16 h-16 bg-pink-200 rounded-full opacity-50"></div>
+            <div class="absolute -left-2 -bottom-4 w-20 h-20 bg-pink-200 rounded-full opacity-30"></div>
+            <h3 class="font-black text-xl mb-3 flex items-center gap-2 text-pink-600 relative z-10">
+              <i data-lucide="palette" class="w-6 h-6"></i> プリセットキャラクター募集中！
+            </h3>
+            <p class="font-bold text-sm leading-relaxed mb-4 relative z-10">
+              原稿進行コンシェルジュの「プリセット画像」として、みんなが初期設定で選べるキャラクターを描いてみませんか？
+            </p>
+            <div class="bg-white rounded-xl p-4 border-2 border-pink-100 font-bold text-sm relative z-10">
+              <div class="space-y-3">
+                <div class="flex items-start gap-2">
+                  <i data-lucide="check" class="w-4 h-4 text-pink-500 mt-0.5 flex-shrink-0"></i>
+                  <p>必要な画像: <strong>通常時、順調な時、ピンチの時、完了時</strong>の4パターン</p>
+                </div>
+                <div class="flex items-start gap-2">
+                  <i data-lucide="check" class="w-4 h-4 text-pink-500 mt-0.5 flex-shrink-0"></i>
+                  <p>サイズ: <strong>横・縦 1024px の正方形</strong> (人物はバストアップ)、背景透過</p>
+                </div>
+                <div class="flex items-start gap-2">
+                  <i data-lucide="check" class="w-4 h-4 text-pink-500 mt-0.5 flex-shrink-0"></i>
+                  <p>ライセンス条件: CC BYライセンス（クレジット表記で誰でも利用可能）として提供していただける方</p>
+                </div>
+                <div class="flex items-start gap-2">
+                  <i data-lucide="check" class="w-4 h-4 text-pink-500 mt-0.5 flex-shrink-0"></i>
+                  <p>特典: アプリ内のクレジット画面にお名前が常時掲載されます！</p>
+                </div>
+              </div>
+              <div class="mt-5 pt-4 border-t-2 border-dashed border-gray-100 text-center">
+                <a href="https://x.com/kagetica" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-1.5 bg-gray-800 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors text-xs sm:text-sm">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4 fill-current"><g><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></g></svg>
+                  X (Twitter) のDMでご応募はこちら
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       `;
@@ -429,6 +517,20 @@
                 <label class="block font-bold text-gray-700 mb-2">しめきり日</label>
                 <input type="date" data-bind="project.deadline" value="${escapeHtml(state.project.deadline)}" class="w-full p-3 border-4 border-gray-800 rounded-xl font-bold focus:outline-none focus:border-pink-500" />
               </div>
+            </div>
+            <div class="bg-gray-50 border-2 border-gray-200 p-4 rounded-xl mt-4">
+              <label class="block font-bold text-gray-800 mb-3"><i data-lucide="target" class="w-4 h-4 inline-block mr-1"></i>目標ペースの設定</label>
+              <div class="flex items-center gap-3">
+                <select data-bind="project.targetPacePeriod" class="p-3 border-4 border-gray-800 rounded-xl font-bold focus:outline-none focus:border-pink-500 appearance-none bg-white w-24 sm:w-32">
+                  <option value="day" ${state.project.targetPacePeriod === 'day' ? 'selected' : ''}>1日</option>
+                  <option value="week" ${state.project.targetPacePeriod === 'week' ? 'selected' : ''}>1週間</option>
+                  <option value="month" ${state.project.targetPacePeriod === 'month' ? 'selected' : ''}>1ヶ月</option>
+                </select>
+                <span class="font-bold text-gray-600">あたり</span>
+                <input type="number" data-bind="project.targetPace" value="${state.project.targetPace || 1}" class="w-20 sm:w-24 p-3 border-4 border-gray-800 rounded-xl font-bold focus:outline-none focus:border-pink-500 text-center" min="0.1" step="0.1" />
+                <span class="font-bold text-gray-600">${escapeHtml(state.project.unitName || 'P')}</span>
+              </div>
+              <p class="text-xs text-gray-500 font-bold mt-2">※この目標ペースを下回ると、キャラが「ピンチの時」の画像になります。</p>
             </div>
           </div>
         </div>
@@ -497,11 +599,20 @@
             ※大きい画像でも自動で軽いサイズに縮小されます。<br/>
             <span class="text-pink-600">{days}</span> : 残り日数 / 
             <span class="text-pink-600">{pace}</span> : 今のペース / 
-            <span class="text-pink-600">{requiredPace}</span> : 必要なペース / 
-            <span class="text-pink-600">{unit}</span> : 単位
+            <span class="text-pink-600">{requiredPace}</span> : ユーザーが設定した目標ペース / 
+            <span class="text-pink-600">{unit}</span> : P/週 などの単位セット
           </p>
 
           <div class="space-y-8">${statesHTML}</div>
+
+          <div class="mt-8 p-4 bg-purple-50 rounded-xl border-2 border-purple-200">
+            <h3 class="font-black text-lg mb-2 text-purple-700 flex items-center gap-2">
+              <i data-lucide="sparkles" class="w-5 h-5"></i> 吉日・占いメッセージ
+            </h3>
+            <p class="text-xs font-bold text-purple-600 mb-2">※複数登録すると、たまに今日の運勢としてランダムに表示されます。</p>
+            <p class="text-xs font-bold text-purple-600 mb-3">※表示される時の表情は「通常時」の画像になります。</p>
+            <textarea data-bind="concierge.luckyMessages" rows="6" placeholder="今日は最高の作業日和！&#13;&#10;&#13;&#10;今日は推しカプ記念日！気合入れていこう！" class="w-full p-3 border-2 border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 text-sm font-bold bg-white leading-relaxed">${escapeHtml(state.concierge.luckyMessages || DEFAULT_LUCKY_MESSAGES)}</textarea>
+          </div>
         </div>
       `;
     };
@@ -530,7 +641,10 @@
 
       const action = btn.dataset.action;
       if (action === 'nav') {
-        if (btn.dataset.save === 'true') saveData();
+        if (btn.dataset.save === 'true') {
+          saveData();
+          updateSpeechStatus(); // しめきり等の設定変更をセリフ（状態）に即時反映させる
+        }
         state.currentView = btn.dataset.view;
         renderApp();
       }
@@ -539,6 +653,22 @@
         const delta = Number(btn.dataset.delta);
         const current = state.progress[stepId] || 0;
         state.progress[stepId] = Math.max(0, Math.min(state.project.totalUnits, current + delta));
+
+        updateSpeechStatus();
+        saveData(); // プログレスは自動保存
+        renderApp();
+      }
+      else if (action === 'toggle-complete') {
+        const stepId = btn.dataset.step;
+        const current = state.progress[stepId] || 0;
+        const maxVal = state.project.totalUnits;
+
+        // すでにMAXなら0に、それ以外ならMAXにする
+        if (current >= maxVal) {
+          state.progress[stepId] = 0;
+        } else {
+          state.progress[stepId] = maxVal;
+        }
 
         updateSpeechStatus();
         saveData(); // プログレスは自動保存
