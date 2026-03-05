@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>FBGS RAP BATTLE — Fan Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Noto+Sans+JP:wght@400;700;900&family=UnifrakturMaguntia&family=Permanent+Marker&family=Rock+Salt&family=Playfair+Display:wght@700;900&family=Orbitron:wght@700;900&family=Press+Start+2P&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a12;
+            color: #eee;
+            font-family: 'Noto Sans JP', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw
+        }
+
+        canvas#bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            opacity: .15
+        }
+
+        .scene {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+            transition: opacity .4s;
+            opacity: 0;
+            pointer-events: none
+        }
+
+        .scene.active {
+            opacity: 1;
+            pointer-events: all
+        }
+
+        /* Title */
+        #title .logo {
+            font-family: 'Permanent Marker', cursive;
+            font-size: clamp(2.5rem, 7vw, 5rem);
+            text-align: center;
+            background: linear-gradient(135deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff, #ff6b6b);
+            background-size: 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: grad 4s ease infinite
+        }
+
+        @keyframes grad {
+
+            0%,
+            100% {
+                background-position: 0 50%
+            }
+
+            50% {
+                background-position: 100% 50%
+            }
+        }
+
+        #title .sub {
+            font-size: .85rem;
+            color: #888;
+            margin: 8px 0 4px;
+            font-family: 'Outfit'
+        }
+
+        #title .fan {
+            font-size: .7rem;
+            color: #666;
+            margin: 12px 0 24px;
+            max-width: 400px;
+            text-align: center;
+            line-height: 1.6
+        }
+
+        #title .fan a {
+            color: #aaa;
+            text-decoration: underline
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            color: #fff;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 900;
+            cursor: pointer;
+            font-family: 'Outfit';
+            transition: transform .15s, box-shadow .15s;
+            margin: 6px
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(108, 92, 231, .4)
+        }
+
+        .btn.sm {
+            padding: 10px 24px;
+            font-size: .85rem
+        }
+
+        /* Select */
+        #select .chars {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            max-width: 700px;
+            margin: 24px auto
+        }
+
+        .char-card {
+            background: #14141f;
+            border: 2px solid #2a2a44;
+            border-radius: 16px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all .2s;
+            text-align: center
+        }
+
+        .char-card:hover,
+        .char-card.sel {
+            border-color: var(--c);
+            box-shadow: 0 0 20px color-mix(in srgb, var(--c) 30%, transparent)
+        }
+
+        .char-card .icon {
+            font-size: 2.5rem;
+            margin-bottom: 8px
+        }
+
+        .char-card .name {
+            font-family: 'Outfit';
+            font-weight: 900;
+            font-size: 1.1rem
+        }
+
+        .char-card .font-name {
+            font-size: .7rem;
+            color: #888;
+            margin: 4px 0 8px
+        }
+
+        .char-card .stats {
+            display: flex;
+            gap: 6px;
+            justify-content: center
+        }
+
+        .stat {
+            font-size: .65rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: #1a1a2e
+        }
+
+        /* VS */
+        #vs {
+            background: #000
+        }
+
+        #vs .vs-text {
+            font-family: 'Permanent Marker';
+            font-size: 5rem;
+            color: #fff;
+            text-shadow: 0 0 40px rgba(255, 100, 100, .5)
+        }
+
+        #vs .vs-names {
+            display: flex;
+            justify-content: space-between;
+            width: 80%;
+            max-width: 600px;
+            margin-top: 16px
+        }
+
+        #vs .vs-names span {
+            font-family: 'Outfit';
+            font-weight: 900;
+            font-size: 1.3rem
+        }
+
+        /* Battle */
+        #battle {
+            background: #0a0a12
+        }
+
+        .battle-hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10
+        }
+
+        .hp-bar {
+            width: 200px;
+            height: 18px;
+            background: #1a1a2e;
+            border-radius: 9px;
+            overflow: hidden;
+            border: 1px solid #333
+        }
+
+        .hp-fill {
+            height: 100%;
+            border-radius: 9px;
+            transition: width .3s
+        }
+
+        .hp-label {
+            font-family: 'Outfit';
+            font-weight: 700;
+            font-size: .8rem;
+            margin: 0 8px
+        }
+
+        .battle-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 5
+        }
+
+        .phase-label {
+            font-family: 'Outfit';
+            font-weight: 900;
+            font-size: 1.2rem;
+            color: #ffd93d;
+            margin-bottom: 8px
+        }
+
+        .combo-display {
+            font-family: 'Press Start 2P';
+            font-size: .7rem;
+            color: #6c5ce7;
+            margin-top: 8px
+        }
+
+        .rhyme-alert {
+            font-family: 'Permanent Marker';
+            font-size: 2rem;
+            color: #ffd93d;
+            opacity: 0;
+            transition: opacity .15s;
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translateX(-50%)
+        }
+
+        .rhyme-alert.show {
+            opacity: 1;
+            animation: pop .4s ease
+        }
+
+        @keyframes pop {
+            0% {
+                transform: translateX(-50%) scale(.5)
+            }
+
+            50% {
+                transform: translateX(-50%) scale(1.3)
+            }
+
+            100% {
+                transform: translateX(-50%) scale(1)
+            }
+        }
+
+        .judge-flash {
+            font-family: 'Permanent Marker';
+            font-size: 2.5rem;
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            pointer-events: none
+        }
+
+        .judge-flash.show {
+            animation: judgeAnim .6s ease forwards
+        }
+
+        @keyframes judgeAnim {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) scale(.5) translateY(0)
+            }
+
+            30% {
+                opacity: 1;
+                transform: translateX(-50%) scale(1.2) translateY(-10px)
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) scale(1) translateY(-40px)
+            }
+        }
+
+        .chars-display {
+            position: absolute;
+            bottom: 140px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10%
+        }
+
+        .char-sprite {
+            text-align: center;
+            transition: transform .15s
+        }
+
+        .char-sprite .avatar {
+            font-size: 4rem
+        }
+
+        .char-sprite .char-n {
+            font-family: 'Outfit';
+            font-weight: 700;
+            font-size: .9rem;
+            margin-top: 4px
+        }
+
+        .word-panels {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 10
+        }
+
+        .word-panel {
+            width: 130px;
+            height: 70px;
+            background: #14141f;
+            border: 2px solid #2a2a44;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all .12s;
+            user-select: none
+        }
+
+        .word-panel:hover {
+            border-color: #6c5ce7;
+            transform: translateY(-3px)
+        }
+
+        .word-panel .word {
+            font-weight: 900;
+            font-size: 1.1rem
+        }
+
+        .word-panel .key {
+            font-family: 'Press Start 2P';
+            font-size: .55rem;
+            color: #666;
+            margin-top: 4px
+        }
+
+        .word-panel.hit {
+            animation: panelHit .3s ease
+        }
+
+        @keyframes panelHit {
+            0% {
+                transform: scale(1)
+            }
+
+            50% {
+                transform: scale(.9);
+                opacity: .5
+            }
+
+            100% {
+                transform: scale(1)
+            }
+        }
+
+        .lyric-fly {
+            position: absolute;
+            font-weight: 900;
+            font-size: 1.8rem;
+            z-index: 8;
+            pointer-events: none;
+            transition: none;
+            white-space: nowrap
+        }
+
+        .beat-bar {
+            position: absolute;
+            bottom: 100px;
+            left: 10%;
+            right: 10%;
+            height: 4px;
+            background: #1a1a2e;
+            border-radius: 2px
+        }
+
+        .beat-indicator {
+            position: absolute;
+            height: 100%;
+            background: #6c5ce7;
+            border-radius: 2px;
+            transition: width .05s linear
+        }
+
+        .hype-bar {
+            position: absolute;
+            bottom: 108px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 8px;
+            background: #1a1a2e;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid #333
+        }
+
+        .hype-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6c5ce7, #ffd93d);
+            border-radius: 4px;
+            transition: width .2s
+        }
+
+        .hype-label {
+            position: absolute;
+            bottom: 118px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: .6rem;
+            font-family: 'Outfit';
+            color: #888
+        }
+
+        .punchline-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, .85);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .2s
+        }
+
+        .punchline-overlay.show {
+            opacity: 1;
+            pointer-events: all
+        }
+
+        .punchline-text {
+            font-size: clamp(1.5rem, 4vw, 3rem);
+            font-weight: 900;
+            text-align: center;
+            max-width: 80%;
+            line-height: 1.5;
+            text-shadow: 0 0 40px currentColor
+        }
+
+        .guard-hint {
+            position: absolute;
+            bottom: 78px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: .7rem;
+            color: #888;
+            font-family: 'Outfit'
+        }
+
+        /* Result */
+        #result .result-title {
+            font-family: 'Permanent Marker';
+            font-size: 3rem;
+            margin-bottom: 16px
+        }
+
+        #result .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            max-width: 350px;
+            margin: 16px auto
+        }
+
+        #result .stat-item {
+            background: #14141f;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center
+        }
+
+        #result .stat-item .val {
+            font-family: 'Outfit';
+            font-weight: 900;
+            font-size: 1.5rem
+        }
+
+        #result .stat-item .lbl {
+            font-size: .7rem;
+            color: #888
+        }
+
+        /* Tutorial */
+        #tutorial {
+            background: #0a0a12
+        }
+
+        .tut-container {
+            max-width: 580px;
+            width: 90%;
+            text-align: center
+        }
+
+        .tut-step {
+            display: none
+        }
+
+        .tut-step.active {
+            display: block
+        }
+
+        .tut-step h2 {
+            font-family: 'Permanent Marker';
+            font-size: 1.6rem;
+            margin-bottom: 16px;
+            color: #ffd93d
+        }
+
+        .tut-step p {
+            font-size: .9rem;
+            color: #bbb;
+            line-height: 1.8;
+            margin-bottom: 10px
+        }
+
+        .tut-step .tut-keys {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin: 16px 0
+        }
+
+        .tut-key {
+            background: #14141f;
+            border: 2px solid #6c5ce7;
+            border-radius: 10px;
+            width: 52px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Press Start 2P';
+            font-size: .8rem;
+            color: #6c5ce7
+        }
+
+        .tut-example {
+            background: #14141f;
+            border: 1px solid #2a2a44;
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin: 14px 0;
+            text-align: left;
+            font-size: .85rem;
+            line-height: 2
+        }
+
+        .tut-example .w {
+            font-family: 'Permanent Marker';
+            font-size: 1.1rem;
+            display: inline;
+            margin: 0 3px
+        }
+
+        .tut-example .fire {
+            color: #ff6b6b
+        }
+
+        .tut-example .rhyme {
+            color: #ffd93d
+        }
+
+        .tut-example .counter {
+            color: #4d96ff
+        }
+
+        .tut-dots {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin: 18px 0
+        }
+
+        .tut-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #2a2a44;
+            transition: background .2s
+        }
+
+        .tut-dot.active {
+            background: #6c5ce7
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="bg"></canvas>
+
+    <!-- TITLE -->
+    <div class="scene active" id="title">
+        <div class="logo">FBGS<br>RAP BATTLE</div>
+        <div class="sub">FONT BAD GIRL SQUAD — FAN GAME</div>
+        <div class="fan">
+            ⚠️ 本作は非公式ファンメイドゲーム（二次創作）です<br>
+            <a href="https://xfolio.jp/portfolio/FBGS" target="_blank">xfolio</a> ·
+            <a href="https://x.com/yuta_ptv" target="_blank">@yuta_ptv</a> ·
+            <a href="https://yutaone.booth.pm/items" target="_blank">BOOTH</a><br>
+            ©FBGS / Art Director: YutaONE / Character Design: ITOTO
+        </div>
+        <button class="btn" onclick="G.goTutorial()">HOW TO PLAY</button>
+        <button class="btn" onclick="G.goSelect()" style="background:linear-gradient(135deg,#e74c3c,#ff6b6b)">FREE
+            BATTLE</button>
+    </div>
+
+    <!-- TUTORIAL -->
+    <div class="scene" id="tutorial">
+        <div class="tut-container">
+            <div class="tut-step active" data-step="0">
+                <h2>🎤 HOW TO RAP BATTLE</h2>
+                <p>ビート ニ アワセテ ワード ヲ エラベ。<br>フォント ノ チカラ デ アイテ ヲ タオス ゲーム ダ。</p>
+                <p>画面下の<b>4つのワードパネル</b>から<br>英単語を選んで相手にリリックを投げつけろ！</p>
+                <div class="tut-keys">
+                    <div class="tut-key">D</div>
+                    <div class="tut-key">F</div>
+                    <div class="tut-key">J</div>
+                    <div class="tut-key">K</div>
+                </div>
+                <p style="font-size:.8rem;color:#888">キーボード or クリックで選択</p>
+            </div>
+            <div class="tut-step" data-step="1">
+                <h2>🔥 RHYME CHAIN（韻踏み）</h2>
+                <p>連続で<b>韻を踏む単語</b>を選ぶとダメージUP！<br>「ライムチェイン」がラップバトルの鍵だ。</p>
+                <div class="tut-example">
+                    1ビート目: <span class="w fire">FIRE</span> → 通常ダメージ<br>
+                    2ビート目: <span class="w rhyme">WIRE</span> → ライム成立！ <b>×1.5</b><br>
+                    3ビート目: <span class="w rhyme">HIGHER</span> → 3チェイン！ <b>×2.0</b> 🔥
+                </div>
+                <p style="font-size:.8rem;color:#888">パネルの中に韻を踏める単語が必ず1〜2個含まれている！</p>
+            </div>
+            <div class="tut-step" data-step="2">
+                <h2>🛡️ DEFEND（防御ターン）</h2>
+                <p>相手のターンではリリックが飛んでくる！<br>2つの防御方法がある。</p>
+                <div class="tut-example">
+                    <b>[Space]</b> ガード → ダメージ半減<br>
+                    <b>[D][F][J][K]</b> カウンター → <span class="w counter">同じ韻の単語</span>を選んで反撃！<br>
+                    <span style="color:#888">韻で返せばダメージ無効＋反撃ダメージ！</span>
+                </div>
+            </div>
+            <div class="tut-step" data-step="3">
+                <h2>💥 PUNCHLINE（必殺技）</h2>
+                <p>攻撃ヒット＆ライムチェインで<b>HYPEゲージ</b>が溜まる。<br>MAXになったら…</p>
+                <div class="tut-example">
+                    <b>[Enter]</b> で <span class="w fire">PUNCHLINE</span> 発動！<br>
+                    キャラ固有の決めゼリフが炸裂 → 大ダメージ！<br>
+                    <span style="color:#888">フォントのタイプフェイスが画面を覆う特殊演出</span>
+                </div>
+                <p><br>タイミング判定: <span style="color:#ff6b6b">FIRE🔥</span> &gt; <span style="color:#ffd93d">DOPE</span>
+                    &gt; <span style="color:#6bcb77">COOL</span> &gt; <span style="color:#888">WACK💀</span></p>
+            </div>
+            <div class="tut-dots">
+                <div class="tut-dot active"></div>
+                <div class="tut-dot"></div>
+                <div class="tut-dot"></div>
+                <div class="tut-dot"></div>
+            </div>
+            <button class="btn sm" onclick="G.tutPrev()" id="tutPrevBtn" style="visibility:hidden">BACK</button>
+            <button class="btn sm" onclick="G.tutNext()" id="tutNextBtn">NEXT</button>
+        </div>
+    </div>
+
+    <!-- SELECT -->
+    <div class="scene" id="select">
+        <h2 style="font-family:Outfit;font-weight:900;font-size:1.5rem;margin-bottom:4px">SELECT YOUR FIGHTER</h2>
+        <p style="font-size:.75rem;color:#888;margin-bottom:8px">キャラヲ エランデクダサイ</p>
+        <div class="chars" id="charGrid"></div>
+        <button class="btn sm" onclick="G.startBattle()" id="fightBtn" disabled>BATTLE START</button>
+    </div>
+
+    <!-- VS -->
+    <div class="scene" id="vs">
+        <div class="vs-names"><span id="vsP" style="color:#6c5ce7"></span><span id="vsE" style="color:#e74c3c"></span>
+        </div>
+        <div class="vs-text">VS</div>
+    </div>
+
+    <!-- BATTLE -->
+    <div class="scene" id="battle">
+        <div class="battle-hud">
+            <div style="display:flex;align-items:center"><span class="hp-label" id="pName"></span>
+                <div class="hp-bar">
+                    <div class="hp-fill" id="pHp" style="width:100%"></div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center">
+                <div class="hp-bar">
+                    <div class="hp-fill" id="eHp" style="width:100%"></div>
+                </div><span class="hp-label" id="eName"></span>
+            </div>
+        </div>
+        <div class="battle-center">
+            <div class="phase-label" id="phaseLabel">YOUR TURN — ATTACK!</div>
+            <div class="combo-display" id="comboDisplay"></div>
+        </div>
+        <div class="rhyme-alert" id="rhymeAlert"></div>
+        <div class="judge-flash" id="judgeFlash"></div>
+        <div class="chars-display">
+            <div class="char-sprite" id="eSpr">
+                <div class="avatar" id="eAvatar"></div>
+                <div class="char-n" id="eNameB"></div>
+            </div>
+            <div class="char-sprite" id="pSpr">
+                <div class="avatar" id="pAvatar"></div>
+                <div class="char-n" id="pNameB"></div>
+            </div>
+        </div>
+        <div class="hype-label">HYPE</div>
+        <div class="hype-bar">
+            <div class="hype-fill" id="hypeFill" style="width:0"></div>
+        </div>
+        <div class="beat-bar">
+            <div class="beat-indicator" id="beatInd"></div>
+        </div>
+        <div class="guard-hint" id="guardHint"></div>
+        <div class="word-panels" id="wordPanels"></div>
+        <div class="punchline-overlay" id="punchOverlay">
+            <div class="punchline-text" id="punchText"></div>
+        </div>
+    </div>
+
+    <!-- RESULT -->
+    <div class="scene" id="result">
+        <div class="result-title" id="resultTitle"></div>
+        <div class="stats-grid" id="statsGrid"></div>
+        <div style="margin-top:24px">
+            <button class="btn sm" onclick="G.goSelect()">SELECT</button>
+            <button class="btn sm" onclick="G.goTitle()">TITLE</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+
+</html>
