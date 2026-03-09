@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIでオリジナルVTuber / キャラクターを作ろう！ | Kagetica Lab</title>
+
+    <!-- OGP Settings -->
+    <meta property="og:title" content="AIでオリジナルVTuber / キャラクターを作ろう！ | Kagetica Lab">
+    <meta property="og:description" content="絵が描けなくても大丈夫。AIに「こんなキャラがほしい」と伝えるだけで、設定・ビジュアル・動画まで全部作れます。">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://kagetica.net/lab/oiioii_vtuber.html">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@kagetica">
+
+    <link rel="icon" href="../assets/icon.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Outfit:wght@400;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+
+    <style>
+        /* ========== Override & Page Variables ========== */
+        :root {
+            --oii-bg: #0a0a14;
+            --oii-surface: #12121e;
+            --oii-surface2: #1a1a2e;
+            --oii-border: #2a2a44;
+            --oii-accent: #6c5ce7;
+            --oii-accent2: #a29bfe;
+            --oii-cyan: #00cec9;
+            --oii-pink: #fd79a8;
+            --oii-yellow: #ffeaa7;
+            --oii-text: #e8e8f0;
+            --oii-text-dim: #8888aa;
+            --oii-gradient: linear-gradient(135deg, #6c5ce7, #a29bfe, #00cec9);
+        }
+
+        body {
+            background: var(--oii-bg) !important;
+            color: var(--oii-text) !important;
+            font-family: 'Noto Sans JP', sans-serif !important;
+            line-height: 1.8;
+            opacity: 1 !important;
+        }
+
+        /* ========== Global Overrides ========== */
+        .subpage-header {
+            background: var(--oii-surface) !important;
+            border-bottom: 2px solid var(--oii-accent) !important;
+        }
+
+        .section {
+            min-height: auto;
+            padding: 60px 0;
+        }
+
+        .footer {
+            background: #050510 !important;
+        }
+
+        .copyright {
+            color: var(--oii-text-dim) !important;
+        }
+
+        /* ========== Hero ========== */
+        .hero-area {
+            position: relative;
+            padding: 100px 0 60px;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .hero-area::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background:
+                radial-gradient(ellipse at 30% 20%, rgba(108, 92, 231, .15) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 60%, rgba(0, 206, 201, .1) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 90%, rgba(253, 121, 168, .08) 0%, transparent 40%);
+            animation: heroBgFloat 20s ease-in-out infinite alternate;
+            pointer-events: none;
+        }
+
+        @keyframes heroBgFloat {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(-20px, 30px) rotate(3deg);
+            }
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--oii-surface2);
+            border: 1px solid var(--oii-accent);
+            padding: 6px 20px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--oii-accent2);
+            margin-bottom: 24px;
+            letter-spacing: 0.05em;
+        }
+
+        .hero-title {
+            font-family: 'Outfit', 'Noto Sans JP', sans-serif;
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 900;
+            line-height: 1.3;
+            writing-mode: horizontal-tb;
+            height: auto;
+            text-shadow: none;
+            background: var(--oii-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 24px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.05rem;
+            color: var(--oii-text-dim);
+            max-width: 600px;
+            margin: 0 auto 32px;
+            line-height: 1.9;
+            writing-mode: horizontal-tb;
+            height: auto;
+            border: none;
+            padding: 0;
+            align-self: auto;
+        }
+
+        .hero-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--oii-gradient);
+            color: #fff;
+            font-weight: 800;
+            font-size: 1rem;
+            padding: 14px 36px;
+            border-radius: 60px;
+            border: none;
+            cursor: pointer;
+            transition: transform .2s, box-shadow .2s;
+            text-decoration: none;
+        }
+
+        .hero-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(108, 92, 231, .4);
+            color: #fff;
+        }
+
+        /* ========== Section Styling ========== */
+        .oii-section {
+            padding: 80px 0;
+            border-top: 1px solid var(--oii-border);
+        }
+
+        .oii-section:first-of-type {
+            border-top: none;
+        }
+
+        .oii-section-title {
+            font-family: 'Outfit', 'Noto Sans JP', sans-serif;
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            font-weight: 900;
+            margin-bottom: 1rem;
+            color: #fff;
+            position: relative;
+        }
+
+        .oii-section-title .emoji {
+            margin-right: 8px;
+        }
+
+        .oii-section-subtitle {
+            color: var(--oii-text-dim);
+            font-size: 1rem;
+            margin-bottom: 2.5rem;
+            max-width: 700px;
+        }
+
+        /* ========== Cards ========== */
+        .oii-card {
+            background: var(--oii-surface);
+            border: 1px solid var(--oii-border);
+            border-radius: 16px;
+            padding: 32px;
+            transition: border-color .3s, box-shadow .3s, transform .3s;
+        }
+
+        .oii-card:hover {
+            border-color: var(--oii-accent);
+            box-shadow: 0 0 30px rgba(108, 92, 231, .1);
+            transform: translateY(-2px);
+        }
+
+        .oii-card-title {
+            font-weight: 800;
+            font-size: 1.15rem;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+
+        .oii-card p {
+            color: var(--oii-text-dim);
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        /* ========== Tool Table ========== */
+        .tool-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            font-size: 0.95rem;
+        }
+
+        .tool-table th,
+        .tool-table td {
+            padding: 14px 18px;
+            text-align: left;
+            border-bottom: 1px solid var(--oii-border);
+        }
+
+        .tool-table th {
+            color: var(--oii-accent2);
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .tool-table td {
+            color: var(--oii-text);
+        }
+
+        .tool-table tr:hover td {
+            background: var(--oii-surface2);
+        }
+
+        .tool-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 800;
+        }
+
+        .tool-badge.gemini {
+            color: #4285f4;
+        }
+
+        .tool-badge.oiioii {
+            color: var(--oii-cyan);
+        }
+
+        /* ========== Agent Grid ========== */
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .agent-card {
+            background: var(--oii-surface2);
+            border: 1px solid var(--oii-border);
+            border-radius: 12px;
+            padding: 18px;
+            text-align: center;
+            transition: border-color .3s, transform .2s;
+        }
+
+        .agent-card:hover {
+            border-color: var(--oii-cyan);
+            transform: translateY(-2px);
+        }
+
+        .agent-card .role {
+            font-weight: 800;
+            font-size: 0.9rem;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .agent-card .desc {
+            font-size: 0.8rem;
+            color: var(--oii-text-dim);
+        }
+
+        .agent-card .icon {
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* ========== Highlight Boxes ========== */
+        .highlight-box {
+            background: var(--oii-surface2);
+            border-left: 4px solid var(--oii-accent);
+            border-radius: 0 12px 12px 0;
+            padding: 24px 28px;
+            margin: 24px 0;
+        }
+
+        .highlight-box.cyan {
+            border-left-color: var(--oii-cyan);
+        }
+
+        .highlight-box.pink {
+            border-left-color: var(--oii-pink);
+        }
+
+        .highlight-box.yellow {
+            border-left-color: var(--oii-yellow);
+        }
+
+        .highlight-box strong {
+            color: #fff;
+        }
+
+        .highlight-box p {
+            color: var(--oii-text-dim);
+            font-size: 0.95rem;
+        }
+
+        /* ========== Steps ========== */
+        .step-block {
+            background: var(--oii-surface);
+            border: 1px solid var(--oii-border);
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 32px;
+            position: relative;
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            background: var(--oii-gradient);
+            border-radius: 14px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: 1.3rem;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
+        .step-title {
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: #fff;
+            margin-bottom: 16px;
+        }
+
+        .step-body {
+            color: var(--oii-text-dim);
+            font-size: 0.95rem;
+            line-height: 1.9;
+        }
+
+        .step-body h4 {
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 800;
+            margin: 24px 0 12px;
+        }
+
+        .step-body ol,
+        .step-body ul {
+            padding-left: 1.5em;
+            margin: 12px 0;
+        }
+
+        .step-body li {
+            margin-bottom: 8px;
+            list-style: disc;
+        }
+
+        .step-body ol li {
+            list-style: decimal;
+        }
+
+        .step-body a {
+            color: var(--oii-accent2);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        .step-body a:hover {
+            color: var(--oii-cyan);
+        }
+
+        /* ========== Prompt Block ========== */
+        .prompt-block {
+            background: #0d0d1a;
+            border: 1px solid var(--oii-border);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 20px 0;
+            position: relative;
+            font-family: 'Noto Sans JP', monospace;
+            font-size: 0.9rem;
+            line-height: 1.8;
+            color: var(--oii-text);
+            white-space: pre-wrap;
+            word-break: break-word;
+            overflow-x: auto;
+        }
+
+        .prompt-block .copy-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: var(--oii-accent);
+            color: #fff;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background .2s, transform .15s;
+        }
+
+        .prompt-block .copy-btn:hover {
+            background: var(--oii-accent2);
+            transform: scale(1.05);
+        }
+
+        .prompt-block .copy-btn.copied {
+            background: #00b894;
+        }
+
+        /* ========== Tips ========== */
+        .tips-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .tips-list li {
+            padding: 10px 0 10px 28px;
+            position: relative;
+            color: var(--oii-text-dim);
+            font-size: 0.95rem;
+        }
+
+        .tips-list li::before {
+            content: '💡';
+            position: absolute;
+            left: 0;
+            top: 10px;
+        }
+
+        /* ========== FAQ ========== */
+        .faq-item {
+            border-bottom: 1px solid var(--oii-border);
+            padding: 24px 0;
+        }
+
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+
+        .faq-q {
+            font-weight: 800;
+            font-size: 1rem;
+            color: #fff;
+            margin-bottom: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .faq-q::before {
+            content: 'Q.';
+            color: var(--oii-accent);
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            flex-shrink: 0;
+        }
+
+        .faq-a {
+            color: var(--oii-text-dim);
+            font-size: 0.95rem;
+            padding-left: 28px;
+            line-height: 1.8;
+        }
+
+        /* ========== Profile Card ========== */
+        .profile-card-oii {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+            background: var(--oii-surface);
+            border: 1px solid var(--oii-border);
+            border-radius: 16px;
+            padding: 28px;
+            max-width: 600px;
+        }
+
+        .profile-card-oii .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--oii-gradient);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+
+        .profile-card-oii .info .name {
+            font-weight: 900;
+            font-size: 1.1rem;
+            color: #fff;
+        }
+
+        .profile-card-oii .info .role-text {
+            font-size: 0.85rem;
+            color: var(--oii-text-dim);
+            line-height: 1.7;
+        }
+
+        /* ========== Share Template ========== */
+        .share-template {
+            background: var(--oii-surface2);
+            border: 1px dashed var(--oii-border);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 20px 0;
+            font-size: 0.95rem;
+            color: var(--oii-text-dim);
+        }
+
+        /* ========== Scroll Animation ========== */
+        .fade-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .fade-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ========== Responsive ========== */
+        @media (max-width: 768px) {
+            .hero-area {
+                padding: 80px 0 40px;
+            }
+
+            .hero-title {
+                font-size: 1.8rem;
+            }
+
+            .oii-section {
+                padding: 50px 0;
+            }
+
+            .step-block {
+                padding: 24px;
+            }
+
+            .agent-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .profile-card-oii {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body class="loaded">
+    <canvas id="matrix-canvas"></canvas>
+    <div class="sf-toggle" id="sf-toggle"><span class="sf-toggle-icon">SF</span></div>
+
+    <main>
+        <!-- ========== HERO ========== -->
+        <section class="hero-area" id="hero">
+            <div class="container" style="position:relative; z-index:1;">
+                <div class="hero-badge">🎟️ 招待コード付き！ 特別企画</div>
+                <h1 class="hero-title">AIでオリジナルVTuber /<br>キャラクターを作ろう！</h1>
+                <p class="hero-subtitle">
+                    絵が描けなくても大丈夫。<br>
+                    AIに「こんなキャラがほしい」と伝えるだけで、<br>
+                    設定・ビジュアル・動画まで全部作れます。<br><br>
+                    このページの手順通りに進めれば、<br>あなただけのオリジナルキャラクターが完成します。
+                </p>
+                <a href="#guide" class="hero-cta">✨ 作り方ガイドへ進む →</a>
+            </div>
+        </section>
+
+        <!-- ========== ABOUT ========== -->
+        <section class="oii-section" id="about">
+            <div class="container">
+                <h2 class="oii-section-title fade-up"><span class="emoji">🎨</span>この企画でできること</h2>
+                <p class="oii-section-subtitle fade-up">
+                    2つのAIツールを使って、あなただけのオリジナルVTuber / キャラクターを作ります。
+                </p>
+
+                <div class="features-grid">
+                    <div class="oii-card fade-up">
+                        <span class="feature-icon">📝</span>
+                        <div class="oii-card-title">キャラクターの設定</div>
+                        <p>名前・性格・世界観・口調など、キャラの「中身」をAIと一緒に考えます。</p>
+                    </div>
+                    <div class="oii-card fade-up">
+                        <span class="feature-icon">🎨</span>
+                        <div class="oii-card-title">キャラクターのビジュアル</div>
+                        <p>立ち絵・アイコン・表情差分など、キャラの「見た目」をAIが生成します。</p>
+                    </div>
+                    <div class="oii-card fade-up">
+                        <span class="feature-icon">🎬</span>
+                        <div class="oii-card-title">キャラクターの動画</div>
+                        <p>自己紹介動画・ショートMVなど、キャラに「命」を吹き込む動画をAIが制作します。</p>
+                    </div>
+                </div>
+
+                <div class="highlight-box cyan" style="margin-top:32px;">
+                    <p><strong>絵を描くスキルも、動画編集の経験も一切不要。</strong><br>AIに指示を出す「監督」になるだけでOKです。</p>
+                </div>
+
+                <h3 style="color:#fff; font-weight:800; margin-top:40px; margin-bottom:8px;">使うツール</h3>
+                <table class="tool-table">
+                    <thead>
+                        <tr>
+                            <th>ツール</th>
+                            <th>役割</th>
+                            <th>料金</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="tool-badge gemini">🔵 Gemini</span>（Google）</td>
+                            <td>キャラの設定を一緒に考える</td>
+                            <td>無料で利用可能</td>
+                        </tr>
+                        <tr>
+                            <td><span class="tool-badge oiioii">🟢 OiiOii AI</span></td>
+                            <td>ビジュアル生成・画像素材・動画/MV制作</td>
+                            <td>ベータ版につき無料<br><span style="font-size:.8rem;color:var(--oii-text-dim)">(招待コード必要)</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ========== OiiOii AI ========== -->
+        <section class="oii-section" id="oiioii">
+            <div class="container">
+                <h2 class="oii-section-title fade-up"><span class="emoji">🤖</span>OiiOii AI とは？</h2>
+                <p class="oii-section-subtitle fade-up">
+                    7人の専門AIエージェントがチームを組んで、あなたの制作をサポートするプラットフォームです。
+                </p>
+
+                <div class="agent-grid fade-up">
+                    <div class="agent-card"><span class="icon">🎬</span>
+                        <div class="role">Art Director</div>
+                        <div class="desc">全体のビジョン管理</div>
+                    </div>
+                    <div class="agent-card"><span class="icon">📝</span>
+                        <div class="role">Scriptwriter</div>
+                        <div class="desc">脚本の作成</div>
+                    </div>
+                    <div class="agent-card"><span class="icon">🎨</span>
+                        <div class="role">Character Designer</div>
+                        <div class="desc">キャラクターの設計</div>
+                    </div>
+                    <div class="agent-card"><span class="icon">📐</span>
+                        <div class="role">Storyboard Artist</div>
+                        <div class="desc">絵コンテの作成</div>
+                    </div>
+                    <div class="agent-card"><span class="icon">🏔️</span>
+                        <div class="role">Scene Designer</div>
+                        <div class="desc">背景・環境の設計</div>
+                    </div>
+                    <div class="agent-card"><span class="icon">🎵</span>
+                        <div class="role">Sound Director</div>
+                        <div class="desc">音響の設計</div>
+                    </div>
+                    <div class="agent-card"><span class="icon">💎</span>
+                        <div class="role">IP Designer</div>
+                        <div class="desc">知的財産の構築</div>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top:32px;">
+                    <p><strong>あなたの役割は「監督」。</strong><br>「こんなキャラを作って」「こういう動画にして」とチャットで指示を出すだけで、チームが動きます。</p>
+                </div>
+
+                <h3 style="color:#fff; font-weight:800; margin-top:40px; margin-bottom:16px;">OiiOii AI のここがすごい</h3>
+                <div class="features-grid">
+                    <div class="highlight-box cyan">
+                        <p><strong>🔗 キャラクターの一貫性</strong><br>「アセットライブラリ」にキャラを登録しておけば、シーンが変わっても同じキャラクターを使い続けられます。</p>
+                    </div>
+                    <div class="highlight-box pink">
+                        <p><strong>💬 チャットで修正</strong><br>「もう少しカメラを寄せて」「表情を変えて」など、チャットで指示するだけで修正が可能。プロンプトの再ガチャは不要です。</p>
+                    </div>
+                    <div class="highlight-box yellow">
+                        <p><strong>🎥
+                                素材ではなく「作品」が作れる</strong><br>脚本から映像、音響まで一貫して制作できるので、数秒の映像素材ではなく、ストーリーのある動画作品が作れます。SUNOとの連携でMV制作も。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== INVITE CODE ========== -->
+        <section class="oii-section" id="invite">
+            <div class="container">
+                <h2 class="oii-section-title fade-up"><span class="emoji">🎟️</span>OiiOii AI 特別招待コード</h2>
+                <div class="oii-card fade-up" style="max-width:600px;">
+                    <p style="color:var(--oii-text);line-height:1.9;">
+                        OiiOii AIは現在ベータ版で、<strong>完全招待制</strong>です。<br><br>
+                        今回、OiiOii AI運営チームのご厚意で、<strong>特別招待コードをご用意いただきました！</strong><br><br>
+                        ⚠️ 招待コードは1回限り有効です。他の方への譲渡はご遠慮ください。
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== GUIDE (Steps) ========== -->
+        <section class="oii-section" id="guide">
+            <div class="container">
+                <h2 class="oii-section-title fade-up"><span class="emoji">📖</span>作り方ガイド</h2>
+                <p class="oii-section-subtitle fade-up">3ステップであなただけのキャラクターが完成します。</p>
+
+                <!-- STEP 1 -->
+                <div class="step-block fade-up">
+                    <div class="step-number">1</div>
+                    <h3 class="step-title">Geminiでキャラクターの設定を考える</h3>
+                    <div class="step-body">
+                        <p>まずは、あなたのキャラクターの「中身」を決めましょう。<br>
+                            Googleの <strong>Gemini</strong> を使って、AIと一緒にキャラ設定を考えます。</p>
+
+                        <p style="margin:16px 0;">👉 <a href="https://gemini.google.com/" target="_blank"
+                                rel="noopener">Gemini を開く</a></p>
+
+                        <p>以下のプロンプトをコピペして、Geminiに送ってみてください。</p>
+
+                        <div class="prompt-block" id="prompt1">
+                            <button class="copy-btn" onclick="copyPrompt('prompt1', this)">📋 コピー</button>あなたはVTuber /
+                            オリジナルキャラクターのプロデューサーです。
+                            私と一緒にオリジナルキャラクターの設定を考えてください。
+
+                            以下の項目を埋める形で、キャラクター設定を提案してください。
+                            私の好みやイメージを聞きながら、一緒にブラッシュアップしていきましょう。
+
+                            【キャラクター設定シート】
+                            ■ 名前：
+                            ■ 種族 / 属性：（人間、獣人、ロボ、魔法少女、悪魔、天使、etc.）
+                            ■ 性別：
+                            ■ 年齢（見た目）：
+                            ■ 性格：（3〜5つのキーワードで）
+                            ■ 口調 / 話し方の特徴：
+                            ■ 世界観 / バックストーリー：（どんな世界に住んでいる？何をしている？）
+                            ■ 見た目のイメージ：（髪色、服装、特徴的なアイテムなど）
+                            ■ 決めゼリフ / キャッチフレーズ：
+                            ■ 好きなもの / 苦手なもの：
+
+                            まずは、どんな雰囲気のキャラクターがいいか聞いてください！
+                        </div>
+
+                        <h4>ポイント</h4>
+                        <ul class="tips-list">
+                            <li>最初は「かわいい系がいい」「ダークな世界観がいい」くらいのざっくりした希望でOK</li>
+                            <li>Geminiが質問してくれるので、会話しながら設定を詰めていけます</li>
+                            <li>完成した設定シートは、次のステップで使うので<strong style="color:#fff;">コピーして保存</strong>しておいてください</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- STEP 2 -->
+                <div class="step-block fade-up">
+                    <div class="step-number">2</div>
+                    <h3 class="step-title">OiiOii AIでビジュアルを作る</h3>
+                    <div class="step-body">
+                        <p>キャラの設定が決まったら、次はビジュアルを作りましょう。<br>
+                            OiiOii AIにログインして、キャラクターの画像を生成します。</p>
+
+                        <p style="margin:16px 0;">👉 <a href="https://www.oiioii.ai/" target="_blank"
+                                rel="noopener">OiiOii AI にログイン</a>
+                            <span style="font-size:.85rem;color:var(--oii-text-dim);">（初回は招待コードでアカウント登録）</span>
+                        </p>
+
+                        <h4>やること</h4>
+                        <ol>
+                            <li><strong style="color:#fff;">OiiOii AIのチャットに、キャラの見た目を指示する</strong><br>
+                                Step 1で作った設定シートの「見た目のイメージ」をベースに指示を出しましょう。<br>
+                                <span
+                                    style="color:var(--oii-accent2);">例：「青い髪のツインテールで、白いセーラー服を着た15歳くらいの女の子。目が大きくて、猫耳がついている。背景は夜の東京。」</span>
+                            </li>
+                            <div class="highlight-box yellow" style="margin: 16px 0; padding: 16px;">
+                                <p><strong>💡 時短・直感派のルート</strong><br>
+                                    Geminiを使わず、いきなりOiiOii
+                                    AIにキャラの方向性を伝えてもお任せで作れます。<strong>「どのAIを使えばいいか」</strong>を悩む必要はありません。AIがあなたの要望に最適なモデルを自動で選んでくれます。
+                                </p>
+                            </div>
+                            <li><strong style="color:#fff;">生成されたビジュアルを確認して、チャットで修正指示を出す</strong><br>
+                                「もうちょっと髪を長くして」「表情をもっと元気にして」「背景を宇宙に変えて」——監督として指示を出すだけでOK！
+                            </li>
+                            <li><strong style="color:#fff;">気に入ったビジュアルをアセットライブラリに保存する</strong><br>
+                                保存しておくと、次に動画を作るときにも同じキャラクターを使えます。
+                            </li>
+                        </ol>
+
+                        <h4>プロンプトのコツ</h4>
+                        <ul class="tips-list">
+                            <li><strong style="color:#fff;">具体的に書く</strong>
+                                →「かわいい女の子」より「ピンクのショートヘアで、大きな丸い目、笑顔、白いパーカーを着ている」の方が精度UP</li>
+                            <li><strong style="color:#fff;">画風を指定する</strong> →「アニメ風」「水彩画風」「サイバーパンク風」など</li>
+                            <li><strong style="color:#fff;">参考イメージがあれば言葉で説明する</strong> →「初音ミクっぽい雰囲気で」「ジブリ風の世界観で」</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- STEP 3 -->
+                <div class="step-block fade-up">
+                    <div class="step-number">3</div>
+                    <h3 class="step-title">OiiOii AIで動画を作る（チャレンジ！）</h3>
+                    <div class="step-body">
+                        <p>ビジュアルができたら、いよいよ動画制作！<br>
+                            OiiOii AIならそのまま動画やMVも作れます。</p>
+
+                        <h4>自己紹介動画を作る場合</h4>
+                        <p>チャットに以下のように指示してみましょう。</p>
+
+                        <div class="prompt-block" id="prompt2">
+                            <button class="copy-btn" onclick="copyPrompt('prompt2', this)">📋
+                                コピー</button>先ほど作成したキャラクターを使って、30秒の自己紹介動画を作ってください。
+
+                            ■ キャラクター名：[名前]
+                            ■ セリフ：「はじめまして！[名前]だよ！[決めゼリフ]」
+                            ■ シーン：[キャラに合った場所や背景]
+                            ■ 雰囲気：明るく元気 / クール / ミステリアス（キャラに合わせて）
+                        </div>
+
+                        <h4>MVを作る場合（上級チャレンジ）</h4>
+                        <p>OiiOii AIにはMVモードがあり、SUNOで作った音楽と組み合わせることもできます。</p>
+                        <ol>
+                            <li><a href="https://suno.com/" target="_blank" rel="noopener">SUNO</a> でキャラのテーマソングを生成</li>
+                            <li>OiiOii AIのMVモードで、音楽に合わせたアニメーションを制作</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="highlight-box red" style="margin-top:20px; border-left-color: #ff4757;">
+                    <p><strong>⚠️ 動画化の重要テクニック：ひらがな台本</strong><br>
+                        AIに喋らせる場合、漢字だと読み間違えることがあります。セリフを指定するときは<strong>「すべて、ひらがな か
+                            カタカナ」</strong>で書くのが、理想のボイスに近づける最大のコツです！</p>
+                </div>
+
+                <!-- COMPLETE -->
+                <div class="step-block fade-up" style="text-align:center; border-color:var(--oii-accent);">
+                    <div style="font-size:3rem;margin-bottom:16px;">🎉</div>
+                    <h3 class="step-title" style="text-align:center;">完成！</h3>
+                    <p style="color:var(--oii-text-dim);font-size:1.05rem;">お疲れさまでした！<br>これであなただけのオリジナルキャラクター /
+                        VTuberの完成です。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== SAMPLE ========== -->
+        <section class="oii-section" id="sample">
+            <div class="container">
+                <h2 class="oii-section-title fade-up"><span class="emoji">✨</span>作例サンプル：月海かつあき</h2>
+                <p class="oii-section-subtitle fade-up">
+                    Geminiで作成したキャラクター設定の一例です。<br>
+                    <strong>Geminiで作ったこのような設定やセリフの部分をそのままOiiOii AIに持っていくことで、スムーズに一貫したキャラクターのビジュアル・動画制作ができます！</strong>
+                </p>
+
+                <div class="oii-card fade-up">
+                    <div class="oii-card-title" style="font-size: 1.3rem;">🚀 月海 かつあき (Tsukimi Katsuaki)</div>
+                    <p style="margin-bottom: 20px; color: #fff; font-weight: 700;">連続起業家（シリアルアントレプレナー）系 バーチャルJK</p>
+
+                    <ul
+                        style="padding-left: 1.5em; margin: 12px 0; color: var(--oii-text-dim); font-size: 0.95rem; line-height: 1.8;">
+                        <li style="margin-bottom: 12px;"><strong style="color: #fff;">年齢 / 出身：</strong>
+                            永遠の15歳（15歳からの商売経験） / バーチャル福島県出身</li>
+                        <li style="margin-bottom: 12px;"><strong style="color: #fff;">性格：</strong>
+                            普段は「ゆるストイック」でマイペース。しかし、お金やビジネスの話になると突然「資本主義の真理」や「世界2.0」について早口で語り出すオタク的二面性を持つ。</li>
+                        <li style="margin-bottom: 12px;"><strong style="color: #fff;">見た目のイメージ：</strong>
+                            宇宙服の要素を取り入れたサイバーパンク風のセーラー服。銀髪のボブカットに、星（宇宙）と硬貨（経済）をモチーフにしたヘアピン。胸元には古風な勲章風のリボン。</li>
+                        <li style="margin-bottom: 12px;"><strong style="color: #fff;">決めゼリフ：</strong>
+                            「ねえ、どこかにたどり着きたいなら……今いる場所には留まらないって決心しなきゃ、ダメなんだよ？ わたしと一緒に、新しい世界（世界2.0）に行こっ！」</li>
+                        <li style="margin-bottom: 12px;"><strong style="color: #fff;">リスナーの呼称：</strong>
+                            「株主」「投資家」（スパチャは宇宙開発への投資として計上される）</li>
+                    </ul>
+                </div>
+
+                <div class="oii-card fade-up" style="margin-top: 24px;">
+                    <div class="oii-card-title" style="font-size: 1.3rem;">🌌 ネビュラん (Nebula-n)</div>
+                    <p style="margin-bottom: 20px; color: #fff; font-weight: 700;">シンギュラボ・非公式サポーター / シンギュラリティ生命体</p>
+
+                    <ul
+                        style="padding-left: 1.5em; margin: 12px 0; color: var(--oii-text-dim); font-size: 0.95rem; line-height: 1.8;">
+                        <li style="margin-bottom: 12px;"><strong style="color: #fff;">外貌：</strong>
+                            宇宙の塵と星の光から生まれた、淡く輝く雲の姿。透明感のある体の中に銀河が渦巻いている。</li>
+                        <li style="margin-bottom: 12px;"><strong style="color: #fff;">性格：</strong>
+                            圧倒的好奇心の塊。知らなかった知識に出逢うと体が大きくなる。時に子供のような純粋さで哲学的な問いを投げかける。</li>
+                        <li style="margin-bottom: 12px;"><strong style="color: #fff;">ボイス指示のコツ：</strong>
+                            「可愛いちびキャラ・ゆるキャラのような高いボイス」と指示すると定着しやすいです。</li>
+                        <li style="margin-bottom: 12px;"><strong style="color: #fff;">口癖：</strong>
+                            「キミの宇宙が広がりんぐ！ ヒロガールネビュラん！」</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box cyan" style="margin-top: 24px; padding: 20px; border-radius: 12px;">
+                    <p style="margin: 0;"><strong>💡 Gemini から OiiOii AI へ持っていくコツ</strong><br>
+                        Step 1でGeminiと会話して完成した上記のような設定のうち、<strong>「見た目のイメージ」をそのままコピー</strong>して、OiiOii AIのチャット（Art
+                        Director など）に「この設定で立ち絵を作って！」と投げるだけでOK。<br><br>
+                        動画を作るときも、<strong>Geminiで考えた「決めゼリフ」や「性格」のテキストをOiiOii
+                            AIのプロンプトに持っていく</strong>ことで、キャラクターの個性そのままに映像化できます。</p>
+                </div>
+            </div>
+            </div>
+        </section>
+
+        <!-- ========== SHARE ========== -->
+        <section class="oii-section" id="share">
+            <div class="container">
+                <h2 class="oii-section-title fade-up"><span class="emoji">📣</span>作ったら見せよう！</h2>
+                <p class="oii-section-subtitle fade-up">作ったキャラクターは、ぜひSNSで共有してください！</p>
+
+                <div class="oii-card fade-up" style="max-width:600px;">
+                    <div class="oii-card-title">投稿テンプレート</div>
+                    <div class="share-template">
+                        【キャラ名】<br>
+                        【ひとこと設定】<br>
+                        【画像 or 動画】<br>
+                        <span style="color:var(--oii-accent2);">#AIキャラメーカー #OiiOiiAI</span>
+                    </div>
+                    <ul class="tips-list">
+                        <li>画像1枚だけでもOK！</li>
+                        <li>途中経過でもOK！</li>
+                        <li>動画まで作れたら最高！</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== FAQ ========== -->
+        <section class="oii-section" id="faq">
+            <div class="container">
+                <h2 class="oii-section-title fade-up"><span class="emoji">❓</span>よくある質問</h2>
+
+                <div style="max-width:700px;" class="fade-up">
+                    <div class="faq-item">
+                        <div class="faq-q">絵を描いたことがないのですが、大丈夫ですか？</div>
+                        <div class="faq-a">まったく問題ありません！ AIに言葉で指示を出すだけなので、絵のスキルは一切不要です。</div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-q">OiiOii AIは無料ですか？</div>
+                        <div class="faq-a">
+                            毎日ログインすると100クレジットがもらえます。画像生成にはかなり使えますが、動画生成は1本あたり300〜500クレジットほど消費することもあるので、動画をたくさん作りたい場合は有料プランの契約がおすすめです。まずは毎日ログインして無料クレジットで試してみてください！
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-q">招待コードが足りなくなったらどうなりますか？</div>
+                        <div class="faq-a">OiiOii AI運営から追加発行していただけるとのことなので、お知らせください。</div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-q">Gemini以外のAI（ChatGPTなど）でキャラ設定を考えてもいいですか？</div>
+                        <div class="faq-a">もちろんOKです！ プロンプトテンプレートはそのまま使えます。</div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-q">作ったキャラクターの著作権はどうなりますか？</div>
+                        <div class="faq-a">OiiOii AIの利用規約に準じます。詳しくは<a href="https://www.oiioii.ai/" target="_blank"
+                                rel="noopener">OiiOii AI公式サイト</a>をご確認ください。</div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-q">どこまで作ればいいですか？</div>
+                        <div class="faq-a">自分のペースでOKです。Step 1のキャラ設定だけでも立派な成果です！ 余裕があればStep 2、Step 3と進めてみてください。</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== CREDIT ========== -->
+        <section class="oii-section" id="credit">
+            <div class="container">
+                <h2 class="oii-section-title fade-up"><span class="emoji">👤</span>この企画について</h2>
+
+                <h3 style="color:var(--oii-text-dim);font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;"
+                    class="fade-up">企画・運営</h3>
+                <div class="profile-card-oii fade-up">
+                    <div class="avatar">🚀</div>
+                    <div class="info">
+                        <div class="name">吉田影近（カゲっち）</div>
+                        <div class="role-text">
+                            株式会社インベーダーズCEO / 作家・起業家VTuber<br>
+                            XR、生成AIなどのテクノロジーで未来をSFに変えるFutureHacker。<br>
+                            バーチャルイベント事業「ソーシャルノバ」、バーチャル出版社事業「インベーダーズ出版」を手掛け、リアルとバーチャルの境界線を侵略中。
+                        </div>
+                    </div>
+                </div>
+
+                <h3 style="color:var(--oii-text-dim);font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin:32px 0 16px;"
+                    class="fade-up">協力</h3>
+                <div class="oii-card fade-up" style="max-width:400px;">
+                    <div class="oii-card-title">OiiOii AI</div>
+                    <p>招待コード提供</p>
+                    <p style="margin-top:8px;"><a href="https://www.oiioii.ai/" target="_blank"
+                            rel="noopener">https://www.oiioii.ai/</a></p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="copyright">&copy; 2026 Yoshida Kagetica</div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+        // Copy prompt functionality
+        function copyPrompt(blockId, btn) {
+            const block = document.getElementById(blockId);
+            // Get only the text content, excluding the button
+            const text = block.childNodes[1] ? block.childNodes[1].textContent.trim() : block.textContent.replace('📋 コピー', '').trim();
+            navigator.clipboard.writeText(text).then(() => {
+                btn.textContent = '✅ コピー完了！';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = '📋 コピー';
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(() => {
+                // Fallback for older browsers
+                const range = document.createRange();
+                range.selectNodeContents(block);
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+                document.execCommand('copy');
+                sel.removeAllRanges();
+                btn.textContent = '✅ コピー完了！';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = '📋 コピー';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        // Scroll-triggered fade-up animation
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+    </script>
+</body>
+
+</html>
